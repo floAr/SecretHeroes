@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandleAnswer",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "viewing_key"
+      ],
+      "properties": {
+        "viewing_key": {
+          "type": "object",
+          "required": [
+            "key"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "chicken_out"
+      ],
+      "properties": {
+        "chicken_out": {
+          "type": "object",
+          "required": [
+            "message"
+          ],
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
