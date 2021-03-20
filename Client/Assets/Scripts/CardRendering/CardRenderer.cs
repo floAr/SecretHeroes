@@ -35,18 +35,14 @@ public class CardRenderer : MonoBehaviour
     [Range(1, 100)]
     public int SkillPsychics;
 
-    private void OnValidate()
+    public void DoUpdate()
     {
         SetVisuals();
         SetSkills();
     }
 
 
-    [ContextMenu("Click")]
-    public void MixModel()
-    {
-        SetModel(Random.Range(0, Models.Length));
-    }
+   
 
     private void SetModel(int newModel)
     {

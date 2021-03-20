@@ -34,17 +34,13 @@ public class CameraController : MonoBehaviour
             {
                 ClickableObject co = hit.transform.gameObject.GetComponent<ClickableObject>();
 
-                //only lerp if clickable object was hit
-                if (co != null)
-                    LerpToTransform(co.GetCameraPosition().position, co.GetCameraPosition().eulerAngles);
-                else
-                    LerpToTransform(_startPos, _startRot);
+                co.OnClick?.Invoke();
             }
         }
     }
 
 
-    private void LerpToTransform(Vector3 toPos, Vector3 toRot)
+    public void LerpToTransform(Vector3 toPos, Vector3 toRot)
     {
         _current = LeanTween.move(this.gameObject, toPos, LerpTime).setEase(TweenType);
         LeanTween.rotate(this.gameObject, toRot, LerpTime).setEase(TweenType);
