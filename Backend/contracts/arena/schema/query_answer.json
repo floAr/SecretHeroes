@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryAnswer",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "bullpen"
+      ],
+      "properties": {
+        "bullpen": {
+          "type": "object",
+          "required": [
+            "fighters_waiting",
+            "one_is_yours"
+          ],
+          "properties": {
+            "fighters_waiting": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "one_is_yours": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "battle_history"
+      ],
+      "properties": {
+        "battle_history": {
+          "type": "object",
+          "required": [
+            "history"
+          ],
+          "properties": {
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Battle"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "Battle": {
+      "type": "object",
+      "required": [
+        "battle_number",
+        "i_won",
+        "my_fighter",
+        "my_skills",
+        "skill_used",
+        "winning_skill_value"
+      ],
+      "properties": {
+        "battle_number": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "i_won": {
+          "type": "boolean"
+        },
+        "my_fighter": {
+          "type": "string"
+        },
+        "my_skills": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "skill_used": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "winning_skill_value": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 [package]
-name = "minter"
+name = "arena"
 version = "0.1.0"
 authors = ["bill wincer"]
 edition = "2018"

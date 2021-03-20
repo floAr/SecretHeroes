@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use cosmwasm_std::{
     log, to_binary, Api, Binary, CanonicalAddr, Coin, CosmosMsg, Env, Extern, HandleResponse,
@@ -13,7 +13,6 @@ use crate::msg::{
 };
 use crate::rand::{sha_256, Prng};
 use crate::state::{load, save, AdminInfo, Config, ContractInfo, ADMIN_INFO_KEY, CONFIG_KEY};
-use snip721_reference_impl::token::Metadata;
 
 use serde_json_wasm as serde_json;
 
@@ -50,6 +49,13 @@ pub struct NftInitMsg {
 
 impl InitCallback for NftInitMsg {
     const BLOCK_SIZE: usize = BLOCK_SIZE;
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Metadata {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub image: Option<String>,
 }
 
 #[derive(Serialize)]
