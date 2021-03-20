@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [push]
 
 jobs:
   buildAndTestForSomePlatforms:
@@ -41,5 +41,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh_pages # The branch the action should deploy to.
+          BRANCH: unity_builds # The branch the action should deploy to.
           FOLDER: build/WebGL/WebGL # The folder the action should deploy.
