@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class TransitionManager : MonoBehaviour
 {
+    public enum Location
+    {
+        MAIN,
+        MARKET
+    }
 
     public CameraController MainCam;
     public FadeCamera MainCamFade;
@@ -16,16 +21,23 @@ public class TransitionManager : MonoBehaviour
 
     public DrawManager DrawHall;
 
+    public Location CurrentLocation = Location.MAIN;
+
     [ContextMenu("Market Transition")]
     public void TransitionIntoMarket()
     {
+        if (CurrentLocation == Location.MARKET)
+            return;
         StartCoroutine(MarketTransition());
     }
 
     public IEnumerator MarketTransition()
     {
+        if (CurrentLocation != Location.MAIN)
+            yield return StartCoroutine(ResetTransition());
+        CurrentLocation = Location.MARKET;
         MainCam.LerpToTransform(Market.ObjectCamera.transform.position, Market.ObjectCamera.transform.rotation.eulerAngles);
-        yield return new WaitForSeconds(MainCam.LerpTime- MainCamFade.Duration * 0.95f);
+        yield return new WaitForSeconds(MainCam.LerpTime - MainCamFade.Duration * 0.95f);
         MainCamFade.FadeOut();
         yield return new WaitForSeconds(MainCamFade.Duration);
         MainCam.transform.position = DrawHall.DrawCamera.transform.position;
@@ -37,6 +49,7 @@ public class TransitionManager : MonoBehaviour
     [ContextMenu("Reset")]
     public void ResetTransitions()
     {
+        CurrentLocation = Location.MAIN;
         StartCoroutine(ResetTransition());
     }
 
@@ -47,6 +60,7 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = ResetTransform.position;
         MainCam.transform.rotation = ResetTransform.rotation;
         MainCamFade.FadeIn();
+        CurrentLocation = Location.MAIN;
         yield return true;
     }
 }

@@ -22,6 +22,8 @@ public class CardRenderer : MonoBehaviour
 
     public bool Hidden;
 
+    public bool ShowSkills;
+
 
     [Range(1, 100)]
     public int SkillWeapons;
@@ -61,14 +63,10 @@ public class CardRenderer : MonoBehaviour
 
 
 
-    //void Start()
-    //{
-    //    MixModel();
-    //    CharacterSlip = new RenderTexture(512, 512, 0);
-
-    //    CharacterCam.targetTexture = CharacterSlip;
-    //    ImageTarget.texture = CharacterSlip;
-    //}
+    private void Update()
+    {
+       
+    }
 
     private void SetVisuals()
     {
