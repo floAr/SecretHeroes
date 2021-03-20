@@ -62,6 +62,7 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 pub struct WaitingHero {
     pub token_id: String,
+    pub name: String,
     pub skills: Vec<u8>,
 }
 
