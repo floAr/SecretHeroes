@@ -60,11 +60,17 @@ pub enum QueryMsg {
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
+pub struct WaitingHero {
+    pub token_id: String,
+    pub skills: Vec<u8>,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryAnswer {
     Bullpen {
-        fighters_waiting: u8,
-        one_is_yours: bool,
+        heroes_waiting: u8,
+        your_hero: Option<WaitingHero>,
     },
     BattleHistory {
         history: Vec<Battle>,

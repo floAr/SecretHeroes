@@ -11,17 +11,23 @@
         "bullpen": {
           "type": "object",
           "required": [
-            "fighters_waiting",
-            "one_is_yours"
+            "heroes_waiting"
           ],
           "properties": {
-            "fighters_waiting": {
+            "heroes_waiting": {
               "type": "integer",
               "format": "uint8",
               "minimum": 0.0
             },
-            "one_is_yours": {
-              "type": "boolean"
+            "your_hero": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/WaitingHero"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }
@@ -90,6 +96,26 @@
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
+        }
+      }
+    },
+    "WaitingHero": {
+      "type": "object",
+      "required": [
+        "skills",
+        "token_id"
+      ],
+      "properties": {
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "token_id": {
+          "type": "string"
         }
       }
     }
