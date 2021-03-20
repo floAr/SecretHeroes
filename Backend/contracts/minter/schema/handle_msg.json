@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandleMsg",
+  "description": "Handle messages",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "mint"
+      ],
+      "properties": {
+        "mint": {
+          "type": "object",
+          "required": [
+            "names"
+          ],
+          "properties": {
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_card_contract"
+      ],
+      "properties": {
+        "register_card_contract": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "new_card_contract"
+      ],
+      "properties": {
+        "new_card_contract": {
+          "type": "object",
+          "required": [
+            "card_contract",
+            "entropy",
+            "label"
+          ],
+          "properties": {
+            "card_contract": {
+              "$ref": "#/definitions/ContractInitInfo"
+            },
+            "entropy": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_status"
+      ],
+      "properties": {
+        "set_status": {
+          "type": "object",
+          "required": [
+            "stop"
+          ],
+          "properties": {
+            "stop": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "ContractInitInfo": {
+      "description": "Info needed to instantiate the token contract",
+      "type": "object",
+      "required": [
+        "code_hash",
+        "code_id",
+        "name",
+        "symbol"
+      ],
+      "properties": {
+        "code_hash": {
+          "type": "string"
+        },
+        "code_id": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
