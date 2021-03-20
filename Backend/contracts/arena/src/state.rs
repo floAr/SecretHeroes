@@ -30,6 +30,7 @@ pub struct Config {
 pub struct Hero {
     pub owner: CanonicalAddr,
     pub token_id: String,
+    pub name: String,
     pub skills: Vec<u8>,
 }
 
@@ -43,7 +44,8 @@ pub struct CardContract {
 #[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
 pub struct Battle {
     pub battle_number: u64,
-    pub my_fighter: String,
+    pub my_hero: String,
+    pub my_token_id: String,
     pub my_skills: Vec<u8>,
     pub skill_used: u8,
     pub winning_skill_value: u8,
@@ -64,7 +66,8 @@ impl StoredBattle {
         if let Some(mine) = self.heroes.iter().find(|h| h.owner == *address) {
             let battle = Battle {
                 battle_number: self.battle_number,
-                my_fighter: mine.token_id.clone(),
+                my_hero: mine.name.clone(),
+                my_token_id: mine.token_id.clone(),
                 my_skills: mine.skills.clone(),
                 skill_used: self.skill_used,
                 winning_skill_value: self.winning_skill_value,

@@ -62,8 +62,9 @@
       "required": [
         "battle_number",
         "i_won",
-        "my_fighter",
+        "my_hero",
         "my_skills",
+        "my_token_id",
         "skill_used",
         "winning_skill_value"
       ],
@@ -76,7 +77,7 @@
         "i_won": {
           "type": "boolean"
         },
-        "my_fighter": {
+        "my_hero": {
           "type": "string"
         },
         "my_skills": {
@@ -86,6 +87,9 @@
             "format": "uint8",
             "minimum": 0.0
           }
+        },
+        "my_token_id": {
+          "type": "string"
         },
         "skill_used": {
           "type": "integer",
@@ -102,10 +106,14 @@
     "WaitingHero": {
       "type": "object",
       "required": [
+        "name",
         "skills",
         "token_id"
       ],
       "properties": {
+        "name": {
+          "type": "string"
+        },
         "skills": {
           "type": "array",
           "items": {

@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{
     log, to_binary, Api, Binary, CanonicalAddr, Coin, CosmosMsg, Env, Extern, HandleResponse,
@@ -327,12 +327,12 @@ fn mint_msg(
 
     let skill_str = serde_json::to_string(&skills).unwrap();
     let priv_meta = Metadata {
-        name: Some(name.clone()),
+        name: Some(name),
         description: None,
         image: Some(skill_str),
     };
     let mint_msg = NftHandleMsg::Mint {
-        token_id: Some(name),
+        token_id: None,
         owner: Some(owner.clone()),
         public_metadata: Some(pub_meta),
         private_metadata: Some(priv_meta),
