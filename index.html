@@ -9,12 +9,12 @@
   <link rel="canonical" href="https://gatsby-starter-typescript-plus.netlify.com/" data-baseprotocol="https:"
     data-basehost="gatsby-starter-typescript-plus.netlify.com" />
   <title data-react-helmet="true"></title>
-  <link as="script" rel="preload" href="/webpack-runtime-0f0b5e300cb2b82c6f92.js" />
+  <link as="script" rel="preload" href="/webpack-runtime-27ef031b8a07ea0e24f2.js" />
   <link as="script" rel="preload" href="/framework-741ade27086b2708e961.js" />
   <link as="script" rel="preload" href="/app-f69a0ed93fba2c9d05c5.js" />
   <link as="script" rel="preload" href="/102d0109-8bc7347c8257defc385c.js" />
   <link as="script" rel="preload" href="/725b77c5-d17da18f7ae0e8fe4af7.js" />
-  <link as="script" rel="preload" href="/component---src-pages-index-tsx-517d7d3bde5022ebe98e.js" />
+  <link as="script" rel="preload" href="/component---src-pages-index-tsx-418577a51fb230b7cd64.js" />
   <link as="fetch" rel="preload" href="/page-data\index\page-data.json" crossorigin="anonymous" />
   <link as="fetch" rel="preload" href="/page-data\app-data.json" crossorigin="anonymous" />
 </head>
@@ -47,14 +47,14 @@
   </div>
   <script id="gatsby-script-loader">/*<![CDATA[*/window.pagePath = "/";/*]]>*/</script>
   <script
-    id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping = { "polyfill": ["/polyfill-2966d4d8fea208fd6f8f.js"], "app": ["/app-f69a0ed93fba2c9d05c5.js"], "component---src-pages-404-tsx": ["/component---src-pages-404-tsx-b7c3d60316391681a7fb.js"], "component---src-pages-index-tsx": ["/component---src-pages-index-tsx-517d7d3bde5022ebe98e.js"], "component---src-templates-page-tsx": ["/component---src-templates-page-tsx-e64c8765ca744a2bdc43.js"] };/*]]>*/</script>
+    id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping = { "polyfill": ["/polyfill-2966d4d8fea208fd6f8f.js"], "app": ["/app-f69a0ed93fba2c9d05c5.js"], "component---src-pages-404-tsx": ["/component---src-pages-404-tsx-b7c3d60316391681a7fb.js"], "component---src-pages-index-tsx": ["/component---src-pages-index-tsx-418577a51fb230b7cd64.js"], "component---src-templates-page-tsx": ["/component---src-templates-page-tsx-e64c8765ca744a2bdc43.js"] };/*]]>*/</script>
   <script src="/polyfill-2966d4d8fea208fd6f8f.js" nomodule=""></script>
-  <script src="/component---src-pages-index-tsx-517d7d3bde5022ebe98e.js" async=""></script>
+  <script src="/component---src-pages-index-tsx-418577a51fb230b7cd64.js" async=""></script>
   <script src="/725b77c5-d17da18f7ae0e8fe4af7.js" async=""></script>
   <script src="/102d0109-8bc7347c8257defc385c.js" async=""></script>
   <script src="/app-f69a0ed93fba2c9d05c5.js" async=""></script>
   <script src="/framework-741ade27086b2708e961.js" async=""></script>
-  <script src="/webpack-runtime-0f0b5e300cb2b82c6f92.js" async=""></script>
+  <script src="/webpack-runtime-27ef031b8a07ea0e24f2.js" async=""></script>
   <script>
     var buildUrl = "Build";
     var loaderUrl = buildUrl + "/_build_default.loader.js";
@@ -94,8 +94,8 @@
       createUnityInstance(canvas, config, (progress) => {
         progressBarFull.style.width = 100 * progress + "%";
       }).then((unityInstance) => {
+        window.unityInstance=unityInstance
         window.registerUnityInstace(unityInstance)
-        window.unityInstace=unityInstance
         loadingBar.style.display = "none";
         fullscreenButton.onclick = () => {
           unityInstance.SetFullscreen(1);
