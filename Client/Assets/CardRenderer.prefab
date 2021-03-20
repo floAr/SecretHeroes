@@ -94,6 +94,7 @@ MonoBehaviour:
   Engineering: {fileID: 423666067566726821}
   Biotech: {fileID: 423666068779446500}
   Psychics: {fileID: 423666067912264822}
+  Hidden: 0
   SkillWeapons: 49
   SkillEngineering: 25
   SkillBiotech: 49

@@ -20,6 +20,8 @@ public class CardRenderer : MonoBehaviour
     public Skill Biotech;
     public Skill Psychics;
 
+    public bool Hidden;
+
 
     [Range(1, 100)]
     public int SkillWeapons;
@@ -48,7 +50,9 @@ public class CardRenderer : MonoBehaviour
 
     private void SetModel(int newModel)
     {
+
         Models[_activeModel].SetActive(false);
+        if (Hidden) return;
         Models[newModel].SetActive(true);
         _activeModel = newModel;
     }
