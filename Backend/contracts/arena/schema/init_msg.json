@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InitMsg",
+  "description": "Instantiation message",
+  "type": "object",
+  "required": [
+    "card_contract",
+    "entropy"
+  ],
+  "properties": {
+    "card_contract": {
+      "$ref": "#/definitions/ContractInfo"
+    },
+    "entropy": {
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "ContractInfo": {
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/HumanAddr"
+        },
+        "code_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "HumanAddr": {
+      "type": "string"
+    }
+  }
+}
