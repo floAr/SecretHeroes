@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 use cosmwasm_std::{
-    to_binary, Api, Binary, CanonicalAddr, Env, Extern, HandleResponse, HandleResult,
-    HumanAddr, InitResponse, InitResult, Querier, QueryResult, ReadonlyStorage, StdError,
-    StdResult, Storage,
+    to_binary, Api, Binary, CanonicalAddr, Env, Extern, HandleResponse, HandleResult, HumanAddr,
+    InitResponse, InitResult, Querier, QueryResult, ReadonlyStorage, StdError, StdResult, Storage,
 };
 use cosmwasm_storage::{PrefixedStorage, ReadonlyPrefixedStorage};
 
@@ -13,7 +12,7 @@ use serde_json_wasm as serde_json;
 
 use secret_toolkit::utils::{pad_handle_result, pad_query_result, HandleCallback, Query};
 
-use crate::msg::{HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg};
+use crate::msg::{HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, WaitingHero};
 use crate::rand::{sha_256, Prng};
 use crate::state::{
     append_battle, append_battle_for_addr, get_history, load, may_load, save, CardContract, Config,
@@ -459,8 +458,15 @@ pub fn query_bullpen<S: Storage, A: Api, Q: Querier>(
     check_key(&deps.storage, &address_raw, viewing_key)?;
     let config: Config = load(&deps.storage, CONFIG_KEY)?;
     to_binary(&QueryAnswer::Bullpen {
-        fighters_waiting: config.heroes.len() as u8,
-        one_is_yours: config.heroes.iter().any(|h| h.owner == address_raw),
+        heroes_waiting: config.heroes.len() as u8,
+        your_hero: config
+            .heroes
+            .into_iter()
+            .find(|h| h.owner == address_raw)
+            .map(|h| WaitingHero {
+                token_id: h.token_id,
+                skills: h.skills,
+            }),
     })
 }
 
