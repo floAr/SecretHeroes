@@ -34,7 +34,7 @@ public class CameraController : MonoBehaviour
             {
                 ClickableObject co = hit.transform.gameObject.GetComponent<ClickableObject>();
 
-                co.OnClick?.Invoke();
+                co?.OnClick?.Invoke();
             }
         }
     }

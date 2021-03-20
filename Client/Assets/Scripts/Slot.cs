@@ -71,11 +71,7 @@ public class Slot : MonoBehaviour
 
     internal void Fill(Token token)
     {
-        CharacterRenderer.SkillWeapons = token.weapons;
-        CharacterRenderer.SkillEngineering = token.engineering;
-        CharacterRenderer.SkillBiotech = token.biotech;
-        CharacterRenderer.SkillPsychics = token.psychics;
-        CharacterRenderer.DoUpdate();
+        CharacterRenderer.ReadToken(token);
         DropPill();
     }
 

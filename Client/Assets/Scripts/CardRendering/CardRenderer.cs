@@ -44,7 +44,14 @@ public class CardRenderer : MonoBehaviour
     }
 
 
-   
+   public void ReadToken(Token token)
+    {
+        SkillWeapons = token.weapons;
+        SkillEngineering = token.engineering;
+        SkillBiotech = token.biotech;
+        SkillPsychics = token.psychics;
+        DoUpdate();
+    }
 
     private void SetModel(int newModel)
     {
