@@ -325,7 +325,8 @@ fn mint_msg(
         skills.push(val);
     }
 
-    let skill_str = serde_json::to_string(&skills).unwrap();
+    let skill_str = serde_json::to_string(&skills)
+        .map_err(|e| StdError::generic_err(format!("Error serializing skills: {}", e)))?;
     let priv_meta = Metadata {
         name: Some(name.clone()),
         description: None,
