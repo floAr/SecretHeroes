@@ -15,10 +15,10 @@ Each card is a secretNFT, minted by a secret contract
 - Rarity - Based on skill scores; cards with skill (any) score above 90
 
 ### Skills
-- TBD
-- TBD
-- TBD
-- TBD
+- Weapons
+- Engineering
+- Biotech
+- Psychics
 
 ## Game play
 
