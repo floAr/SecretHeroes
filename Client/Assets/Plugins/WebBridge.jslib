@@ -4,9 +4,14 @@ mergeInto(LibraryManager.library, {
 	var content = JSON.parse(Pointer_stringify(str_json));
 	updateChart(content);
   },
-  SetViewingKey: function (str_json){
-	var content = JSON.parse(Pointer_stringify(str_json));
+  
+  SendToBattle: function (tokenId){
+	var token = Pointer_stringify(tokenId);
 	updateChart(content);
+  },
+
+  PollData: function (){
+	window.scrtPoll()
   },
    GetPrivateMetadata: function (str_json){
 	var content = JSON.parse(Pointer_stringify(str_json));

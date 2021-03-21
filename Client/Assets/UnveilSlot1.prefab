@@ -162,6 +162,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Status: 0
   CharacterRenderer: {fileID: 3111235508477919779}
+  ClickCollider: {fileID: 605098615}
   Pill: {fileID: 384652673755901650}
   Burst: {fileID: 546306475648280868}
 --- !u!65 &605098615
