@@ -8,7 +8,8 @@ public class TransitionManager : MonoBehaviour
     {
         MAIN,
         MARKET,
-        BAR
+        BAR,
+        ARENA
     }
 
     public CameraController MainCam;
@@ -18,12 +19,16 @@ public class TransitionManager : MonoBehaviour
 
     public Coroutine RunningTransition;
 
+    // MARKET
     public ClickableObject Market;
     public DrawManager DrawHall;
 
-
+    //BAR
     public ClickableObject Bar;
     public SelectionRooster Selection;
+
+    //ARENA
+    public ClickableObject Arena;
 
     public Location CurrentLocation = Location.MAIN;
 
@@ -73,6 +78,31 @@ public class TransitionManager : MonoBehaviour
         MainCamFade.FadeIn();
         yield return true;
     }
+
+
+    [ContextMenu("Arena Transition")]
+    public void TransitionIntoArena()
+    {
+        if (CurrentLocation == Location.ARENA)
+            return;
+        StartCoroutine(ArenaTransition());
+    }
+
+    public IEnumerator ArenaTransition()
+    {
+        if (CurrentLocation != Location.MAIN)
+            yield return StartCoroutine(ResetTransition());
+        CurrentLocation = Location.ARENA;
+        MainCam.LerpToTransform(Arena.ObjectCamera.transform.position, Arena.ObjectCamera.transform.rotation.eulerAngles);
+        yield return new WaitForSeconds(MainCam.LerpTime - MainCamFade.Duration * 0.95f);
+        MainCamFade.FadeOut();
+        yield return new WaitForSeconds(MainCamFade.Duration);
+        MainCam.transform.position = Selection.SectionCamera.transform.position;
+        MainCam.transform.rotation = Selection.SectionCamera.transform.rotation;
+        MainCamFade.FadeIn();
+        yield return true;
+    }
+
 
 
 
