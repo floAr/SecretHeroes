@@ -9,6 +9,7 @@ public class WebGlBridge : MonoBehaviour
     public bool IsConnected;
     public UnityEvent Connected;
     public DrawManager DrawManager;
+    public BattleMaster BattleMaster;
 
     [DllImport("__Internal")]
     private static extern void MintTokens(string str);
@@ -25,7 +26,7 @@ public class WebGlBridge : MonoBehaviour
     public void TriggerPoll()
     {
         //Debug.Log(payload);
-       
+
         PollData();
     }
 
@@ -69,7 +70,9 @@ public class WebGlBridge : MonoBehaviour
 
     public void ReportBattleStatus(string encodedBattle)
     {
-
+        Debug.Log("Encoded for battleState " + encodedBattle);
+        var battle = BattleState.CreateFromJSON(encodedBattle);
+        BattleMaster.AddBattleState(battle);
     }
 
     public void Connect()
@@ -80,7 +83,8 @@ public class WebGlBridge : MonoBehaviour
     }
 
     [ContextMenu("Test RegisterMint")]
-    public void TestRegisterMint() {
+    public void TestRegisterMint()
+    {
         RegisterMint("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
     }
 
@@ -93,7 +97,18 @@ public class WebGlBridge : MonoBehaviour
     [ContextMenu("Test Connect")]
     public void TestConnect()
     {
-        Connect();    
+        Connect();
+    }
+    [ContextMenu("Test ReportBattleState")]
+    public void TestReportBattleState()
+    {
+        ReportBattleStatus("{\"heroes_waiting\": 1, \"your_hero\": {\"token_id\": \"test\",\"name\": \"test\",\"skills\": [17,2,14,7]}}");
+    }
+
+    [ContextMenu("Test ReportBattleState222")]
+    public void TestReportBattleStateZEor()
+    {
+        ReportBattleStatus("{\"heroes_waiting\": 1, \"your_hero\": null}");
     }
 }
 

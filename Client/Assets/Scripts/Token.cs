@@ -15,4 +15,9 @@ public class Token
     {
         return JsonUtility.FromJson<Token>(jsonString);
     }
+
+    public static Token Random()
+    {
+        return new Token() { name = "test", biotech = 3, engineering = 1, psychics = 1, weapons = 2 };
+    }
 }

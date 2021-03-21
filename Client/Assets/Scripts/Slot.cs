@@ -22,6 +22,7 @@ public class Slot : MonoBehaviour
             case SlotStatus.EMPTY:
                 Pill.gameObject.SetActive(false);
                 CharacterRenderer.gameObject.SetActive(false);
+                CharacterRenderer.IsSelected =false;
                 ClickCollider.enabled = false;
                 break;
             case SlotStatus.CHARGED:
@@ -62,20 +63,21 @@ public class Slot : MonoBehaviour
             Status = SlotStatus.OPENING;
             Burst.Emit(20);
             LeanTween.scale(CharacterRenderer.gameObject, Vector3.one, 0.75f).setEase(LeanTweenType.easeInExpo);
+            CharacterRenderer.IsSelected = true;
         }
         if (Status == SlotStatus.OPEN)
         {
             Burst.Emit(20);
             Status = SlotStatus.EMPTY;
             Pill.Slider = 0;
-            CharacterRenderer.SetSelected(false);
+            CharacterRenderer.IsSelected = true;
         }
     }
 
     public IEnumerator SkillsAndMove()
     {
         yield return new WaitForSeconds(0.5f);
-        CharacterRenderer.SetSelected(true);
+        CharacterRenderer.IsSelected = true;
         // TODO play animation instead
     }
 

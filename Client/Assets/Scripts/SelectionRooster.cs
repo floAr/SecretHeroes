@@ -91,7 +91,7 @@ public class SelectionRooster : MonoBehaviour
             else
                 LeanTween.move(CardHolders[i].gameObject, FixPoints[sanitized], duration).setEase(LeanTweenType.easeInOutExpo);
 
-            CardHolders[i].SetSelected(sanitized == 2);
+            CardHolders[i].IsSelected = sanitized == 2;
 
             LeanTween.rotate(CardHolders[i].gameObject, FixPoints[sanitized].rotation.eulerAngles, duration);
 

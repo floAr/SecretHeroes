@@ -26,6 +26,8 @@ public class CardRenderer : MonoBehaviour
 
     public bool Hidden;
 
+    public bool IsSelected;
+
 
     [Range(1, 100)]
     public int SkillWeapons;
@@ -39,16 +41,15 @@ public class CardRenderer : MonoBehaviour
     [Range(1, 100)]
     public int SkillPsychics;
 
+    LTDescr _scaling;
+
     public void DoUpdate()
     {
         SetVisuals();
         SetSkills();
     }
 
-    private void Start()
-    {
-        SetSelected(false);
-    }
+ 
 
     public void ReadToken(Token token)
     {
@@ -63,8 +64,10 @@ public class CardRenderer : MonoBehaviour
 
     private void SetModel(int newModel)
     {
-
-        Models[_activeModel].SetActive(false);
+        for (int i = 0; i < Models.Length; i++)
+        {
+            Models[i].SetActive(false);
+        }
         if (Hidden) return;
         Models[newModel].SetActive(true);
         _activeModel = newModel;
@@ -75,12 +78,11 @@ public class CardRenderer : MonoBehaviour
         Models[_activeModel].GetComponent<SkinnedMeshRenderer>().material = Variants[newVariant];
     }
 
-    public void SetSelected(bool selected)
+
+    private void Update()
     {
-        Animator.SetBool("IsSelected", selected);
-       
-            LeanTween.scale(SkillCanvas.gameObject, selected? new Vector3(0.1f, 0.1f, 0.1f): Vector3.zero, 0.6f).setEase(LeanTweenType.easeInOutExpo);
-        
+        Animator.SetBool("IsSelected", IsSelected);
+        SkillCanvas.gameObject.SetActive(IsSelected);
     }
 
 
