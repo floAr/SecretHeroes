@@ -216,7 +216,7 @@ pub fn try_chicken<S: Storage, A: Api, Q: Querier>(
             messages: vec![xfer_cosmos],
             log: vec![],
             data: Some(to_binary(&HandleAnswer::ChickenOut {
-                message: format!("{} fled", hero.token_id),
+                message: format!("{} fled", hero.name),
             })?),
         });
     }
@@ -310,6 +310,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
         let new_hero = Hero {
             owner: owner_raw,
             token_id: token_id.clone(),
+            name: priv_meta.private_metadata.name.unwrap_or_else(String::new),
             skills,
         };
         config.heroes.push(new_hero);
@@ -465,6 +466,7 @@ pub fn query_bullpen<S: Storage, A: Api, Q: Querier>(
             .find(|h| h.owner == address_raw)
             .map(|h| WaitingHero {
                 token_id: h.token_id,
+                name: h.name,
                 skills: h.skills,
             }),
     })
