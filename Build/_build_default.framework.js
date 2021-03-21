@@ -1298,7 +1298,7 @@ function _emscripten_asm_const_ii(code, a0) {
  return ASM_CONSTS[code](a0);
 }
 STATIC_BASE = GLOBAL_BASE;
-STATICTOP = STATIC_BASE + 2620800;
+STATICTOP = STATIC_BASE + 2621248;
 __ATINIT__.push({
  func: (function() {
   __GLOBAL__sub_I_AccessibilityScriptingClasses_cpp();
@@ -3284,7 +3284,7 @@ __ATINIT__.push({
   ___emscripten_environ_constructor();
  })
 });
-var STATIC_BUMP = 2620800;
+var STATIC_BUMP = 2621248;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 var tempDoublePtr = STATICTOP;
@@ -3602,6 +3602,13 @@ function _JS_SystemInfo_HasWebGL() {
 }
 function _MintTokens(str_json) {
  var content = JSON.parse(Pointer_stringify(str_json));
+ updateChart(content);
+}
+function _PollData() {
+ window.scrtPoll();
+}
+function _SendToBattle(tokenId) {
+ var token = Pointer_stringify(tokenId);
  updateChart(content);
 }
 function ___atomic_compare_exchange_8(ptr, expected, desiredl, desiredh, weak, success_memmodel, failure_memmodel) {
@@ -18654,6 +18661,8 @@ Module.asmLibraryArg = {
  "_JS_SystemInfo_HasFullscreen": _JS_SystemInfo_HasFullscreen,
  "_JS_SystemInfo_HasWebGL": _JS_SystemInfo_HasWebGL,
  "_MintTokens": _MintTokens,
+ "_PollData": _PollData,
+ "_SendToBattle": _SendToBattle,
  "__ZSt18uncaught_exceptionv": __ZSt18uncaught_exceptionv,
  "___atomic_compare_exchange_8": ___atomic_compare_exchange_8,
  "___atomic_fetch_add_8": ___atomic_fetch_add_8,
