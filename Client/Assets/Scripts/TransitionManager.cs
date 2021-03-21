@@ -29,6 +29,7 @@ public class TransitionManager : MonoBehaviour
 
     //ARENA
     public ClickableObject Arena;
+    public BattleMaster ArenaMaster;
 
     public Location CurrentLocation = Location.MAIN;
 
@@ -97,8 +98,8 @@ public class TransitionManager : MonoBehaviour
         yield return new WaitForSeconds(MainCam.LerpTime - MainCamFade.Duration * 0.95f);
         MainCamFade.FadeOut();
         yield return new WaitForSeconds(MainCamFade.Duration);
-        MainCam.transform.position = Selection.SectionCamera.transform.position;
-        MainCam.transform.rotation = Selection.SectionCamera.transform.rotation;
+        MainCam.transform.position = ArenaMaster.BattleCamera.transform.position;
+        MainCam.transform.rotation = ArenaMaster.BattleCamera.transform.rotation;
         MainCamFade.FadeIn();
         yield return true;
     }

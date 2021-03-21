@@ -3997,7 +3997,19 @@ MonoBehaviour:
   ObjectCamera: {fileID: 1567567417}
   OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 429921184}
+        m_TargetAssemblyTypeName: TransitionManager, Assembly-CSharp
+        m_MethodName: TransitionIntoArena
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &284019221
 Transform:
   m_ObjectHideFlags: 0
@@ -5800,6 +5812,8 @@ MonoBehaviour:
   DrawHall: {fileID: 1049221993}
   Bar: {fileID: 1315058467}
   Selection: {fileID: 1381141192}
+  Arena: {fileID: 284019220}
+  ArenaMaster: {fileID: 1650110163}
   CurrentLocation: 0
 --- !u!4 &429921185
 Transform:
@@ -21247,6 +21261,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1650110164}
+  - component: {fileID: 1650110163}
   m_Layer: 0
   m_Name: BattleStation
   m_TagString: Untagged
@@ -21254,6 +21269,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1650110163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1650110162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a29d672c9b11854db0e076a9b121c60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BattleCamera: {fileID: 1947465729}
 --- !u!4 &1650110164
 Transform:
   m_ObjectHideFlags: 0

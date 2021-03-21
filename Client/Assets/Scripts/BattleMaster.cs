@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BattleMaster : MonoBehaviour
 {
+
+    public Camera BattleCamera;
     // Start is called before the first frame update
     void Start()
     {
