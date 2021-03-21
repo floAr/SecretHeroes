@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class WebGlBridge : MonoBehaviour
 {
+    public bool IsConnected;
+    public UnityEvent Connected;
     public DrawManager DrawManager;
 
     [DllImport("__Internal")]
@@ -22,6 +25,7 @@ public class WebGlBridge : MonoBehaviour
     public void TriggerPoll()
     {
         //Debug.Log(payload);
+       
         PollData();
     }
 
@@ -68,6 +72,13 @@ public class WebGlBridge : MonoBehaviour
 
     }
 
+    public void Connect()
+    {
+        IsConnected = true;
+        if (Connected != null)
+            Connected.Invoke();
+    }
+
     [ContextMenu("Test RegisterMint")]
     public void TestRegisterMint() {
         RegisterMint("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
@@ -79,9 +90,10 @@ public class WebGlBridge : MonoBehaviour
         ReportTokens("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
     }
 
-    private void Start()
+    [ContextMenu("Test Connect")]
+    public void TestConnect()
     {
-        TriggerPoll();
+        Connect();    
     }
 }
 
