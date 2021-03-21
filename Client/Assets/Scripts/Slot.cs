@@ -7,6 +7,7 @@ public class Slot : MonoBehaviour
 {
     public SlotStatus Status = SlotStatus.EMPTY;
     public CardRenderer CharacterRenderer;
+    public Collider ClickCollider;
     public DissolveSphere Pill;
 
     public ParticleSystem Burst;
@@ -15,14 +16,15 @@ public class Slot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        ClickCollider.enabled = true;
         switch (Status)
         {
             case SlotStatus.EMPTY:
                 Pill.gameObject.SetActive(false);
                 CharacterRenderer.gameObject.SetActive(false);
+                ClickCollider.enabled = false;
                 break;
             case SlotStatus.CHARGED:
-
                 Pill.gameObject.SetActive(true);
                 CharacterRenderer.gameObject.SetActive(false);
                 break;
@@ -66,7 +68,15 @@ public class Slot : MonoBehaviour
             Burst.Emit(20);
             Status = SlotStatus.EMPTY;
             Pill.Slider = 0;
+            CharacterRenderer.SetSelected(false);
         }
+    }
+
+    public IEnumerator SkillsAndMove()
+    {
+        yield return new WaitForSeconds(0.5f);
+        CharacterRenderer.SetSelected(true);
+        // TODO play animation instead
     }
 
     internal void Fill(Token token)

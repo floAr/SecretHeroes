@@ -110,6 +110,8 @@ public class TransitionManager : MonoBehaviour
     [ContextMenu("Reset")]
     public void ResetTransitions()
     {
+        if (CurrentLocation == Location.MAIN)
+            return;
         CurrentLocation = Location.MAIN;
         StartCoroutine(ResetTransition());
     }
