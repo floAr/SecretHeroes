@@ -59,14 +59,19 @@ pub struct Metadata {
 }
 
 #[derive(Serialize)]
+pub struct Mint {
+    pub token_id: Option<String>,
+    pub owner: Option<HumanAddr>,
+    pub public_metadata: Option<Metadata>,
+    pub private_metadata: Option<Metadata>,
+    pub memo: Option<String>,
+}
+
+#[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum NftHandleMsg {
-    Mint {
-        token_id: Option<String>,
-        owner: Option<HumanAddr>,
-        public_metadata: Option<Metadata>,
-        private_metadata: Option<Metadata>,
-        memo: Option<String>,
+    BatchMintNft {
+        mints: Vec<Mint>,
         padding: Option<String>,
     },
     ChangeAdmin {
@@ -172,25 +177,28 @@ pub fn try_mint<S: Storage, A: Api, Q: Querier>(
     }
     let entropy = names.join("");
     let rdm_bytes = rdm_bytes(&env, &config.prng_seed, entropy.as_ref());
-    let mut messages = Vec::new();
     let nft_address = deps.api.human_address(&config.card_contract.address)?;
+    let mut mints = Vec::new();
 
     for (i, name) in names.into_iter().enumerate() {
         if i > 2 {
             break;
         }
         let start_byte = i * 20;
-        messages.push(mint_msg(
+        mints.push(get_mints(
             &rdm_bytes[start_byte..start_byte + 20],
             name,
             &env.message.sender,
-            &nft_address,
-            &config.card_contract.code_hash,
         )?);
     }
-
+    let mint_msg = NftHandleMsg::BatchMintNft {
+        mints,
+        padding: None,
+    };
     config.prng_seed = rdm_bytes;
     save(&mut deps.storage, CONFIG_KEY, &config)?;
+    let messages =
+        vec![mint_msg.to_cosmos_msg(config.card_contract.code_hash, nft_address, None)?];
 
     Ok(HandleResponse {
         messages,
@@ -300,13 +308,7 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
     Ok(QueryResponse::default())
 }
 
-fn mint_msg(
-    bytes: &[u8],
-    name: String,
-    owner: &HumanAddr,
-    nft_address: &HumanAddr,
-    nft_code_hash: &str,
-) -> StdResult<CosmosMsg> {
+fn get_mints(bytes: &[u8], name: String, owner: &HumanAddr) -> StdResult<Mint> {
     let pub_meta = Metadata {
         name: Some(name.clone()),
         description: None,
@@ -325,21 +327,21 @@ fn mint_msg(
         skills.push(val);
     }
 
-    let skill_str = serde_json::to_string(&skills).unwrap();
+    let skill_str = serde_json::to_string(&skills)
+        .map_err(|e| StdError::generic_err(format!("Error serializing skills: {}", e)))?;
     let priv_meta = Metadata {
         name: Some(name),
         description: None,
         image: Some(skill_str),
     };
-    let mint_msg = NftHandleMsg::Mint {
+    let mint = Mint {
         token_id: None,
         owner: Some(owner.clone()),
         public_metadata: Some(pub_meta),
         private_metadata: Some(priv_meta),
         memo: None,
-        padding: None,
     };
-    mint_msg.to_cosmos_msg(nft_code_hash.to_string(), nft_address.clone(), None)
+    Ok(mint)
 }
 
 fn card_init_msg(
