@@ -1,0 +1,225 @@
+*:focus {
+    outline: none;
+}
+
+body {
+    background-image: url(./background.svg);
+    background-size: 100%;
+    overflow: hidden !important;
+}
+
+.bodyy {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 35vw;
+    min-width: 760px;
+}
+
+.frosted-box {
+    font-weight: bold;
+    padding: 5vh 5vw;
+    border-radius: 10px;
+    background: rgb(245, 245, 245);
+    animation: 1s calc(100 * -.01s) 1 paused both opacify;
+    backdrop-filter: blur(10px);
+    box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+}
+
+@-webkit-keyframes opacify {
+    to {
+        background: transparent;
+    }
+}
+
+@keyframes opacify {
+    to {
+        background: transparent;
+    }
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.neu-button {
+    box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+}
+
+.button {
+    outline: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 30px;
+    font-weight: bold;
+    width: 220px;
+    padding: 5px 40px;
+    color: #fff;
+    transition: .5s;
+    background: rgb(245, 245, 245);
+    animation: 1s calc(100 * -.01s) 1 paused both opacify;
+    backdrop-filter: blur(10px);
+    box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+}
+
+.button span {
+    background: linear-gradient(45deg, rgba(10, 32, 27, 1) 0%, rgba(24, 80, 47, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.button:hover {
+    letter-spacing: 2px;
+    animation: 1s calc(100 * -.01s) 1 paused both opacify, 4s ease-in-out infinite pulse;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.input-field {
+    margin-bottom: 30px;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    width: 30vw;
+    overflow: visible;
+    background: rgb(245, 245, 245);
+    animation: 1s calc(100 * -.01s) 1 paused both opacify;
+    backdrop-filter: blur(20px);
+    box-shadow: inset -0.25rem -0.25rem 0.4rem rgba(255, 255, 255, 0.03), inset 0.25rem 0.25rem 0.4rem rgba(0, 0, 0, 0.08), inset -0.75rem -0.75rem 1.35rem rgba(255, 255, 255, 0.03), inset 0.75rem 0.75rem 1.35rem rgba(0, 0, 0, 0.08);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-field.large {
+    height: 10vh;
+}
+
+.input-field.smol {
+    height: fit-content;
+}
+
+.input-wrapper::after {
+    content: attr(data-text);
+    overflow: visible;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: calc(100% - 30px);
+    opacity: 0;
+    left: -20%;
+    font-size: smaller;
+    z-index: 10;
+    background: none;
+    backdrop-filter: none;
+    animation: none;
+    box-shadow: none;
+    transition: all .5s ease-in-out;
+    background: linear-gradient(228deg, rgba(21, 64, 67, 1) 0%, rgba(20, 55, 67, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.input-wrapper:hover::after {
+    left: 0%;
+    opacity: .9;
+}
+
+.input-wrapper:focus-within::after {
+    left: 0%;
+    opacity: .9;
+}
+
+.message-container {
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h2 {
+    font-weight: 800 !important;
+    font-size: 4em !important;
+    background: linear-gradient(228deg, rgba(21, 64, 67, 1) 0%, rgba(20, 55, 67, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-address {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.dark-gradient-text {
+    background: linear-gradient(228deg, rgba(21, 64, 67, 1) 0%, rgba(20, 55, 67, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.address-container {
+    display: flex;
+}
+
+.copy-button {
+    margin-left: 10px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
+.read-button {
+    margin-top: 30px;
+}
+
+.copy-button:hover {
+    animation: 1s calc(100 * -.01s) 1 paused both opacify, 4s ease-in-out infinite pulse;
+}
+
+.copy-button img {
+    width: 18px;
+    height: 18px;
+}
+
+.new-message-container {
+    position: absolute;
+    font-size: x-small;
+    bottom: -200px;
+    font-weight: bold;
+    padding: 2vh 2vw;
+    font-size: larger;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    background: rgb(245, 245, 245);
+    animation: 1s calc(100 * -.01s) 1 paused both opacify;
+    backdrop-filter: blur(10px);
+    box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+    transition: all .5s ease-in-out;
+}
+
+.moved {
+    bottom: 20px;
+}
