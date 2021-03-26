@@ -18,6 +18,7 @@ public class SelectionRooster : MonoBehaviour
     private Rooster Rooster;
 
     //private Token[] Characters = new Token[10];
+    LTDescr[] movers;
 
     public void Refresh()
     {
@@ -41,6 +42,7 @@ public class SelectionRooster : MonoBehaviour
     {
 
         Rooster = GameObject.FindObjectOfType<Rooster>();
+        movers = new LTDescr[CardHolders.Length];
 
         CurrentCenter = 0;
         WheelOffset = 0;
@@ -71,7 +73,18 @@ public class SelectionRooster : MonoBehaviour
         CurrentCenter = (CurrentCenter - 1 + Rooster.MyHeroes.Count) % Rooster.MyHeroes.Count;
 
         WheelOffset = (WheelOffset - 1) % FixPoints.Length;
-        UpdatePositions( Duration , true);
+        UpdatePositions( Duration , false);
+    }
+
+    public void SentToBattle()
+    {
+        for (int i = 0; i < CardHolders.Length; i++)
+        {
+            if (CardHolders[i].IsSelected)
+            {
+                GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(CardHolders[i].Name);
+            }
+        }
     }
 
 
@@ -89,7 +102,12 @@ public class SelectionRooster : MonoBehaviour
 
             }
             else
-                LeanTween.move(CardHolders[i].gameObject, FixPoints[sanitized], duration).setEase(LeanTweenType.easeInOutExpo);
+            {
+                if (movers[i] != null)
+                    movers[i].setPassed(duration);
+                movers[i] = LeanTween.move(CardHolders[i].gameObject, FixPoints[sanitized], duration).setEase(LeanTweenType.easeInOutExpo);
+                CardHolders[i].Reset();
+            }
 
             CardHolders[i].IsSelected = sanitized == 2;
 

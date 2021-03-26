@@ -103,4 +103,9 @@ public class CardRenderer : MonoBehaviour
         Biotech.Value.text = SkillBiotech.ToString();
         Psychics.Value.text = SkillPsychics.ToString();
     }
+
+    public void Reset()
+    {
+        Animator.gameObject.transform.localPosition = Vector3.zero;
+    }
 }

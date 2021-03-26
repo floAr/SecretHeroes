@@ -12,12 +12,21 @@ public class WebGlBridge : MonoBehaviour
     public BattleMaster BattleMaster;
 
     [DllImport("__Internal")]
-    private static extern void MintTokens(string str);
+    private static extern void MintTokens();
 
     public void TriggerMint()
     {
         //Debug.Log(payload);
-        MintTokens("");
+        MintTokens();
+    }
+
+    [DllImport("__Internal")]
+    private static extern void SendToBattle(string tokenId);
+
+    public void TriggerBattle(string id)
+    {
+        //Debug.Log(payload);
+        SendToBattle(id);
     }
 
     [DllImport("__Internal")]
@@ -31,14 +40,6 @@ public class WebGlBridge : MonoBehaviour
     }
 
 
-    [DllImport("__Internal")]
-    private static extern void SendToBattle(string tokenId);
-
-    public void SendToBattle()
-    {
-        //Debug.Log(payload);
-        SendToBattle("");
-    }
 
     [System.Serializable]
     public class TokenList
