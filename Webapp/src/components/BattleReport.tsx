@@ -28,10 +28,10 @@ const BattleReportRender: React.FC<BattleReportProps> = ({ report }) => {
 
   const getImage = id => {
     if (id === 0) return allImageSharp.nodes.find(n => n.fluid.originalName === "Weapons.png")
-    .fluid
-    if (id === 1) return allImageSharp.nodes.find(n => n.fluid.originalName === "Engineering.png")
-    if (id === 2) return allImageSharp.nodes.find(n => n.fluid.originalName === "Biotech.png")
-    if (id === 3) return allImageSharp.nodes.find(n => n.fluid.originalName === "Psychics1.png")
+      .fluid
+    if (id === 1) return allImageSharp.nodes.find(n => n.fluid.originalName === "Engineering.png").fluid
+    if (id === 2) return allImageSharp.nodes.find(n => n.fluid.originalName === "Biotech.png").fluid
+    if (id === 3) return allImageSharp.nodes.find(n => n.fluid.originalName === "Psychics1.png").fluid
   }
 
   return (
@@ -44,7 +44,7 @@ const BattleReportRender: React.FC<BattleReportProps> = ({ report }) => {
         fluid={getImage(report.skill_used)}
         alt="Secret Heroes"
       />
-      <h5>Hero {report.my_hero} | Your Skill: {report.my_skills[report.skill_used]} {!report.i_won ? " Other: "+report.winning_skill_value:""} | {report.i_won ? "WIN":"LOOSE"}</h5>
+      <h5>Hero {report.my_hero} | Your Skill: {report.my_skills[report.skill_used]} {!report.i_won ? " Other: " + report.winning_skill_value : ""} | {report.i_won ? "WIN" : "LOOSE"}</h5>
     </div>
   )
 }
