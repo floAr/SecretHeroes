@@ -57,6 +57,8 @@
     "react-countup": "^4.3.3",
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
+    "react-icons": "^4.2.0",
+    "react-modal": "^3.12.1",
     "react-unity-webgl": "8.x",
     "secretjs": "^0.11.0",
     "typescript": "^3.5.2"

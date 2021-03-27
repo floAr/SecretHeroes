@@ -51,7 +51,7 @@ export const dimensions = {
     h1: 2.441,
     h2: 1.953,
     h3: 1.563,
-    h4: 1.25
+    h4: 1.1
   },
   lineHeight: {
     regular: 1.45,

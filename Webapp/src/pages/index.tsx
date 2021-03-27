@@ -10,12 +10,14 @@ import contracts from '../secretReact/contracts'
 import { useInterval } from '../secretReact/useInterval'
 import BattleReportRender from '../components/BattleReport'
 
-import Unity, { UnityContext } from 'react-unity-webgl'
 import UnityFunc from '../components/UnityFunc'
+import BattleStateRender from '../components/BattleState'
 
 const chainId = 'holodeck-2'
 
 const buildUrl = 'Build'
+
+
 
 interface Token {
   id: string
@@ -36,10 +38,12 @@ export interface BattleResult {
   i_won: boolean
 }
 
-interface BattleState {
+
+export interface BattleState {
   heroes_waiting: number
   your_hero?: Token
 }
+
 interface PollingData {
   tokens: Token[]
 }
@@ -69,6 +73,7 @@ const IndexPage = () => {
   const [viewingKey, setViewingKey] = useState<string | null>(isBrowser ? localStorage.getItem('viewingKey') : null)
   const [unityInstance, setUnityInstance] = useState(undefined)
   const [battleHistory, setBattleHistory] = useState<BattleResult[]>([])
+  const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
 
   if (isBrowser) window.registerUnityInstance = setUnityInstance
 
@@ -195,13 +200,11 @@ const IndexPage = () => {
   const pollFightState = async () => {
     const fightState = await client?.queryContractSmart(contracts.bullpen.address, contracts.bullpen.queries.fightStatus(account.address))
     // eslint-disable-next-line @typescript-eslint/camelcase
-    const battleState: BattleState = { heroes_waiting: fightState.bullpen.heroes_waiting, your_hero: null }
-    console.log(fightState)
+    const _battleState: BattleState = { heroes_waiting: fightState.bullpen.heroes_waiting, your_hero: null }
     if (fightState.bullpen.your_hero !== null) {
-      console.log(fightState.bullpen.your_hero.skills)
 
       // eslint-disable-next-line @typescript-eslint/camelcase
-      battleState.your_hero = {
+      _battleState.your_hero = {
         id: fightState.bullpen.your_hero.name,
         name: fightState.bullpen.your_hero.name,
         weapons: fightState.bullpen.your_hero.skills[0],
@@ -209,10 +212,14 @@ const IndexPage = () => {
         biotech: fightState.bullpen.your_hero.skills[2],
         psychics: fightState.bullpen.your_hero.skills[3]
       }
+      if (JSON.stringify(_battleState) !== JSON.stringify(battleState)) {
+        if (unityInstance !== undefined) {
+          unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(_battleState))
+          setBattleState(_battleState)
+        }
+      }
     }
-    if (unityInstance !== undefined) {
-      unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(battleState))
-    }
+
   }
 
   const pollData = async () => {
@@ -256,7 +263,7 @@ const IndexPage = () => {
       try {
         localStorage.setItem('viewingKey', vKey.viewing_key.key)
         setViewingKey(vKey.viewing_key.key)
-      } catch (error) {}
+      } catch (error) { }
     }
 
     setAccount(scrtAccount)
@@ -307,6 +314,9 @@ const IndexPage = () => {
   useEffect(() => {
     console.log('trying unlock - account: ' + account + ' & unityInstace: ' + unityInstance)
     if (account && unityInstance) {
+      pollBattleHistory();
+      pollData();
+      pollFightState();
       unityInstance.SendMessage('WebGlBridge', 'Connect')
     }
   }, [account, unityInstance])
@@ -349,43 +359,43 @@ const IndexPage = () => {
       <div
         css={css`
           display: grid;
-          grid-template-columns: 0.3fr 3fr 2fr 1fr;
-          grid-template-rows: 0.3fr 3fr;
+          grid-template-columns: 0.1fr 8fr 2fr 0.1fr;
+          grid-template-rows: 0.2fr 3fr;
           grid-column-gap: 5px;
           grid-row-gap: 5px;
           place-items: center;
           height: 100%;
-
           align-content: stretch;
         `}
       >
-        <div
+
+        <Img
           css={css`
-            grid-area: 1 / 1 / 2 / 2;
-            background-image: './images/secret-heroes.png';
-            width: 100%;
-            height: 100%;
-          `}
-        >
-          <Img
-            css={css`
-              grid-area: 1 / 1 / 2 / 2;
-              background-image: './images/secret-heroes.png';
+              grid-area: 1 / 3 / 2 / 4;
               width: 100%;
               height: 100%;
+              object-fit:contain;
             `}
-            fluid={data.file.childImageSharp.fluid}
-            alt="Secret Heroes"
-          />
-        </div>
+          fluid={data.file.childImageSharp.fluid}
+          alt="Secret Heroes"
+        />
+
 
         <div
           css={css`
             grid-area: 1 / 2 / 2 / 3;
             align-content: center;
+            align-items: center;
             vertical-align: middle;
             width: 100%;
-          `}
+            font-weight: bold;
+            padding: 0.1vw 2vw 0.1vw 2vw;
+            border-radius: 10px;
+            background: rgb(245, 245, 245);
+            backdrop-filter: blur(10px);
+            box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between`}
         >
           {account === undefined ? (
             <h4
@@ -404,39 +414,59 @@ const IndexPage = () => {
               Connected as {account.address}
             </h4>
           )}
+          <div css={css`display:flex;flex-direction:row; align-items:center`}>
+            <h4 css={css`padding:15px`}>Currently waiting to fight:</h4>
+            {battleState && <BattleStateRender report={battleState} />}
+            {battleState === undefined && <h4>-</h4>}
+          </div>
         </div>
         <div
           css={css`
             grid-area: 2 / 2 / 3 / 3;
             height: 100%;
             width: 100%;
+            padding: 5vh 5vw;
+            border-radius: 10px;
+            background: rgb(245, 245, 245);
+            backdrop-filter: blur(10px);
+            box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+
           `}
         >
           <UnityFunc />
+          {/* <div css={css`background-color: aliceblue`} /> */}
         </div>
         <div
           css={css`
             grid-area: 2 / 3 / 3 / 4;
             /* background-color: #0f8824; */
             width: 100%;
+            height: 100%;
             align-self: flex-start;
+            padding: 5vh 5vw;
+            border-radius: 10px;
+            background: rgb(245, 245, 245);
+            backdrop-filter: blur(10px);
+            box-shadow: -0.25rem -0.25rem 0.5rem rgba(255, 255, 255, 0.07), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.12), -0.75rem -0.75rem 1.75rem rgba(255, 255, 255, 0.07), 0.75rem 0.75rem 1.75rem rgba(0, 0, 0, 0.12), inset 8rem 8rem 8rem rgba(0, 0, 0, 0.05), inset -8rem -8rem 8rem rgba(255, 255, 255, 0.05);
+
           `}
         >
           <h4>Battle Results</h4>
-          <ul>
-            {battleHistory.map(battle => {
-              return (
-                <li
-                  css={css`
+          {battleHistory.length === 0 ? ("No battles yet") : (
+            <ul>
+              {battleHistory.map(battle => {
+                return (
+                  <li
+                    css={css`
                     width: 100%;
                   `}
-                  key={battle.battle_number}
-                >
-                  <BattleReportRender report={battle} />{' '}
-                </li>
-              )
-            })}
-          </ul>
+                    key={battle.battle_number}
+                  >
+                    <BattleReportRender report={battle} />{' '}
+                  </li>
+                )
+              })}
+            </ul>)}
         </div>
       </div>
     </IndexLayout>
