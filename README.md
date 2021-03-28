@@ -1,5 +1,6 @@
 # NFTHack-SecretHeroes
-Entry for #NFTHack 2021 https://hack.ethglobal.co/showcase/secret-heros-reckb8Gx0K55ezLIA
+Entry for ATOM_HACK_ru 2021.
+Prototyped at the #NFTHack 2021 https://hack.ethglobal.co/showcase/secret-heros-reckb8Gx0K55ezLIA
 
 ## Summary
 Secret Heroes is a card game based on [secretNFTs](https://scrt.network/blog/secret-grant-secret-nft-reference-implementation) on SNIP-721 standard on Secret Network. Leveraging privacy properties of [Secret Network](https://build.scrt.network/), [SNIP-721](https://github.com/baedrik/snip721-reference-impl) enables private ownership and private metadata in NFTs.
