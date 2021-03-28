@@ -42,7 +42,7 @@ pub enum AccessLevel {
 #[derive(Serialize)]
 pub struct Transfer {
     pub recipient: HumanAddr,
-    pub token_id: String,
+    pub token_ids: Vec<String>,
     pub memo: Option<String>,
 }
 
@@ -51,6 +51,7 @@ pub struct Transfer {
 pub enum CardHandleMsg {
     RegisterReceiveNft {
         code_hash: String,
+        also_implements_batch_receive_nft: Option<bool>,
         padding: Option<String>,
     },
     SetViewingKey {
@@ -148,6 +149,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 
     let reg_msg = CardHandleMsg::RegisterReceiveNft {
         code_hash: env.contract_code_hash,
+        also_implements_batch_receive_nft: Some(false),
         padding: None,
     };
     let reg_cosmos = reg_msg.to_cosmos_msg(
@@ -327,7 +329,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
             for (i, hero) in config.heroes.iter().enumerate() {
                 transfers.push(Transfer {
                     recipient: deps.api.human_address(&hero.owner)?,
-                    token_id: hero.token_id.clone(),
+                    token_ids: vec![hero.token_id.clone()],
                     memo: None,
                 });
                 let cur_score = hero.skills[fight_idx];
