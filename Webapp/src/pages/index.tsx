@@ -13,6 +13,11 @@ import BattleReportRender from '../components/BattleReport'
 import UnityFunc from '../components/UnityFunc'
 import BattleStateRender from '../components/BattleState'
 
+import { library } from "@fortawesome/fontawesome-svg-core"
+import { fas } from "@fortawesome/free-solid-svg-icons"
+
+library.add(fas)
+
 const chainId = 'holodeck-2'
 
 const buildUrl = 'Build'
@@ -334,7 +339,7 @@ const IndexPage = () => {
   const SendToBattle = async (tokenId: string) => {
     try {
       const result = await execute(contracts.nft.address, contracts.nft.messages.sendNft(tokenId))
-      console.log(result)
+      pollFightState()
     } catch (e) {
       console.log(e)
       console.log('error')
@@ -425,7 +430,7 @@ const IndexPage = () => {
             grid-area: 2 / 2 / 3 / 3;
             height: 100%;
             width: 100%;
-            padding: 5vh 5vw;
+            padding: 1.3vh 1.3vw;
             border-radius: 10px;
             background: rgb(245, 245, 245);
             backdrop-filter: blur(10px);

@@ -26,6 +26,9 @@
   "dependencies": {
     "@emotion/core": "^10.0.10",
     "@emotion/styled": "^10.0.12",
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "animated-number-react": "^0.1.1",
     "babel-plugin-styled-components": "^1.10.1",
     "classnames": "^2.2.6",
