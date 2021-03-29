@@ -78,6 +78,12 @@ public class WebGlBridge : MonoBehaviour
 
     public void Connect()
     {
+        StartCoroutine(EnableAfterX(3));
+    }
+
+    private IEnumerator EnableAfterX(int seconds)
+    {
+        yield return new WaitForSeconds(seconds);
         IsConnected = true;
         if (Connected != null)
             Connected.Invoke();

@@ -17,10 +17,20 @@ public class ConnectionHelper : MonoBehaviour
         "Connecting....",
     };
 
-    private void Start()
+    private void Awake()
     {
         Controller.enabled = false;
     }
+
+    //private void Start()
+    //{
+    //    if (GameObject.FindObjectOfType<WebGlBridge>().IsConnected)
+    //    {
+    //        OnConnectedr();
+    //    }
+
+      
+    //}
 
     public void OnConnectedr()
     {
