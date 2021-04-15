@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryAnswer",
+  "anyOf": [
+    {
+      "description": "list of proposals",
+      "type": "object",
+      "required": [
+        "proposal_list"
+      ],
+      "properties": {
+        "proposal_list": {
+          "type": "object",
+          "required": [
+            "proposals"
+          ],
+          "properties": {
+            "proposals": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Proposal"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "proposal info",
+      "type": "object",
+      "required": [
+        "proposal_info"
+      ],
+      "properties": {
+        "proposal_info": {
+          "type": "object",
+          "required": [
+            "proposal"
+          ],
+          "properties": {
+            "proposal": {
+              "$ref": "#/definitions/Proposal"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "list of voters",
+      "type": "object",
+      "required": [
+        "voter_list"
+      ],
+      "properties": {
+        "voter_list": {
+          "type": "object",
+          "required": [
+            "voters"
+          ],
+          "properties": {
+            "voters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "history of a vote",
+      "type": "object",
+      "required": [
+        "vote"
+      ],
+      "properties": {
+        "vote": {
+          "type": "object",
+          "properties": {
+            "vote": {
+              "description": "a voter's history for a specific proposal.  None if they did not vote",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Vote"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "Action": {
+      "description": "actions that a proposal can take",
+      "anyOf": [
+        {
+          "description": "add a voter to the authorized list",
+          "type": "object",
+          "required": [
+            "add_voter"
+          ],
+          "properties": {
+            "add_voter": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              }
+            }
+          }
+        },
+        {
+          "description": "remove a voter from the authorized list",
+          "type": "object",
+          "required": [
+            "remove_voter"
+          ],
+          "properties": {
+            "remove_voter": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              }
+            }
+          }
+        },
+        {
+          "description": "withdraw funds from the contract",
+          "type": "object",
+          "required": [
+            "withdraw"
+          ],
+          "properties": {
+            "withdraw": {
+              "type": "object",
+              "required": [
+                "amount",
+                "recipient"
+              ],
+              "properties": {
+                "amount": {
+                  "description": "amount to send",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Uint128"
+                    }
+                  ]
+                },
+                "recipient": {
+                  "description": "address to send the funds to",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/HumanAddr"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "HumanAddr": {
+      "type": "string"
+    },
+    "Proposal": {
+      "type": "object",
+      "required": [
+        "action",
+        "id",
+        "no",
+        "status",
+        "yes"
+      ],
+      "properties": {
+        "action": {
+          "$ref": "#/definitions/Action"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "no": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HumanAddr"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/Status"
+        },
+        "yes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HumanAddr"
+          }
+        }
+      }
+    },
+    "Status": {
+      "description": "status of a proposal",
+      "type": "string",
+      "enum": [
+        "open",
+        "passed",
+        "failed"
+      ]
+    },
+    "Uint128": {
+      "type": "string"
+    },
+    "Vote": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "no"
+      ]
+    }
+  }
+}

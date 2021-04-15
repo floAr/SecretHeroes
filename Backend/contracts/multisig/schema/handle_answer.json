@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandleAnswer",
+  "anyOf": [
+    {
+      "description": "response from setting and creating a viewing key",
+      "type": "object",
+      "required": [
+        "viewing_key"
+      ],
+      "properties": {
+        "viewing_key": {
+          "type": "object",
+          "required": [
+            "key"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "list of proposals that closed after either voting or creating a new one",
+      "type": "object",
+      "required": [
+        "closed_proposals"
+      ],
+      "properties": {
+        "closed_proposals": {
+          "type": "object",
+          "required": [
+            "failed",
+            "passed"
+          ],
+          "properties": {
+            "failed": {
+              "description": "list of proposals that failed as a result of this tx",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            },
+            "passed": {
+              "description": "list of proposals that passed as a result of this tx",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

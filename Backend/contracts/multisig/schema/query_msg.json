@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "anyOf": [
+    {
+      "description": "list all proposals in descending order",
+      "type": "object",
+      "required": [
+        "list_all_proposals"
+      ],
+      "properties": {
+        "list_all_proposals": {
+          "type": "object",
+          "required": [
+            "address",
+            "viewing_key"
+          ],
+          "properties": {
+            "address": {
+              "description": "address of the querier",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "limit": {
+              "description": "number of proposals to display",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "start_at": {
+              "description": "optional proposal id to start listing from.  If not specified, it will start with the most recently created proposal",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "viewing_key": {
+              "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "list only the open proposals",
+      "type": "object",
+      "required": [
+        "list_open_proposals"
+      ],
+      "properties": {
+        "list_open_proposals": {
+          "type": "object",
+          "required": [
+            "address",
+            "viewing_key"
+          ],
+          "properties": {
+            "address": {
+              "description": "address of the querier",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "viewing_key": {
+              "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "display a single proposal",
+      "type": "object",
+      "required": [
+        "proposal"
+      ],
+      "properties": {
+        "proposal": {
+          "type": "object",
+          "required": [
+            "address",
+            "id",
+            "viewing_key"
+          ],
+          "properties": {
+            "address": {
+              "description": "address of the querier",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "id": {
+              "description": "proposal id",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "viewing_key": {
+              "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "display the list of authorized voters",
+      "type": "object",
+      "required": [
+        "list_voters"
+      ],
+      "properties": {
+        "list_voters": {
+          "type": "object",
+          "required": [
+            "address",
+            "viewing_key"
+          ],
+          "properties": {
+            "address": {
+              "description": "address of the querier",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "viewing_key": {
+              "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "display a voter's vote on a specific proposal",
+      "type": "object",
+      "required": [
+        "vote"
+      ],
+      "properties": {
+        "vote": {
+          "type": "object",
+          "required": [
+            "id",
+            "viewing_key",
+            "voter"
+          ],
+          "properties": {
+            "id": {
+              "description": "proposal id",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "viewer": {
+              "description": "querier's address if different from the voter's address",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "viewing_key": {
+              "description": "viewing key of the querier",
+              "type": "string"
+            },
+            "voter": {
+              "description": "voter whose vote history is requested",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "HumanAddr": {
+      "type": "string"
+    }
+  }
+}

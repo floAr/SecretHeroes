@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandleMsg",
+  "anyOf": [
+    {
+      "description": "propose an action",
+      "type": "object",
+      "required": [
+        "propose"
+      ],
+      "properties": {
+        "propose": {
+          "type": "object",
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "action": {
+              "description": "action to perform if proposal passes",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Action"
+                }
+              ]
+            },
+            "description": {
+              "description": "optional description for the propoal",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "vote on an existing proposal",
+      "type": "object",
+      "required": [
+        "vote"
+      ],
+      "properties": {
+        "vote": {
+          "type": "object",
+          "required": [
+            "id",
+            "vote"
+          ],
+          "properties": {
+            "id": {
+              "description": "proposal id",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "vote": {
+              "description": "your vote",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Vote"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "create a viewing key",
+      "type": "object",
+      "required": [
+        "create_viewing_key"
+      ],
+      "properties": {
+        "create_viewing_key": {
+          "type": "object",
+          "required": [
+            "entropy"
+          ],
+          "properties": {
+            "entropy": {
+              "description": "entropy String used in random key generation",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "set viewing key",
+      "type": "object",
+      "required": [
+        "set_viewing_key"
+      ],
+      "properties": {
+        "set_viewing_key": {
+          "type": "object",
+          "required": [
+            "key"
+          ],
+          "properties": {
+            "key": {
+              "description": "desired viewing key",
+              "type": "string"
+            },
+            "padding": {
+              "description": "optional message length padding",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "Action": {
+      "description": "actions that a proposal can take",
+      "anyOf": [
+        {
+          "description": "add a voter to the authorized list",
+          "type": "object",
+          "required": [
+            "add_voter"
+          ],
+          "properties": {
+            "add_voter": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              }
+            }
+          }
+        },
+        {
+          "description": "remove a voter from the authorized list",
+          "type": "object",
+          "required": [
+            "remove_voter"
+          ],
+          "properties": {
+            "remove_voter": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              }
+            }
+          }
+        },
+        {
+          "description": "withdraw funds from the contract",
+          "type": "object",
+          "required": [
+            "withdraw"
+          ],
+          "properties": {
+            "withdraw": {
+              "type": "object",
+              "required": [
+                "amount",
+                "recipient"
+              ],
+              "properties": {
+                "amount": {
+                  "description": "amount to send",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Uint128"
+                    }
+                  ]
+                },
+                "recipient": {
+                  "description": "address to send the funds to",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/HumanAddr"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "HumanAddr": {
+      "type": "string"
+    },
+    "Uint128": {
+      "type": "string"
+    },
+    "Vote": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "no"
+      ]
+    }
+  }
+}
