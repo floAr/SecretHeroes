@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{Binary, HumanAddr};
 
-use minter::{msg::ContractInfo, stats::Stats};
+use crate::stats::Stats;
 
 /// Instantiation message
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -160,4 +160,13 @@ pub struct Hero {
     pub pre_battle_skills: Vec<u8>,
     /// hero's skills after the battle
     pub post_battle_skills: Vec<u8>,
+}
+
+/// code hash and address of a contract
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct ContractInfo {
+    /// contract's code hash string
+    pub code_hash: String,
+    /// contract's address
+    pub address: HumanAddr,
 }

@@ -23,7 +23,6 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
- "minter",
  "rand_chacha",
  "rand_core",
  "schemars",
@@ -295,25 +294,6 @@ checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
 dependencies = [
  "adler",
  "autocfg",
-]
-
-[[package]]
-name = "minter"
-version = "0.1.0"
-dependencies = [
- "base64 0.12.3",
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "rand_chacha",
- "rand_core",
- "schemars",
- "secret-toolkit",
- "serde",
- "serde-json-wasm",
- "sha2 0.9.3",
- "snafu",
- "subtle 2.4.0",
 ]
 
 [[package]]

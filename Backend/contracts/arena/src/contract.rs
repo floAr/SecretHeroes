@@ -18,14 +18,16 @@ use secret_toolkit::{
     utils::{pad_handle_result, pad_query_result},
 };
 
-use minter::{msg::ContractInfo, state::StoreContractInfo, stats::Stats};
-
-use crate::msg::{HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, TokenInfo, WaitingHero};
+use crate::msg::{
+    ContractInfo, HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, TokenInfo, WaitingHero,
+};
 use crate::rand::{sha_256, Prng};
 use crate::state::{
-    append_battle_for_addr, get_history, load, may_load, save, Config, StoreBattle, StoreHero,
-    StoreTokenInfo, StoreWaitingHero, ADMIN_KEY, CONFIG_KEY, PREFIX_HISTORY, PREFIX_VIEW_KEY,
+    append_battle_for_addr, get_history, load, may_load, save, Config, StoreBattle,
+    StoreContractInfo, StoreHero, StoreTokenInfo, StoreWaitingHero, ADMIN_KEY, CONFIG_KEY,
+    PREFIX_HISTORY, PREFIX_VIEW_KEY,
 };
+use crate::stats::Stats;
 use crate::viewing_key::{ViewingKey, VIEWING_KEY_SIZE};
 
 pub const BLOCK_SIZE: usize = 256;

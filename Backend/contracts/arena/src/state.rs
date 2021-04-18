@@ -11,9 +11,8 @@ use secret_toolkit::{
     storage::{AppendStore, AppendStoreMut},
 };
 
-use crate::msg::{Battle, Hero, TokenInfo};
-
-use minter::{msg::ContractInfo, state::StoreContractInfo, stats::Stats};
+use crate::msg::{Battle, ContractInfo, Hero, TokenInfo};
+use crate::stats::Stats;
 
 pub const CONFIG_KEY: &[u8] = b"config";
 pub const PREFIX_VIEW_KEY: &[u8] = b"viewkey";
@@ -206,6 +205,31 @@ pub fn get_history<A: Api, S: ReadonlyStorage>(
         .collect();
 
     battles
+}
+
+/// code hash and address of a contract
+#[derive(Serialize, Deserialize, Clone)]
+pub struct StoreContractInfo {
+    /// contract's code hash string
+    pub code_hash: String,
+    /// contract's address
+    pub address: CanonicalAddr,
+}
+
+impl StoreContractInfo {
+    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
+    /// ContractInfo
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
+        let info = ContractInfo {
+            address: api.human_address(&self.address)?,
+            code_hash: self.code_hash.clone(),
+        };
+        Ok(info)
+    }
 }
 
 pub fn save<T: Serialize, S: Storage>(storage: &mut S, key: &[u8], value: &T) -> StdResult<()> {

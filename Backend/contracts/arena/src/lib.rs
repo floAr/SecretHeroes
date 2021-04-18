@@ -3,6 +3,7 @@ pub mod contract;
 pub mod msg;
 mod rand;
 pub mod state;
+pub mod stats;
 mod utils;
 mod viewing_key;
 
