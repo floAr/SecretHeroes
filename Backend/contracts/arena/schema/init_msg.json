@@ -9,14 +9,21 @@
   ],
   "properties": {
     "card_contract": {
-      "$ref": "#/definitions/ContractInfo"
+      "description": "card ContractInfo",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ContractInfo"
+        }
+      ]
     },
     "entropy": {
+      "description": "entropy for prng",
       "type": "string"
     }
   },
   "definitions": {
     "ContractInfo": {
+      "description": "code hash and address of a contract",
       "type": "object",
       "required": [
         "address",
@@ -24,9 +31,15 @@
       ],
       "properties": {
         "address": {
-          "$ref": "#/definitions/HumanAddr"
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
         },
         "code_hash": {
+          "description": "contract's code hash string",
           "type": "string"
         }
       }

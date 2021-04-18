@@ -2,33 +2,55 @@ use std::any::type_name;
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use cosmwasm_std::{CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
+use cosmwasm_std::{Api, CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
 
 use secret_toolkit::serialization::{Bincode2, Serde};
 
-pub const CONFIG_KEY: &[u8] = b"config";
-pub const ADMIN_INFO_KEY: &[u8] = b"admin";
+use crate::msg::ContractInfo;
 
-/// grouping the data primarily used when minting cards
+pub const CONFIG_KEY: &[u8] = b"config";
+pub const ADMIN_KEY: &[u8] = b"admin";
+
+/// minter state
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    pub card_contract: ContractInfo,
-    pub stopped: bool,
+    /// card contract versions info
+    pub card_versions: Vec<StoreContractInfo>,
+    /// true if minting should be halted
+    pub minting_halt: bool,
+    /// true if tournaments have been halted
+    //    pub tourney_halt: bool,
+    /// multi sig contract address
+    pub multi_sig: CanonicalAddr,
+    /// tournament contract address
+    //    pub tourney: CanonicalAddr,
+    /// prng seed
     pub prng_seed: Vec<u8>,
 }
 
 /// code hash and address of a contract
-#[derive(Serialize, Deserialize)]
-pub struct ContractInfo {
+#[derive(Serialize, Deserialize, Clone)]
+pub struct StoreContractInfo {
+    /// contract's code hash string
     pub code_hash: String,
+    /// contract's address
     pub address: CanonicalAddr,
 }
 
-/// info used for admin functions
-#[derive(Serialize, Deserialize)]
-pub struct AdminInfo {
-    pub admin: CanonicalAddr,
-    pub expect_reg: bool,
+impl StoreContractInfo {
+    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
+    /// ContractInfo
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
+        let info = ContractInfo {
+            address: api.human_address(&self.address)?,
+            code_hash: self.code_hash.clone(),
+        };
+        Ok(info)
+    }
 }
 
 pub fn save<T: Serialize, S: Storage>(storage: &mut S, key: &[u8], value: &T) -> StdResult<()> {

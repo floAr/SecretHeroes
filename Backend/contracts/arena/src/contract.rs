@@ -1,124 +1,39 @@
-use serde::{Deserialize, Serialize};
-
 use std::cmp::Ordering;
 
 use cosmwasm_std::{
-    to_binary, Api, Binary, CanonicalAddr, Env, Extern, HandleResponse, HandleResult, HumanAddr,
-    InitResponse, InitResult, Querier, QueryResult, ReadonlyStorage, StdError, StdResult, Storage,
+    to_binary, Api, Binary, CanonicalAddr, CosmosMsg, Env, Extern, HandleResponse, HandleResult,
+    HumanAddr, InitResponse, InitResult, Querier, QueryResult, ReadonlyStorage, StdError,
+    StdResult, Storage,
 };
 use cosmwasm_storage::{PrefixedStorage, ReadonlyPrefixedStorage};
 
 use serde_json_wasm as serde_json;
 
-use secret_toolkit::utils::{pad_handle_result, pad_query_result, HandleCallback, Query};
+use secret_toolkit::{
+    snip721::{
+        batch_transfer_nft_msg, private_metadata_query, register_receive_nft_msg,
+        set_private_metadata_msg, set_viewing_key_msg, set_whitelisted_approval_msg,
+        transfer_nft_msg, AccessLevel, Metadata, Transfer, ViewerInfo,
+    },
+    utils::{pad_handle_result, pad_query_result},
+};
 
-use crate::msg::{HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, WaitingHero};
+use minter::{msg::ContractInfo, state::StoreContractInfo, stats::Stats};
+
+use crate::msg::{HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, TokenInfo, WaitingHero};
 use crate::rand::{sha_256, Prng};
 use crate::state::{
-    append_battle, append_battle_for_addr, get_history, load, may_load, save, CardContract, Config,
-    Hero, StoredBattle, CONFIG_KEY, CONTRACT_KEY, PREFIX_VIEW_KEY,
+    append_battle_for_addr, get_history, load, may_load, save, Config, StoreBattle, StoreHero,
+    StoreTokenInfo, StoreWaitingHero, ADMIN_KEY, CONFIG_KEY, PREFIX_HISTORY, PREFIX_VIEW_KEY,
 };
 use crate::viewing_key::{ViewingKey, VIEWING_KEY_SIZE};
 
 pub const BLOCK_SIZE: usize = 256;
 
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Expiration {
-    AtHeight(u64),
-    AtTime(u64),
-    Never,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum AccessLevel {
-    ApproveToken,
-    All,
-    RevokeToken,
-    None,
-}
-
-#[derive(Serialize)]
-pub struct Transfer {
-    pub recipient: HumanAddr,
-    pub token_ids: Vec<String>,
-    pub memo: Option<String>,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum CardHandleMsg {
-    RegisterReceiveNft {
-        code_hash: String,
-        also_implements_batch_receive_nft: Option<bool>,
-        padding: Option<String>,
-    },
-    SetViewingKey {
-        key: String,
-        padding: Option<String>,
-    },
-    SetWhitelistedApproval {
-        address: HumanAddr,
-        token_id: Option<String>,
-        view_owner: Option<AccessLevel>,
-        view_private_metadata: Option<AccessLevel>,
-        transfer: Option<AccessLevel>,
-        expires: Option<Expiration>,
-        padding: Option<String>,
-    },
-    BatchTransferNft {
-        transfers: Vec<Transfer>,
-        padding: Option<String>,
-    },
-    TransferNft {
-        recipient: HumanAddr,
-        token_id: String,
-        memo: Option<String>,
-        padding: Option<String>,
-    },
-}
-
-impl HandleCallback for CardHandleMsg {
-    const BLOCK_SIZE: usize = BLOCK_SIZE;
-}
-
-#[derive(Serialize)]
-pub struct ViewerInfo {
-    pub address: HumanAddr,
-    pub viewing_key: String,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum CardQueryMsg {
-    PrivateMetadata {
-        token_id: String,
-        viewer: Option<ViewerInfo>,
-    },
-}
-
-impl Query for CardQueryMsg {
-    const BLOCK_SIZE: usize = BLOCK_SIZE;
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Metadata {
-    pub name: Option<String>,
-    pub description: Option<String>,
-    pub image: Option<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct PrivateMetadata {
-    pub private_metadata: Metadata,
-}
-
 ////////////////////////////////////// Init ///////////////////////////////////////
 /// Returns InitResult
 ///
-/// Initializes the auction state and registers Receive function with sell and bid
-/// token contracts
+/// Initializes the arena and sets the viewing key and registers with the card contract
 ///
 /// # Arguments
 ///
@@ -131,37 +46,41 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> InitResult {
     let prng_seed: Vec<u8> = sha_256(base64::encode(msg.entropy).as_bytes()).to_vec();
-    let config = Config {
+    let viewing_key = base64::encode(&prng_seed);
+    let admin = deps.api.canonical_address(&env.message.sender)?;
+    let mut config = Config {
         heroes: Vec::new(),
         prng_seed,
         entropy: String::default(),
         battle_cnt: 0,
+        viewing_key,
+        card_versions: vec![StoreContractInfo {
+            code_hash: msg.card_contract.code_hash,
+            address: deps.api.canonical_address(&msg.card_contract.address)?,
+        }],
+        fight_halt: false,
     };
     save(&mut deps.storage, CONFIG_KEY, &config)?;
-    let key = base64::encode(config.prng_seed);
-    let contract_raw = deps.api.canonical_address(&msg.card_contract.address)?;
-    let card_contract = CardContract {
-        address: contract_raw,
-        code_hash: msg.card_contract.code_hash.clone(),
-        viewing_key: key.clone(),
-    };
-    save(&mut deps.storage, CONTRACT_KEY, &card_contract)?;
-
-    let reg_msg = CardHandleMsg::RegisterReceiveNft {
-        code_hash: env.contract_code_hash,
-        also_implements_batch_receive_nft: Some(false),
-        padding: None,
-    };
-    let reg_cosmos = reg_msg.to_cosmos_msg(
-        msg.card_contract.code_hash,
-        msg.card_contract.address.clone(),
-        None,
-    )?;
-    let key_msg = CardHandleMsg::SetViewingKey { key, padding: None };
-    let key_cosmos =
-        key_msg.to_cosmos_msg(card_contract.code_hash, msg.card_contract.address, None)?;
+    save(&mut deps.storage, ADMIN_KEY, &admin)?;
+    let card_contract = config.card_versions.swap_remove(0);
     Ok(InitResponse {
-        messages: vec![reg_cosmos, key_cosmos],
+        messages: vec![
+            register_receive_nft_msg(
+                env.contract_code_hash,
+                Some(true),
+                None,
+                BLOCK_SIZE,
+                card_contract.code_hash.clone(),
+                msg.card_contract.address.clone(),
+            )?,
+            set_viewing_key_msg(
+                config.viewing_key,
+                None,
+                BLOCK_SIZE,
+                card_contract.code_hash,
+                msg.card_contract.address,
+            )?,
+        ],
         log: vec![],
     })
 }
@@ -182,17 +101,193 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     let response = match msg {
         HandleMsg::CreateViewingKey { entropy } => try_create_key(deps, env, &entropy),
         HandleMsg::SetViewingKey { key, .. } => try_set_key(deps, env, key),
-        HandleMsg::ReceiveNft {
+        HandleMsg::BatchReceiveNft {
             from,
-            token_id,
+            token_ids,
             msg,
             ..
-        } => try_receive(deps, env, from, token_id, msg),
+        } => try_receive(deps, env, from, &token_ids, msg),
         HandleMsg::ChickenOut {} => try_chicken(deps, env),
+        HandleMsg::ChangeAdmin { address } => try_change_admin(deps, env, address),
+        HandleMsg::SetBattleStatus { stop } => try_set_battle_status(deps, env, stop),
+        HandleMsg::AddCardContract { card_contract } => {
+            try_add_card_contract(deps, env, card_contract)
+        }
     };
     pad_handle_result(response, BLOCK_SIZE)
 }
 
+/// Returns HandleResult
+///
+/// add a new card contract
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `card_contract` - new card ContractInfo
+pub fn try_add_card_contract<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    card_contract: ContractInfo,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    config.card_versions.push(StoreContractInfo {
+        address: deps.api.canonical_address(&card_contract.address)?,
+        code_hash: card_contract.code_hash.clone(),
+    });
+    save(&mut deps.storage, CONFIG_KEY, &config)?;
+    Ok(HandleResponse {
+        messages: vec![
+            register_receive_nft_msg(
+                env.contract_code_hash,
+                Some(true),
+                None,
+                BLOCK_SIZE,
+                card_contract.code_hash.clone(),
+                card_contract.address.clone(),
+            )?,
+            set_viewing_key_msg(
+                config.viewing_key,
+                None,
+                BLOCK_SIZE,
+                card_contract.code_hash,
+                card_contract.address.clone(),
+            )?,
+        ],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::AddCardContract {
+            card_contract: card_contract.address,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// set the battle status
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `stop` - true if battles shold be halted
+pub fn try_set_battle_status<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    stop: bool,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let mut messages: Vec<CosmosMsg> = Vec::new();
+    // if battle status will change
+    if config.fight_halt != stop {
+        // if stopping battles and there are heroes in the bullpen
+        if stop && !config.heroes.is_empty() {
+            let mut version_xfers: Vec<VersionTransfer> = Vec::new();
+            let versions = config
+                .card_versions
+                .iter()
+                .map(|v| v.to_humanized(&deps.api))
+                .collect::<StdResult<Vec<ContractInfo>>>()?;
+            for hero in config.heroes.drain(..) {
+                let transfer = Transfer {
+                    recipient: deps.api.human_address(&hero.owner)?,
+                    token_ids: vec![hero.token_info.token_id.clone()],
+                    memo: None,
+                };
+                // if already encountered this version, add the transfer
+                if let Some(vxfers) = version_xfers
+                    .iter_mut()
+                    .find(|v| v.version == hero.token_info.version)
+                {
+                    vxfers.transfers.push(transfer);
+                // otherwise create a new list of transfers for this version
+                } else {
+                    version_xfers.push(VersionTransfer {
+                        version: hero.token_info.version,
+                        transfers: vec![transfer],
+                    });
+                }
+            }
+            for vxfer in version_xfers.into_iter() {
+                messages.push(batch_transfer_nft_msg(
+                    vxfer.transfers,
+                    None,
+                    BLOCK_SIZE,
+                    versions[vxfer.version as usize].code_hash.clone(),
+                    versions[vxfer.version as usize].address.clone(),
+                )?);
+            }
+        }
+        config.fight_halt = stop;
+        save(&mut deps.storage, CONFIG_KEY, &config)?;
+    }
+
+    Ok(HandleResponse {
+        messages,
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::SetBattleStatus {
+            battles_have_halted: stop,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// change the admin address
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `address` - the new admin address
+pub fn try_change_admin<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    address: HumanAddr,
+) -> HandleResult {
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    if admin != sender_raw {
+        return Err(StdError::generic_err(
+            "This is an admin command and can only be run from the admin address",
+        ));
+    }
+    let new_admin = deps.api.canonical_address(&address)?;
+    if new_admin != admin {
+        save(&mut deps.storage, ADMIN_KEY, &new_admin)?;
+    }
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::ChangeAdmin {
+            new_admin: address,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// returns the message sender's hero waiting in the bullpen
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
 pub fn try_chicken<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
@@ -201,21 +296,19 @@ pub fn try_chicken<S: Storage, A: Api, Q: Querier>(
     let owner_raw = deps.api.canonical_address(&env.message.sender)?;
     if let Some(pos) = config.heroes.iter().position(|h| h.owner == owner_raw) {
         let hero = config.heroes.swap_remove(pos);
-        let card_contract: CardContract = load(&deps.storage, CONTRACT_KEY)?;
-        let xfer_msg = CardHandleMsg::TransferNft {
-            recipient: env.message.sender,
-            token_id: hero.token_id.clone(),
-            memo: None,
-            padding: None,
-        };
-        let xfer_cosmos = xfer_msg.to_cosmos_msg(
-            card_contract.code_hash,
-            deps.api.human_address(&card_contract.address)?,
-            None,
-        )?;
         save(&mut deps.storage, CONFIG_KEY, &config)?;
+        let card_contract =
+            config.card_versions[hero.token_info.version as usize].to_humanized(&deps.api)?;
         return Ok(HandleResponse {
-            messages: vec![xfer_cosmos],
+            messages: vec![transfer_nft_msg(
+                env.message.sender,
+                hero.token_info.token_id,
+                None,
+                None,
+                BLOCK_SIZE,
+                card_contract.code_hash,
+                card_contract.address,
+            )?],
             log: vec![],
             data: Some(to_binary(&HandleAnswer::ChickenOut {
                 message: format!("{} fled", hero.name),
@@ -227,6 +320,15 @@ pub fn try_chicken<S: Storage, A: Api, Q: Querier>(
     ))
 }
 
+/// Returns HandleResult
+///
+/// creates a viewing key
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `entropy` - string slice of the input String to be used as entropy in randomization
 pub fn try_create_key<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
@@ -246,6 +348,15 @@ pub fn try_create_key<S: Storage, A: Api, Q: Querier>(
     })
 }
 
+/// Returns HandleResult
+///
+/// sets the viewing key to the input String
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `key` - String to be used as the viewing key
 pub fn try_set_key<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
@@ -263,152 +374,206 @@ pub fn try_set_key<S: Storage, A: Api, Q: Querier>(
     })
 }
 
+/// Returns HandleResult
+///
+/// adds a hero to the bullpen and starts a battle if there are 3
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `token_ids` - list of heroes sent to the bullpen. Will error if more than 1
+/// * `msg` - base64 encoded entropy string
 pub fn try_receive<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
     from: HumanAddr,
-    token_id: String,
+    token_ids: &[String],
     msg: Option<Binary>,
 ) -> HandleResult {
-    let card_contract: CardContract = load(&deps.storage, CONTRACT_KEY)?;
-    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
-    if card_contract.address != sender_raw {
-        return Err(StdError::generic_err(format!(
-            "This arena does not accept fighters from that guild (nft contract {})",
-            env.message.sender
-        )));
-    }
-    let owner_raw = deps.api.canonical_address(&from)?;
-    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    if config.heroes.iter().any(|h| h.owner == owner_raw) {
+    if token_ids.len() != 1 {
         return Err(StdError::generic_err(
-            "You already have a dog in this fight!",
+            "You may only send one hero to the arena!",
         ));
     }
-    if let Some(bin) = msg {
-        let mut messages = Vec::new();
-        let entropy: String = bin.to_base64();
-        config.entropy.push_str(&entropy);
-        let card_human = deps.api.human_address(&card_contract.address)?;
-        let get_meta_msg = CardQueryMsg::PrivateMetadata {
-            token_id: token_id.clone(),
-            viewer: Some(ViewerInfo {
-                address: env.contract.address.clone(),
-                viewing_key: card_contract.viewing_key,
-            }),
-        };
-        let priv_meta: PrivateMetadata = get_meta_msg.query(
-            &deps.querier,
-            card_contract.code_hash.clone(),
-            card_human.clone(),
-        )?;
-        let skills: Vec<u8> = serde_json::from_str(
-            &priv_meta
-                .private_metadata
-                .image
-                .unwrap_or_else(|| "[0,0,0,0]".to_string()),
-        )
-        .map_err(|e| StdError::generic_err(format!("Error parsing private metadata: {}", e)))?;
-        let new_hero = Hero {
-            owner: owner_raw,
-            token_id: token_id.clone(),
-            name: priv_meta.private_metadata.name.unwrap_or_else(String::new),
-            skills,
-        };
-        config.heroes.push(new_hero);
-        if config.heroes.len() == 3 {
-            let rand_slice = get_rand_slice(&env, &config.prng_seed, config.entropy.as_ref());
-            let fight_idx = (rand_slice[0] % 4) as usize;
-            config.entropy.clear();
-            config.prng_seed = rand_slice.to_vec();
-            let mut win_score = 0u8;
-            let mut winners = Vec::new();
-            let mut ties = Vec::new();
-            let mut transfers = Vec::new();
-            let mut opt_winner = None;
-            for (i, hero) in config.heroes.iter().enumerate() {
-                transfers.push(Transfer {
-                    recipient: deps.api.human_address(&hero.owner)?,
-                    token_ids: vec![hero.token_id.clone()],
-                    memo: None,
-                });
-                let cur_score = hero.skills[fight_idx];
-                match cur_score.cmp(&win_score) {
-                    Ordering::Greater => {
-                        win_score = cur_score;
-                        winners = vec![i];
-                    }
-                    Ordering::Equal => winners.push(i),
-                    _ => (),
-                };
-            }
-            if winners.len() > 1 {
-                let mut max = 0u16;
-                for winner in winners {
-                    let sum: u16 = config.heroes[winner].skills.iter().map(|u| *u as u16).sum();
-                    match sum.cmp(&max) {
-                        Ordering::Greater => {
-                            max = sum;
-                            ties = vec![winner];
-                        }
-                        Ordering::Equal => ties.push(winner),
-                        _ => (),
-                    };
-                }
-                winners = ties;
-            }
-            if winners.len() == 1 {
-                opt_winner = Some(config.heroes[winners[0]].token_id.clone());
-                let win_own = transfers[winners[0]].recipient.clone();
-                for (i, xfer) in transfers.iter_mut().enumerate() {
-                    if i != winners[0] {
-                        xfer.recipient = win_own.clone();
-                    }
-                }
-            }
-            let xfer_msg = CardHandleMsg::BatchTransferNft {
-                transfers,
-                padding: None,
-            };
-            let xfer_cosmos = xfer_msg.to_cosmos_msg(card_contract.code_hash, card_human, None)?;
-            messages.push(xfer_cosmos);
-
-            let battle = StoredBattle {
-                battle_number: config.battle_cnt,
-                heroes: config.heroes.drain(..).collect(),
-                skill_used: fight_idx as u8,
-                winner: opt_winner,
-                winning_skill_value: win_score,
-            };
-            append_battle(&mut deps.storage, &battle)?;
-            for hero in battle.heroes {
-                append_battle_for_addr(&mut deps.storage, config.battle_cnt, &hero.owner)?;
-            }
-            config.battle_cnt += 1;
-        } else {
-            let access_msg = CardHandleMsg::SetWhitelistedApproval {
-                address: from,
-                token_id: Some(token_id),
-                view_owner: None,
-                view_private_metadata: Some(AccessLevel::ApproveToken),
-                transfer: None,
-                expires: None,
-                padding: None,
-            };
-            let acc_cosmos = access_msg.to_cosmos_msg(card_contract.code_hash, card_human, None)?;
-            messages.push(acc_cosmos);
-        }
-        save(&mut deps.storage, CONFIG_KEY, &config)?;
-        let resp = HandleResponse {
-            messages,
-            log: vec![],
-            data: None,
-        };
-        return Ok(resp);
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    if config.fight_halt {
+        return Err(StdError::generic_err("This arena has been shut down!"));
     }
-    Err(StdError::generic_err(
-        "You forgot to provide a password (random entropy string) when entering the arena",
-    ))
+    let mut versions = config
+        .card_versions
+        .iter()
+        .map(|v| v.to_humanized(&deps.api))
+        .collect::<StdResult<Vec<ContractInfo>>>()?;
+    if let Some(pos) = versions
+        .iter()
+        .position(|v| v.address == env.message.sender)
+    {
+        if let Some(version) = versions.get(pos) {
+            let owner_raw = deps.api.canonical_address(&from)?;
+            if config.heroes.iter().any(|h| h.owner == owner_raw) {
+                return Err(StdError::generic_err(
+                    "You already have a dog in this fight!",
+                ));
+            }
+            if let Some(bin) = msg {
+                let mut messages = Vec::new();
+                let entropy: String = bin.to_base64();
+                config.entropy.push_str(&entropy);
+                let viewer = Some(ViewerInfo {
+                    address: env.contract.address.clone(),
+                    viewing_key: config.viewing_key.clone(),
+                });
+                let priv_meta = private_metadata_query(
+                    &deps.querier,
+                    token_ids[0].clone(),
+                    viewer,
+                    BLOCK_SIZE,
+                    version.code_hash.clone(),
+                    version.address.clone(),
+                )?;
+                let stats: Stats = serde_json::from_str(
+                    &priv_meta
+                        .image
+                        .ok_or_else(|| StdError::generic_err("Missing Hero Stats!"))?,
+                )
+                .map_err(|e| {
+                    StdError::generic_err(format!("Error parsing private metadata: {}", e))
+                })?;
+                let new_hero = StoreWaitingHero {
+                    owner: owner_raw,
+                    name: priv_meta.name.unwrap_or_else(String::new),
+                    token_info: StoreTokenInfo {
+                        token_id: token_ids[0].clone(),
+                        version: pos as u8,
+                    },
+                    stats,
+                };
+                config.heroes.push(new_hero);
+                if config.heroes.len() == 3 {
+                    let rand_slice =
+                        get_rand_slice(&env, &config.prng_seed, config.entropy.as_ref());
+                    let fight_idx = (rand_slice[0] % 4) as usize;
+                    config.entropy.clear();
+                    config.prng_seed = rand_slice.to_vec();
+                    let mut win_score = 0u8;
+                    let mut winners = Vec::new();
+                    let mut ties = Vec::new();
+                    let mut version_xfers: Vec<VersionTransfer> = Vec::new();
+                    let mut opt_winner = None;
+                    let mut totals = vec![0i16; 4];
+                    for (i, hero) in config.heroes.iter().enumerate() {
+                        let transfer = Transfer {
+                            recipient: deps.api.human_address(&hero.owner)?,
+                            token_ids: vec![hero.token_info.token_id.clone()],
+                            memo: None,
+                        };
+                        // if already encountered this version, add the transfer
+                        if let Some(vxfers) = version_xfers
+                            .iter_mut()
+                            .find(|v| v.version == hero.token_info.version)
+                        {
+                            vxfers.transfers.push(transfer);
+                        // otherwise create a new list of transfers for this version
+                        } else {
+                            version_xfers.push(VersionTransfer {
+                                version: hero.token_info.version,
+                                transfers: vec![transfer],
+                            });
+                        }
+                        totals[i] = hero.stats.current.iter().map(|u| *u as i16).sum();
+                        totals[3] += totals[i];
+                        let cur_score = hero.stats.current[fight_idx];
+                        match cur_score.cmp(&win_score) {
+                            Ordering::Greater => {
+                                win_score = cur_score;
+                                winners = vec![i];
+                            }
+                            Ordering::Equal => winners.push(i),
+                            _ => (),
+                        };
+                    }
+                    // if there was a tie
+                    if winners.len() > 1 {
+                        let mut max = 0i16;
+                        for winner in winners {
+                            match totals[winner].cmp(&max) {
+                                Ordering::Greater => {
+                                    max = totals[winner];
+                                    ties = vec![winner];
+                                }
+                                Ordering::Equal => ties.push(winner),
+                                _ => (),
+                            };
+                        }
+                        winners = ties;
+                    }
+                    // if there was a winner
+                    if winners.len() == 1 {
+                        opt_winner = Some(winners[0] as u8);
+                        totals[3] -= totals[winners[0]];
+                    }
+                    let heroes = update_skills(
+                        config.heroes.drain(..).collect(),
+                        &rand_slice[1..10],
+                        &winners,
+                        &totals,
+                        &versions,
+                        &mut messages,
+                    )?;
+                    for vxfer in version_xfers.into_iter() {
+                        messages.push(batch_transfer_nft_msg(
+                            vxfer.transfers,
+                            None,
+                            BLOCK_SIZE,
+                            versions[vxfer.version as usize].code_hash.clone(),
+                            versions[vxfer.version as usize].address.clone(),
+                        )?);
+                    }
+                    let battle = StoreBattle {
+                        battle_number: config.battle_cnt,
+                        heroes,
+                        skill_used: fight_idx as u8,
+                        winner: opt_winner,
+                        winning_skill_value: win_score,
+                    };
+                    let mut his_store = PrefixedStorage::new(PREFIX_HISTORY, &mut deps.storage);
+                    save(&mut his_store, &config.battle_cnt.to_le_bytes(), &battle)?;
+                    for hero in battle.heroes {
+                        append_battle_for_addr(&mut deps.storage, config.battle_cnt, &hero.owner)?;
+                    }
+                    config.battle_cnt += 1;
+                } else {
+                    messages.push(set_whitelisted_approval_msg(
+                        from,
+                        Some(token_ids[0].clone()),
+                        None,
+                        Some(AccessLevel::ApproveToken),
+                        None,
+                        None,
+                        None,
+                        BLOCK_SIZE,
+                        versions.swap_remove(pos).code_hash,
+                        versions.swap_remove(pos).address,
+                    )?);
+                }
+                save(&mut deps.storage, CONFIG_KEY, &config)?;
+                let resp = HandleResponse {
+                    messages,
+                    log: vec![],
+                    data: None,
+                };
+                return Ok(resp);
+            }
+            return Err(StdError::generic_err(
+                "You forgot to provide a password (random entropy string) when entering the arena",
+            ));
+        }
+    }
+    Err(StdError::generic_err(format!(
+        "This arena does not accept fighters from that guild (nft contract {})",
+        env.message.sender
+    )))
 }
 
 /////////////////////////////////////// Query /////////////////////////////////////
@@ -444,6 +609,7 @@ pub fn query_history<S: Storage, A: Api, Q: Querier>(
     let address_raw = deps.api.canonical_address(address)?;
     check_key(&deps.storage, &address_raw, viewing_key)?;
     let history = get_history(
+        &deps.api,
         &deps.storage,
         &address_raw,
         page.unwrap_or(0),
@@ -460,17 +626,25 @@ pub fn query_bullpen<S: Storage, A: Api, Q: Querier>(
     let address_raw = deps.api.canonical_address(address)?;
     check_key(&deps.storage, &address_raw, viewing_key)?;
     let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let heroes_waiting = config.heroes.len() as u8;
+    let your_hero = if let Some(hero) = config.heroes.into_iter().find(|h| h.owner == address_raw) {
+        Some(WaitingHero {
+            name: hero.name,
+            token_info: TokenInfo {
+                token_id: hero.token_info.token_id,
+                address: deps.api.human_address(
+                    &config.card_versions[hero.token_info.version as usize].address,
+                )?,
+            },
+            stats: hero.stats,
+        })
+    } else {
+        None
+    };
+
     to_binary(&QueryAnswer::Bullpen {
-        heroes_waiting: config.heroes.len() as u8,
-        your_hero: config
-            .heroes
-            .into_iter()
-            .find(|h| h.owner == address_raw)
-            .map(|h| WaitingHero {
-                token_id: h.token_id,
-                name: h.name,
-                skills: h.skills,
-            }),
+        heroes_waiting,
+        your_hero,
     })
 }
 
@@ -504,4 +678,114 @@ pub fn get_rand_slice(env: &Env, seed: &[u8], entropy: &[u8]) -> [u8; 32] {
 
     let mut rng = Prng::new(seed, &rng_entropy);
     rng.rand_bytes()
+}
+
+// list of transfers for each card version in the fight
+pub struct VersionTransfer {
+    version: u8,
+    transfers: Vec<Transfer>,
+}
+
+fn update_skills(
+    fighters: Vec<StoreWaitingHero>,
+    rand: &[u8],
+    winners: &[usize],
+    totals: &[i16],
+    versions: &[ContractInfo],
+    messages: &mut Vec<CosmosMsg>,
+) -> StdResult<Vec<StoreHero>> {
+    let adjust: [i8; 23] = [
+        -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2,
+    ];
+    let mut heroes: Vec<StoreHero> = Vec::new();
+    let is_tie = winners.len() != 1;
+    for (i, hero) in fighters.into_iter().enumerate() {
+        let pre_battle_skills = hero.stats.current;
+        let base = hero.stats.base;
+        let post_battle_skills: Vec<u8>;
+        // no skill changes on ties
+        if is_tie {
+            post_battle_skills = pre_battle_skills.clone();
+        // if this is the winner, give him an upgrade
+        } else if i == winners[0] {
+            let power_diff = 2 * totals[i] - totals[3];
+            let mut rand_iter = rand.iter();
+            let base_upgrade: i8 = if power_diff > 160 {
+                -1
+            } else if power_diff > 80 {
+                0
+            } else if power_diff > 0 {
+                1
+            } else if power_diff >= -80 {
+                2
+            } else if power_diff >= -200 {
+                3
+            } else {
+                4
+            };
+            post_battle_skills = pre_battle_skills
+                .iter()
+                .map(|u| {
+                    if let Some(r) = rand_iter.next() {
+                        let modified = base_upgrade + adjust[(*r as usize) % adjust.len()];
+                        if modified > 0 {
+                            let new_skill = modified as u8 + u;
+                            if new_skill > 100 {
+                                100
+                            } else {
+                                new_skill
+                            }
+                        } else {
+                            *u
+                        }
+                    } else {
+                        *u
+                    }
+                })
+                .collect();
+        // otherwise fracture a losing hero
+        } else {
+            let mut base_iter = base.iter();
+            post_battle_skills = pre_battle_skills
+                .iter()
+                .map(|u| {
+                    if let Some(b) = base_iter.next() {
+                        u - (u - b) / 2
+                    } else {
+                        *u
+                    }
+                })
+                .collect();
+        }
+        if pre_battle_skills != post_battle_skills {
+            let stats = Stats {
+                base,
+                current: post_battle_skills.clone(),
+            };
+            let stats_str = serde_json::to_string(&stats).map_err(|e| {
+                StdError::generic_err(format!("Error serializing card stats: {}", e))
+            })?;
+            let metadata = Metadata {
+                name: Some(hero.name.clone()),
+                description: None,
+                image: Some(stats_str),
+            };
+            messages.push(set_private_metadata_msg(
+                hero.token_info.token_id.clone(),
+                metadata,
+                None,
+                BLOCK_SIZE,
+                versions[hero.token_info.version as usize].code_hash.clone(),
+                versions[hero.token_info.version as usize].address.clone(),
+            )?);
+        }
+        heroes.push(StoreHero {
+            owner: hero.owner,
+            name: hero.name,
+            token_info: hero.token_info,
+            pre_battle_skills,
+            post_battle_skills,
+        });
+    }
+    Ok(heroes)
 }

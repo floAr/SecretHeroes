@@ -23,6 +23,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
+ "minter",
  "rand_chacha",
  "rand_core",
  "schemars",
@@ -297,6 +298,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "minter"
+version = "0.1.0"
+dependencies = [
+ "base64 0.12.3",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "rand_chacha",
+ "rand_core",
+ "schemars",
+ "secret-toolkit",
+ "serde",
+ "serde-json-wasm",
+ "sha2 0.9.3",
+ "snafu",
+ "subtle 2.4.0",
+]
+
+[[package]]
 name = "object"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -412,11 +432,12 @@ dependencies = [
 [[package]]
 name = "secret-toolkit"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "secret-toolkit-crypto",
  "secret-toolkit-serialization",
  "secret-toolkit-snip20",
+ "secret-toolkit-snip721",
  "secret-toolkit-storage",
  "secret-toolkit-utils",
 ]
@@ -424,7 +445,7 @@ dependencies = [
 [[package]]
 name = "secret-toolkit-crypto"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "cosmwasm-std",
  "libsecp256k1",
@@ -436,7 +457,7 @@ dependencies = [
 [[package]]
 name = "secret-toolkit-serialization"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "bincode2",
  "cosmwasm-std",
@@ -446,7 +467,18 @@ dependencies = [
 [[package]]
 name = "secret-toolkit-snip20"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
+dependencies = [
+ "cosmwasm-std",
+ "schemars",
+ "secret-toolkit-utils",
+ "serde",
+]
+
+[[package]]
+name = "secret-toolkit-snip721"
+version = "0.1.0"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "cosmwasm-std",
  "schemars",
@@ -457,7 +489,7 @@ dependencies = [
 [[package]]
 name = "secret-toolkit-storage"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "cosmwasm-std",
  "cosmwasm-storage",
@@ -468,7 +500,7 @@ dependencies = [
 [[package]]
 name = "secret-toolkit-utils"
 version = "0.1.0"
-source = "git+https://github.com/enigmampc/secret-toolkit#1faf60a45ece9b4dc7c635786259f731405b4f76"
+source = "git+https://github.com/enigmampc/secret-toolkit?tag=v0.1.1#6c646a9c9b2bb893251214de8032b4387e1a3652"
 dependencies = [
  "cosmwasm-std",
  "schemars",

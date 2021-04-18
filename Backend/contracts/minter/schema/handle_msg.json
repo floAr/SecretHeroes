@@ -4,6 +4,7 @@
   "description": "Handle messages",
   "anyOf": [
     {
+      "description": "mint a pack of 3 cards",
       "type": "object",
       "required": [
         "mint"
@@ -16,6 +17,7 @@
           ],
           "properties": {
             "names": {
+              "description": "names to give the cards.  Must provide 3 names",
               "type": "array",
               "items": {
                 "type": "string"
@@ -26,17 +28,32 @@
       }
     },
     {
+      "description": "change address with administrative power",
       "type": "object",
       "required": [
-        "register_card_contract"
+        "change_admin"
       ],
       "properties": {
-        "register_card_contract": {
-          "type": "object"
+        "change_admin": {
+          "type": "object",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "description": "address with admin authority",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            }
+          }
         }
       }
     },
     {
+      "description": "change the ContractInfo of the cards",
       "type": "object",
       "required": [
         "new_card_contract"
@@ -45,37 +62,61 @@
         "new_card_contract": {
           "type": "object",
           "required": [
-            "card_contract",
-            "entropy",
-            "label"
+            "card_contract"
           ],
           "properties": {
             "card_contract": {
-              "$ref": "#/definitions/ContractInitInfo"
-            },
-            "entropy": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
+              "description": "new card ContractInfo",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ContractInfo"
+                }
+              ]
             }
           }
         }
       }
     },
     {
+      "description": "change the address of the multi sig contract",
       "type": "object",
       "required": [
-        "set_status"
+        "new_multi_sig"
       ],
       "properties": {
-        "set_status": {
+        "new_multi_sig": {
+          "type": "object",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "description": "new multi sig contract address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "halt/start minting",
+      "type": "object",
+      "required": [
+        "set_mint_status"
+      ],
+      "properties": {
+        "set_mint_status": {
           "type": "object",
           "required": [
             "stop"
           ],
           "properties": {
             "stop": {
+              "description": "true if minting should be halted",
               "type": "boolean"
             }
           }
@@ -84,31 +125,30 @@
     }
   ],
   "definitions": {
-    "ContractInitInfo": {
-      "description": "Info needed to instantiate the token contract",
+    "ContractInfo": {
+      "description": "code hash and address of a contract",
       "type": "object",
       "required": [
-        "code_hash",
-        "code_id",
-        "name",
-        "symbol"
+        "address",
+        "code_hash"
       ],
       "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
         "code_hash": {
-          "type": "string"
-        },
-        "code_id": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
-        "name": {
-          "type": "string"
-        },
-        "symbol": {
+          "description": "contract's code hash string",
           "type": "string"
         }
       }
+    },
+    "HumanAddr": {
+      "type": "string"
     }
   }
 }

@@ -1,8 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
+  "description": "Query messages",
   "anyOf": [
     {
+      "description": "display the number of heroes waiting to battle, and the stats of the querier's hero if applicable",
       "type": "object",
       "required": [
         "bullpen"
@@ -16,9 +18,15 @@
           ],
           "properties": {
             "address": {
-              "$ref": "#/definitions/HumanAddr"
+              "description": "querier's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
             },
             "viewing_key": {
+              "description": "querier's viewing key",
               "type": "string"
             }
           }
@@ -26,6 +34,7 @@
       }
     },
     {
+      "description": "display the querier's battle history",
       "type": "object",
       "required": [
         "battle_history"
@@ -39,9 +48,15 @@
           ],
           "properties": {
             "address": {
-              "$ref": "#/definitions/HumanAddr"
+              "description": "querier's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
             },
             "page": {
+              "description": "optional page to display",
               "type": [
                 "integer",
                 "null"
@@ -50,6 +65,7 @@
               "minimum": 0.0
             },
             "page_size": {
+              "description": "optional number of battles to display",
               "type": [
                 "integer",
                 "null"
@@ -58,6 +74,7 @@
               "minimum": 0.0
             },
             "viewing_key": {
+              "description": "querier's viewing key",
               "type": "string"
             }
           }

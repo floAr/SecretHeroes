@@ -1,9 +1,8 @@
 use std::any::type_name;
 
-use schemars::JsonSchema;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use cosmwasm_std::{CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
+use cosmwasm_std::{Api, CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
 
 use cosmwasm_storage::{PrefixedStorage, ReadonlyPrefixedStorage};
 
@@ -12,66 +11,127 @@ use secret_toolkit::{
     storage::{AppendStore, AppendStoreMut},
 };
 
+use crate::msg::{Battle, Hero, TokenInfo};
+
+use minter::{msg::ContractInfo, state::StoreContractInfo, stats::Stats};
+
 pub const CONFIG_KEY: &[u8] = b"config";
-pub const CONTRACT_KEY: &[u8] = b"contract";
 pub const PREFIX_VIEW_KEY: &[u8] = b"viewkey";
 pub const PREFIX_HISTORY: &[u8] = b"history";
 pub const PREFIX_BATTLE_ID: &[u8] = b"battleids";
+pub const ADMIN_KEY: &[u8] = b"admin";
 
+/// arena config
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    pub heroes: Vec<Hero>,
+    /// heroes waiting to fight
+    pub heroes: Vec<StoreWaitingHero>,
+    /// prng seed
     pub prng_seed: Vec<u8>,
+    /// combined entropy strings supplied with the heroes
     pub entropy: String,
+    /// current battle count
     pub battle_cnt: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Hero {
-    pub owner: CanonicalAddr,
-    pub token_id: String,
-    pub name: String,
-    pub skills: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct CardContract {
-    pub address: CanonicalAddr,
-    pub code_hash: String,
+    /// viewing key used with the card contracts
     pub viewing_key: String,
+    /// contract info of all the card versions
+    pub card_versions: Vec<StoreContractInfo>,
+    /// true if battles are halted
+    pub fight_halt: bool,
 }
 
-#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
-pub struct Battle {
-    pub battle_number: u64,
-    pub my_hero: String,
-    pub my_token_id: String,
-    pub my_skills: Vec<u8>,
-    pub skill_used: u8,
-    pub winning_skill_value: u8,
-    pub i_won: bool,
-}
-
+/// waiting hero's info
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct StoredBattle {
+pub struct StoreWaitingHero {
+    /// hero's owner
+    pub owner: CanonicalAddr,
+    /// name of the hero
+    pub name: String,
+    /// hero's token info
+    pub token_info: StoreTokenInfo,
+    /// hero's stats
+    pub stats: Stats,
+}
+
+/// hero info
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StoreHero {
+    /// hero's owner
+    pub owner: CanonicalAddr,
+    /// name of the hero
+    pub name: String,
+    /// hero's token info
+    pub token_info: StoreTokenInfo,
+    /// hero's skills before the battle
+    pub pre_battle_skills: Vec<u8>,
+    /// hero's skills after the battle
+    pub post_battle_skills: Vec<u8>,
+}
+
+impl StoreHero {
+    /// Returns StdResult<Hero> from converting a StoreHero to a displayable Hero
+    ///
+    /// # Arguments
+    ///
+    /// * `versions` - a slice of ContractInfo of token contract versions
+    pub fn into_humanized(self, versions: &[ContractInfo]) -> StdResult<Hero> {
+        let hero = Hero {
+            name: self.name,
+            token_info: TokenInfo {
+                token_id: self.token_info.token_id,
+                address: versions[self.token_info.version as usize].address.clone(),
+            },
+            pre_battle_skills: self.pre_battle_skills,
+            post_battle_skills: self.post_battle_skills,
+        };
+
+        Ok(hero)
+    }
+}
+
+/// a hero's token info
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StoreTokenInfo {
+    /// hero's token id
+    pub token_id: String,
+    /// index of the card contract version
+    pub version: u8,
+}
+
+/// battle info
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StoreBattle {
+    /// battle id number
     pub battle_number: u64,
-    pub heroes: Vec<Hero>,
+    /// heroes that fought
+    pub heroes: Vec<StoreHero>,
+    /// skill used to determine the winner
     pub skill_used: u8,
-    pub winner: Option<String>,
+    /// index of winning hero
+    pub winner: Option<u8>,
+    /// winning skill value
     pub winning_skill_value: u8,
 }
 
-impl StoredBattle {
-    pub fn into_humanized(self, address: &CanonicalAddr) -> StdResult<Battle> {
-        if let Some(mine) = self.heroes.iter().find(|h| h.owner == *address) {
+impl StoreBattle {
+    /// Returns StdResult<Battle> from converting a StoreBattle to a displayable Battle
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - a reference to the address querying their battle history
+    /// * `versions` - a slice of ContractInfo of token contract versions
+    pub fn into_humanized(
+        mut self,
+        address: &CanonicalAddr,
+        versions: &[ContractInfo],
+    ) -> StdResult<Battle> {
+        if let Some(pos) = self.heroes.iter().position(|h| h.owner == *address) {
             let battle = Battle {
                 battle_number: self.battle_number,
-                my_hero: mine.name.clone(),
-                my_token_id: mine.token_id.clone(),
-                my_skills: mine.skills.clone(),
+                my_hero: self.heroes.swap_remove(pos).into_humanized(versions)?,
                 skill_used: self.skill_used,
                 winning_skill_value: self.winning_skill_value,
-                i_won: matches!(self.winner, Some(h) if h == mine.token_id),
+                i_won: self.winner.map_or_else(|| false, |w| w as usize == pos),
             };
             Ok(battle)
         } else {
@@ -79,13 +139,13 @@ impl StoredBattle {
         }
     }
 }
-
-pub fn append_battle<S: Storage>(storage: &mut S, battle: &StoredBattle) -> StdResult<()> {
-    let mut store = PrefixedStorage::new(PREFIX_HISTORY, storage);
-    let mut store = AppendStoreMut::attach_or_create(&mut store)?;
-    store.push(battle)
-}
-
+/// Returns StdResult<()> after saving the battle id
+///
+/// # Arguments
+///
+/// * `storage` - a mutable reference to the storage this item should go to
+/// * `battle_num` - the battle id to store
+/// * `address` - a reference to the address for which to store this battle id
 pub fn append_battle_for_addr<S: Storage>(
     storage: &mut S,
     battle_num: u64,
@@ -96,7 +156,17 @@ pub fn append_battle_for_addr<S: Storage>(
     store.push(&battle_num)
 }
 
-pub fn get_history<S: ReadonlyStorage>(
+/// Returns StdResult<Vec<Battle>> of the battles to display
+///
+/// # Arguments
+///
+/// * `api` - a reference to the Api used to convert human and canonical addresses
+/// * `storage` - a reference to the contract's storage
+/// * `address` - a reference to the address whose battles to display
+/// * `page` - page to start displaying
+/// * `page_size` - number of txs per page
+pub fn get_history<A: Api, S: ReadonlyStorage>(
+    api: &A,
     storage: &S,
     address: &CanonicalAddr,
     page: u32,
@@ -104,24 +174,34 @@ pub fn get_history<S: ReadonlyStorage>(
 ) -> StdResult<Vec<Battle>> {
     let id_store =
         ReadonlyPrefixedStorage::multilevel(&[PREFIX_BATTLE_ID, address.as_slice()], storage);
-
-    let id_store = if let Some(result) = AppendStore::<u32, _>::attach(&id_store) {
+    // Try to access the storage of battle ids for the account.
+    // If it doesn't exist yet, return an empty list of battles.
+    let id_store = if let Some(result) = AppendStore::<u64, _>::attach(&id_store) {
         result?
     } else {
         return Ok(vec![]);
     };
+    let config: Config = load(storage, CONFIG_KEY)?;
+    let versions = config
+        .card_versions
+        .iter()
+        .map(|v| v.to_humanized(api))
+        .collect::<StdResult<Vec<ContractInfo>>>()?;
+    // access battle storage
     let his_store = ReadonlyPrefixedStorage::new(PREFIX_HISTORY, storage);
-    let his_store = AppendStore::<StoredBattle, _, _>::attach(&his_store)
-        .ok_or_else(|| StdError::generic_err("Unable to retrieve battle history"))??;
-
+    // Take `page_size` battles starting from the latest battle, potentially skipping `page * page_size`
+    // battles from the start.
     let battles: StdResult<Vec<Battle>> = id_store
         .iter()
         .rev()
         .skip((page * page_size) as usize)
         .take(page_size as usize)
         .map(|id| {
-            id.map(|id| his_store.get_at(id).and_then(|b| b.into_humanized(address)))
-                .and_then(|x| x)
+            id.map(|id| {
+                load(&his_store, &id.to_le_bytes())
+                    .and_then(|b: StoreBattle| b.into_humanized(address, &versions))
+            })
+            .and_then(|x| x)
         })
         .collect();
 

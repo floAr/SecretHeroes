@@ -1,8 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "HandleMsg",
+  "description": "Handle messages",
   "anyOf": [
     {
+      "description": "create a viewing key",
       "type": "object",
       "required": [
         "create_viewing_key"
@@ -15,6 +17,7 @@
           ],
           "properties": {
             "entropy": {
+              "description": "entropy String used in random key generation",
               "type": "string"
             }
           }
@@ -22,6 +25,7 @@
       }
     },
     {
+      "description": "set viewing key",
       "type": "object",
       "required": [
         "set_viewing_key"
@@ -34,9 +38,11 @@
           ],
           "properties": {
             "key": {
+              "description": "desired viewing key",
               "type": "string"
             },
             "padding": {
+              "description": "optional message length padding",
               "type": [
                 "string",
                 "null"
@@ -47,23 +53,30 @@
       }
     },
     {
+      "description": "NFT receiver interface",
       "type": "object",
       "required": [
-        "receive_nft"
+        "batch_receive_nft"
       ],
       "properties": {
-        "receive_nft": {
+        "batch_receive_nft": {
           "type": "object",
           "required": [
             "from",
             "sender",
-            "token_id"
+            "token_ids"
           ],
           "properties": {
             "from": {
-              "$ref": "#/definitions/HumanAddr"
+              "description": "previous owner of the NFTs",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
             },
             "msg": {
+              "description": "msg specified when sending",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Binary"
@@ -74,16 +87,26 @@
               ]
             },
             "sender": {
-              "$ref": "#/definitions/HumanAddr"
+              "description": "address that sent the NFTs",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
             },
-            "token_id": {
-              "type": "string"
+            "token_ids": {
+              "description": "list of NFTs sent from the previous owner",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         }
       }
     },
     {
+      "description": "withdraw hero from the arena waiting room (bullpen)",
       "type": "object",
       "required": [
         "chicken_out"
@@ -93,12 +116,105 @@
           "type": "object"
         }
       }
+    },
+    {
+      "description": "change address with administrative power",
+      "type": "object",
+      "required": [
+        "change_admin"
+      ],
+      "properties": {
+        "change_admin": {
+          "type": "object",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "description": "address with admin authority",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "halt/start battles",
+      "type": "object",
+      "required": [
+        "set_battle_status"
+      ],
+      "properties": {
+        "set_battle_status": {
+          "type": "object",
+          "required": [
+            "stop"
+          ],
+          "properties": {
+            "stop": {
+              "description": "true if battles should be halted",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "add a compatible card contract",
+      "type": "object",
+      "required": [
+        "add_card_contract"
+      ],
+      "properties": {
+        "add_card_contract": {
+          "type": "object",
+          "required": [
+            "card_contract"
+          ],
+          "properties": {
+            "card_contract": {
+              "description": "new card ContractInfo",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ContractInfo"
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
       "type": "string"
+    },
+    "ContractInfo": {
+      "description": "code hash and address of a contract",
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "code_hash": {
+          "description": "contract's code hash string",
+          "type": "string"
+        }
+      }
     },
     "HumanAddr": {
       "type": "string"

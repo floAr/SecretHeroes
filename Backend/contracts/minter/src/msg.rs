@@ -1,28 +1,46 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use cosmwasm_std::HumanAddr;
+
 /// Instantiation message
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct InitMsg {
+    /// prng entropy
     pub entropy: String,
-    pub card_contract_label: String,
-    pub card_contract: ContractInitInfo,
+    /// card contract info
+    pub card_contract: ContractInfo,
+    /// address of the multisig contract
+    pub multi_sig: HumanAddr,
 }
 
 /// Handle messages
 #[derive(Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HandleMsg {
+    /// mint a pack of 3 cards
     Mint {
+        /// names to give the cards.  Must provide 3 names
         names: Vec<String>,
     },
-    RegisterCardContract {},
-    NewCardContract {
-        label: String,
-        entropy: String,
-        card_contract: ContractInitInfo,
+    /// change address with administrative power
+    ChangeAdmin {
+        /// address with admin authority
+        address: HumanAddr,
     },
-    SetStatus {
+    /// change the ContractInfo of the cards
+    NewCardContract {
+        /// new card ContractInfo
+        card_contract: ContractInfo,
+    },
+    /// change the address of the multi sig contract
+    NewMultiSig {
+        /// new multi sig contract address
+        address: HumanAddr,
+    },
+    /// halt/start minting
+    SetMintStatus {
+        /// true if minting should be halted
         stop: bool,
     },
 }
@@ -30,7 +48,8 @@ pub enum HandleMsg {
 #[derive(Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    NotUsed {},
+    /// display the minter config
+    Config {},
 }
 
 /// success or failure response
@@ -44,14 +63,30 @@ pub enum ResponseStatus {
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HandleAnswer {
-    Status { status: ResponseStatus },
+    Mint { status: ResponseStatus },
+    ChangeAdmin { new_admin: HumanAddr },
+    NewCardContract { card_contract: HumanAddr },
+    NewMultiSig { multi_sig: HumanAddr },
+    SetMintStatus { minting_has_halted: bool },
 }
 
-/// Info needed to instantiate the token contract
-#[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ContractInitInfo {
-    pub name: String,
-    pub symbol: String,
-    pub code_id: u64,
+/// Responses from queries
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum QueryAnswer {
+    /// minter config
+    Config {
+        card_versions: Vec<ContractInfo>,
+        multi_sig_contract: HumanAddr,
+        minting_has_halted: bool,
+    },
+}
+
+/// code hash and address of a contract
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct ContractInfo {
+    /// contract's code hash string
     pub code_hash: String,
+    /// contract's address
+    pub address: HumanAddr,
 }

@@ -1,88 +1,24 @@
-use serde::{Deserialize, Serialize};
-
 use cosmwasm_std::{
-    log, to_binary, Api, Binary, CanonicalAddr, Coin, CosmosMsg, Env, Extern, HandleResponse,
-    HandleResult, HumanAddr, InitResponse, InitResult, Querier, QueryResponse, QueryResult,
-    StdError, StdResult, Storage,
+    to_binary, Api, BankMsg, CanonicalAddr, Coin, CosmosMsg, Env, Extern, HandleResponse,
+    HandleResult, HumanAddr, InitResponse, InitResult, Querier, QueryResult, StdError, StdResult,
+    Storage, Uint128,
 };
 
-use secret_toolkit::utils::{pad_handle_result, HandleCallback, InitCallback};
+use secret_toolkit::{
+    snip721::{batch_mint_nft_msg, Metadata, Mint},
+    utils::{pad_handle_result, pad_query_result},
+};
 
 use crate::msg::{
-    ContractInitInfo, HandleAnswer, HandleMsg, InitMsg, QueryMsg, ResponseStatus::Success,
+    ContractInfo, HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, ResponseStatus::Success,
 };
 use crate::rand::{sha_256, Prng};
-use crate::state::{load, save, AdminInfo, Config, ContractInfo, ADMIN_INFO_KEY, CONFIG_KEY};
+use crate::state::{load, save, Config, StoreContractInfo, ADMIN_KEY, CONFIG_KEY};
+use crate::stats::Stats;
 
 use serde_json_wasm as serde_json;
 
 pub const BLOCK_SIZE: usize = 256;
-
-#[derive(Serialize)]
-pub struct NftInitConfig {
-    pub public_token_supply: Option<bool>,
-    pub public_owner: Option<bool>,
-    pub enable_sealed_metadata: Option<bool>,
-    pub unwrapped_metadata_is_private: Option<bool>,
-    pub minter_may_update_metadata: Option<bool>,
-    pub owner_may_update_metadata: Option<bool>,
-    pub enable_burn: Option<bool>,
-}
-
-#[derive(Serialize)]
-pub struct PostInitCallback {
-    pub msg: Binary,
-    pub contract_address: HumanAddr,
-    pub code_hash: String,
-    pub send: Vec<Coin>,
-}
-
-#[derive(Serialize)]
-pub struct NftInitMsg {
-    pub name: String,
-    pub symbol: String,
-    pub admin: Option<HumanAddr>,
-    pub entropy: String,
-    pub config: Option<NftInitConfig>,
-    pub post_init_callback: Option<PostInitCallback>,
-}
-
-impl InitCallback for NftInitMsg {
-    const BLOCK_SIZE: usize = BLOCK_SIZE;
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Metadata {
-    pub name: Option<String>,
-    pub description: Option<String>,
-    pub image: Option<String>,
-}
-
-#[derive(Serialize)]
-pub struct Mint {
-    pub token_id: Option<String>,
-    pub owner: Option<HumanAddr>,
-    pub public_metadata: Option<Metadata>,
-    pub private_metadata: Option<Metadata>,
-    pub memo: Option<String>,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum NftHandleMsg {
-    BatchMintNft {
-        mints: Vec<Mint>,
-        padding: Option<String>,
-    },
-    ChangeAdmin {
-        address: HumanAddr,
-        padding: Option<String>,
-    },
-}
-
-impl HandleCallback for NftHandleMsg {
-    const BLOCK_SIZE: usize = BLOCK_SIZE;
-}
 
 ////////////////////////////////////// Init ///////////////////////////////////////
 /// Returns InitResult
@@ -100,37 +36,21 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> InitResult {
     let prng_seed: Vec<u8> = sha_256(base64::encode(msg.entropy).as_bytes()).to_vec();
-    let admin = AdminInfo {
-        admin: deps.api.canonical_address(&env.message.sender)?,
-        expect_reg: true,
-    };
-    let card_contract = ContractInfo {
-        address: CanonicalAddr::default(),
-        code_hash: msg.card_contract.code_hash.clone(),
-    };
-
-    let rdm_bytes = rdm_bytes(
-        &env,
-        &prng_seed,
-        "Give NFT contract different entropy than the minter".as_ref(),
-    );
-    let nft_entropy = base64::encode(&rdm_bytes);
-
+    let admin = deps.api.canonical_address(&env.message.sender)?;
     let config = Config {
-        card_contract,
-        stopped: false,
+        card_versions: vec![StoreContractInfo {
+            code_hash: msg.card_contract.code_hash,
+            address: deps.api.canonical_address(&msg.card_contract.address)?,
+        }],
+        minting_halt: true,
+        multi_sig: deps.api.canonical_address(&msg.multi_sig)?,
         prng_seed,
     };
 
     save(&mut deps.storage, CONFIG_KEY, &config)?;
-    save(&mut deps.storage, ADMIN_INFO_KEY, &admin)?;
+    save(&mut deps.storage, ADMIN_KEY, &admin)?;
 
-    let cosmosmsg = card_init_msg(env, msg.card_contract_label, nft_entropy, msg.card_contract)?;
-
-    Ok(InitResponse {
-        messages: vec![cosmosmsg],
-        log: vec![],
-    })
+    Ok(InitResponse::default())
 }
 
 ///////////////////////////////////// Handle //////////////////////////////////////
@@ -147,27 +67,43 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     msg: HandleMsg,
 ) -> HandleResult {
     let response = match msg {
-        HandleMsg::RegisterCardContract {} => try_register_contract(deps, env),
-        HandleMsg::NewCardContract {
-            label,
-            entropy,
-            card_contract,
-        } => try_new_contract(deps, env, label, entropy, card_contract),
-        HandleMsg::SetStatus { stop } => try_set_status(deps, env, stop),
+        HandleMsg::NewMultiSig { address } => try_new_multi_sig(deps, env, address),
+        HandleMsg::NewCardContract { card_contract } => {
+            try_new_card_contract(deps, env, card_contract)
+        }
+        HandleMsg::SetMintStatus { stop } => try_set_mint_status(deps, env, stop),
         HandleMsg::Mint { names } => try_mint(deps, env, names),
+        HandleMsg::ChangeAdmin { address } => try_change_admin(deps, env, address),
     };
     pad_handle_result(response, BLOCK_SIZE)
 }
 
+/// Returns HandleResult
+///
+/// mint a pack of cards
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `names` - list of names for the newly minted cards
 pub fn try_mint<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
     names: Vec<String>,
 ) -> HandleResult {
     let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    if config.stopped {
+    if config.minting_halt {
         return Err(StdError::generic_err(
             "The minter has been stopped.  No new cards can be minted",
+        ));
+    }
+    if env.message.sent_funds.len() != 1
+        || env.message.sent_funds[0].amount != Uint128(1000000)
+        || env.message.sent_funds[0].denom != *"uscrt"
+    {
+        return Err(StdError::generic_err(
+            "You must pay exactly 1 SCRT to buy a pack of heroes",
         ));
     }
     if names.len() < 3 {
@@ -177,7 +113,6 @@ pub fn try_mint<S: Storage, A: Api, Q: Querier>(
     }
     let entropy = names.join("");
     let rdm_bytes = rdm_bytes(&env, &config.prng_seed, entropy.as_ref());
-    let nft_address = deps.api.human_address(&config.card_contract.address)?;
     let mut mints = Vec::new();
 
     for (i, name) in names.into_iter().enumerate() {
@@ -191,106 +126,195 @@ pub fn try_mint<S: Storage, A: Api, Q: Querier>(
             &env.message.sender,
         )?);
     }
-    let mint_msg = NftHandleMsg::BatchMintNft {
-        mints,
-        padding: None,
-    };
     config.prng_seed = rdm_bytes;
     save(&mut deps.storage, CONFIG_KEY, &config)?;
-    let messages =
-        vec![mint_msg.to_cosmos_msg(config.card_contract.code_hash, nft_address, None)?];
-
+    let card_contract = config
+        .card_versions
+        .pop()
+        .ok_or_else(|| StdError::generic_err("Card version history is corrupt"))?;
+    let mut messages: Vec<CosmosMsg> = Vec::new();
+    messages.push(batch_mint_nft_msg(
+        mints,
+        None,
+        BLOCK_SIZE,
+        card_contract.code_hash,
+        deps.api.human_address(&card_contract.address)?,
+    )?);
+    let amount: Vec<Coin> = vec![Coin {
+        denom: "uscrt".to_string(),
+        amount: Uint128(1000000),
+    }];
+    messages.push(CosmosMsg::Bank(BankMsg::Send {
+        from_address: env.contract.address,
+        to_address: deps.api.human_address(&config.multi_sig)?,
+        amount,
+    }));
     Ok(HandleResponse {
         messages,
         log: vec![],
-        data: Some(to_binary(&HandleAnswer::Status { status: Success })?),
+        data: Some(to_binary(&HandleAnswer::Mint { status: Success })?),
     })
 }
 
-pub fn try_register_contract<S: Storage, A: Api, Q: Querier>(
+/// Returns HandleResult
+///
+/// change the admin address
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `address` - the new admin address
+pub fn try_change_admin<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
+    address: HumanAddr,
 ) -> HandleResult {
-    let mut admin_info: AdminInfo = load(&deps.storage, ADMIN_INFO_KEY)?;
-    if !admin_info.expect_reg {
-        return Err(StdError::generic_err(
-            "You are not permitted to call RegisterCardContract",
-        ));
-    }
-    let admin_addr = deps.api.human_address(&admin_info.admin)?;
-    admin_info.expect_reg = false;
-    save(&mut deps.storage, ADMIN_INFO_KEY, &admin_info)?;
-
-    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    config.card_contract.address = deps.api.canonical_address(&env.message.sender)?;
-    save(&mut deps.storage, CONFIG_KEY, &config)?;
-
-    let change_adm_msg = NftHandleMsg::ChangeAdmin {
-        address: admin_addr,
-        padding: None,
-    };
-    let nft_address = deps.api.human_address(&config.card_contract.address)?;
-    let cosmosmsg =
-        change_adm_msg.to_cosmos_msg(config.card_contract.code_hash, nft_address.clone(), None)?;
-
-    Ok(HandleResponse {
-        messages: vec![cosmosmsg],
-        log: vec![log("card contract address", nft_address)],
-        data: Some(to_binary(&HandleAnswer::Status { status: Success })?),
-    })
-}
-
-pub fn try_new_contract<S: Storage, A: Api, Q: Querier>(
-    deps: &mut Extern<S, A, Q>,
-    env: Env,
-    label: String,
-    entropy: String,
-    card_contract: ContractInitInfo,
-) -> HandleResult {
-    let mut admin_info: AdminInfo = load(&deps.storage, ADMIN_INFO_KEY)?;
     let sender_raw = deps.api.canonical_address(&env.message.sender)?;
-    if sender_raw != admin_info.admin {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    if admin != sender_raw {
         return Err(StdError::generic_err(
-            "This is an admin command. Admin commands can only be run from admin address",
+            "This is an admin command and can only be run from the admin address",
         ));
     }
-    admin_info.expect_reg = true;
-    save(&mut deps.storage, ADMIN_INFO_KEY, &admin_info)?;
-
-    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    config.card_contract.code_hash = card_contract.code_hash.clone();
-    save(&mut deps.storage, CONFIG_KEY, &config)?;
-    let cosmosmsg = card_init_msg(env, label, entropy, card_contract)?;
-
+    let new_admin = deps.api.canonical_address(&address)?;
+    if new_admin != admin {
+        save(&mut deps.storage, ADMIN_KEY, &new_admin)?;
+    }
     Ok(HandleResponse {
-        messages: vec![cosmosmsg],
+        messages: vec![],
         log: vec![],
-        data: Some(to_binary(&HandleAnswer::Status { status: Success })?),
+        data: Some(to_binary(&HandleAnswer::ChangeAdmin {
+            new_admin: address,
+        })?),
     })
 }
 
-pub fn try_set_status<S: Storage, A: Api, Q: Querier>(
+/// Returns HandleResult
+///
+/// change the card contract
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `card_contract` - new card ContractInfo
+pub fn try_new_card_contract<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
-    stop: bool,
+    card_contract: ContractInfo,
 ) -> HandleResult {
-    let admin_info: AdminInfo = load(&deps.storage, ADMIN_INFO_KEY)?;
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
     let sender_raw = deps.api.canonical_address(&env.message.sender)?;
-    if sender_raw != admin_info.admin {
+    if sender_raw != admin {
         return Err(StdError::generic_err(
             "This is an admin command. Admin commands can only be run from admin address",
         ));
     }
+
     let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    if config.stopped != stop {
-        config.stopped = stop;
+    let new_address_raw = deps.api.canonical_address(&card_contract.address)?;
+    let latest = config.card_versions.len() - 1;
+    // if changing the version
+    if config.card_versions[latest].address != new_address_raw {
+        // check if reverting to a previous version
+        if let Some(pos) = config
+            .card_versions
+            .iter()
+            .position(|c| c.address == new_address_raw)
+        {
+            let old_version = config.card_versions.swap_remove(pos);
+            config.card_versions.push(old_version);
+        } else {
+            // new version
+            config.card_versions.push(StoreContractInfo {
+                address: new_address_raw,
+                code_hash: card_contract.code_hash,
+            });
+        }
         save(&mut deps.storage, CONFIG_KEY, &config)?;
     }
 
     Ok(HandleResponse {
         messages: vec![],
         log: vec![],
-        data: Some(to_binary(&HandleAnswer::Status { status: Success })?),
+        data: Some(to_binary(&HandleAnswer::NewCardContract {
+            card_contract: card_contract.address,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// change the multi sig address
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `address` - the new multi sig address
+pub fn try_new_multi_sig<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    address: HumanAddr,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let new_address_raw = deps.api.canonical_address(&address)?;
+    if config.multi_sig != new_address_raw {
+        config.multi_sig = new_address_raw;
+        save(&mut deps.storage, CONFIG_KEY, &config)?;
+    }
+
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::NewMultiSig {
+            multi_sig: address,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// set the minting status
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `stop` - true if minting shold be halted
+pub fn try_set_mint_status<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    stop: bool,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    if config.minting_halt != stop {
+        config.minting_halt = stop;
+        save(&mut deps.storage, CONFIG_KEY, &config)?;
+    }
+
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::SetMintStatus {
+            minting_has_halted: stop,
+        })?),
     })
 }
 
@@ -301,11 +325,29 @@ pub fn try_set_status<S: Storage, A: Api, Q: Querier>(
 ///
 /// * `deps` - reference to Extern containing all the contract's external dependencies
 /// * `msg` - QueryMsg passed in with the query call
-pub fn query<S: Storage, A: Api, Q: Querier>(
-    _deps: &Extern<S, A, Q>,
-    _msg: QueryMsg,
-) -> QueryResult {
-    Ok(QueryResponse::default())
+pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryMsg) -> QueryResult {
+    let response = match msg {
+        QueryMsg::Config {} => query_config(deps),
+    };
+    pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult displaying the contract's config
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+pub fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    to_binary(&QueryAnswer::Config {
+        card_versions: config
+            .card_versions
+            .iter()
+            .map(|v| v.to_humanized(&deps.api))
+            .collect::<StdResult<Vec<ContractInfo>>>()?,
+        multi_sig_contract: deps.api.human_address(&config.multi_sig)?,
+        minting_has_halted: config.minting_halt,
+    })
 }
 
 fn get_mints(bytes: &[u8], name: String, owner: &HumanAddr) -> StdResult<Mint> {
@@ -326,13 +368,16 @@ fn get_mints(bytes: &[u8], name: String, owner: &HumanAddr) -> StdResult<Mint> {
             .unwrap_or(1);
         skills.push(val);
     }
-
-    let skill_str = serde_json::to_string(&skills)
-        .map_err(|e| StdError::generic_err(format!("Error serializing skills: {}", e)))?;
+    let stats = Stats {
+        base: skills.clone(),
+        current: skills,
+    };
+    let stats_str = serde_json::to_string(&stats)
+        .map_err(|e| StdError::generic_err(format!("Error serializing card stats: {}", e)))?;
     let priv_meta = Metadata {
         name: Some(name),
         description: None,
-        image: Some(skill_str),
+        image: Some(stats_str),
     };
     let mint = Mint {
         token_id: None,
@@ -342,39 +387,6 @@ fn get_mints(bytes: &[u8], name: String, owner: &HumanAddr) -> StdResult<Mint> {
         memo: None,
     };
     Ok(mint)
-}
-
-fn card_init_msg(
-    env: Env,
-    label: String,
-    entropy: String,
-    card_contract: ContractInitInfo,
-) -> StdResult<CosmosMsg> {
-    let nft_config = NftInitConfig {
-        public_token_supply: Some(true),
-        public_owner: None,
-        enable_sealed_metadata: None,
-        unwrapped_metadata_is_private: None,
-        minter_may_update_metadata: None,
-        owner_may_update_metadata: None,
-        enable_burn: None,
-    };
-    let post_init = PostInitCallback {
-        msg: to_binary(&HandleMsg::RegisterCardContract {})?,
-        contract_address: env.contract.address,
-        code_hash: env.contract_code_hash,
-        send: vec![],
-    };
-
-    let initmsg = NftInitMsg {
-        name: card_contract.name,
-        symbol: card_contract.symbol,
-        admin: None,
-        entropy,
-        config: Some(nft_config),
-        post_init_callback: Some(post_init),
-    };
-    initmsg.to_cosmos_msg(label, card_contract.code_id, card_contract.code_hash, None)
 }
 
 fn rdm_bytes(env: &Env, seed: &[u8], entropy: &[u8]) -> Vec<u8> {

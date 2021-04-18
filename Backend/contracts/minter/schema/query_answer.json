@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryAnswer",
+  "description": "Responses from queries",
+  "anyOf": [
+    {
+      "description": "minter config",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object",
+          "required": [
+            "card_versions",
+            "minting_has_halted",
+            "multi_sig_contract"
+          ],
+          "properties": {
+            "card_versions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
+            },
+            "minting_has_halted": {
+              "type": "boolean"
+            },
+            "multi_sig_contract": {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "ContractInfo": {
+      "description": "code hash and address of a contract",
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "code_hash": {
+          "description": "contract's code hash string",
+          "type": "string"
+        }
+      }
+    },
+    "HumanAddr": {
+      "type": "string"
+    }
+  }
+}

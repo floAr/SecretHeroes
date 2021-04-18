@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryAnswer",
+  "description": "responses from queries",
   "anyOf": [
     {
       "type": "object",
@@ -58,63 +59,64 @@
   ],
   "definitions": {
     "Battle": {
+      "description": "battle info",
       "type": "object",
       "required": [
         "battle_number",
         "i_won",
         "my_hero",
-        "my_skills",
-        "my_token_id",
         "skill_used",
         "winning_skill_value"
       ],
       "properties": {
         "battle_number": {
+          "description": "batlle id number",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "i_won": {
+          "description": "true if the querier's hero won the battle",
           "type": "boolean"
         },
         "my_hero": {
-          "type": "string"
-        },
-        "my_skills": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "uint8",
-            "minimum": 0.0
-          }
-        },
-        "my_token_id": {
-          "type": "string"
+          "description": "querier's hero in the battle",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Hero"
+            }
+          ]
         },
         "skill_used": {
+          "description": "skill used to determine battle results",
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
         },
         "winning_skill_value": {
+          "description": "the skill value that won the battle",
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
         }
       }
     },
-    "WaitingHero": {
+    "Hero": {
+      "description": "hero info",
       "type": "object",
       "required": [
         "name",
-        "skills",
-        "token_id"
+        "post_battle_skills",
+        "pre_battle_skills",
+        "token_info"
       ],
       "properties": {
         "name": {
+          "description": "hero's name",
           "type": "string"
         },
-        "skills": {
+        "post_battle_skills": {
+          "description": "hero's skills after the battle",
           "type": "array",
           "items": {
             "type": "integer",
@@ -122,8 +124,106 @@
             "minimum": 0.0
           }
         },
+        "pre_battle_skills": {
+          "description": "hero's skills before the battle",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "token_info": {
+          "description": "token info",
+          "allOf": [
+            {
+              "$ref": "#/definitions/TokenInfo"
+            }
+          ]
+        }
+      }
+    },
+    "HumanAddr": {
+      "type": "string"
+    },
+    "Stats": {
+      "description": "card stats",
+      "type": "object",
+      "required": [
+        "base",
+        "current"
+      ],
+      "properties": {
+        "base": {
+          "description": "the card's skills at time of minting",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "current": {
+          "description": "the card's current skills",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        }
+      }
+    },
+    "TokenInfo": {
+      "description": "token info",
+      "type": "object",
+      "required": [
+        "address",
+        "token_id"
+      ],
+      "properties": {
+        "address": {
+          "description": "address of the token contract that controls the token",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
         "token_id": {
+          "description": "id of the token",
           "type": "string"
+        }
+      }
+    },
+    "WaitingHero": {
+      "description": "info of hero waiting to fight",
+      "type": "object",
+      "required": [
+        "name",
+        "stats",
+        "token_info"
+      ],
+      "properties": {
+        "name": {
+          "description": "name of the hero",
+          "type": "string"
+        },
+        "stats": {
+          "description": "hero's stats",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Stats"
+            }
+          ]
+        },
+        "token_info": {
+          "description": "hero's token info",
+          "allOf": [
+            {
+              "$ref": "#/definitions/TokenInfo"
+            }
+          ]
         }
       }
     }

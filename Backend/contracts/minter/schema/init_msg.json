@@ -5,46 +5,56 @@
   "type": "object",
   "required": [
     "card_contract",
-    "card_contract_label",
-    "entropy"
+    "entropy",
+    "multi_sig"
   ],
   "properties": {
     "card_contract": {
-      "$ref": "#/definitions/ContractInitInfo"
-    },
-    "card_contract_label": {
-      "type": "string"
+      "description": "card contract info",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ContractInfo"
+        }
+      ]
     },
     "entropy": {
+      "description": "prng entropy",
       "type": "string"
+    },
+    "multi_sig": {
+      "description": "address of the multisig contract",
+      "allOf": [
+        {
+          "$ref": "#/definitions/HumanAddr"
+        }
+      ]
     }
   },
   "definitions": {
-    "ContractInitInfo": {
-      "description": "Info needed to instantiate the token contract",
+    "ContractInfo": {
+      "description": "code hash and address of a contract",
       "type": "object",
       "required": [
-        "code_hash",
-        "code_id",
-        "name",
-        "symbol"
+        "address",
+        "code_hash"
       ],
       "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
         "code_hash": {
-          "type": "string"
-        },
-        "code_id": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
-        "name": {
-          "type": "string"
-        },
-        "symbol": {
+          "description": "contract's code hash string",
           "type": "string"
         }
       }
+    },
+    "HumanAddr": {
+      "type": "string"
     }
   }
 }
