@@ -42,7 +42,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
             code_hash: msg.card_contract.code_hash,
             address: deps.api.canonical_address(&msg.card_contract.address)?,
         }],
-        minting_halt: true,
+        minting_halt: false,
         multi_sig: deps.api.canonical_address(&msg.multi_sig)?,
         prng_seed,
     };

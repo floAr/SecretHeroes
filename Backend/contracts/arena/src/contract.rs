@@ -142,29 +142,39 @@ pub fn try_add_card_contract<S: Storage, A: Api, Q: Querier>(
     }
 
     let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    config.card_versions.push(StoreContractInfo {
-        address: deps.api.canonical_address(&card_contract.address)?,
-        code_hash: card_contract.code_hash.clone(),
-    });
-    save(&mut deps.storage, CONFIG_KEY, &config)?;
+    let address = deps.api.canonical_address(&card_contract.address)?;
+    let mut messages: Vec<CosmosMsg> = Vec::new();
+    // only add the contract if we haven't seen it before
+    if config
+        .card_versions
+        .iter()
+        .find(|v| v.address == address)
+        .is_none()
+    {
+        config.card_versions.push(StoreContractInfo {
+            address,
+            code_hash: card_contract.code_hash.clone(),
+        });
+        save(&mut deps.storage, CONFIG_KEY, &config)?;
+        messages.push(register_receive_nft_msg(
+            env.contract_code_hash,
+            Some(true),
+            None,
+            BLOCK_SIZE,
+            card_contract.code_hash.clone(),
+            card_contract.address.clone(),
+        )?);
+        messages.push(set_viewing_key_msg(
+            config.viewing_key,
+            None,
+            BLOCK_SIZE,
+            card_contract.code_hash,
+            card_contract.address.clone(),
+        )?);
+    }
+
     Ok(HandleResponse {
-        messages: vec![
-            register_receive_nft_msg(
-                env.contract_code_hash,
-                Some(true),
-                None,
-                BLOCK_SIZE,
-                card_contract.code_hash.clone(),
-                card_contract.address.clone(),
-            )?,
-            set_viewing_key_msg(
-                config.viewing_key,
-                None,
-                BLOCK_SIZE,
-                card_contract.code_hash,
-                card_contract.address.clone(),
-            )?,
-        ],
+        messages,
         log: vec![],
         data: Some(to_binary(&HandleAnswer::AddCardContract {
             card_contract: card_contract.address,
@@ -546,6 +556,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     }
                     config.battle_cnt += 1;
                 } else {
+                    let own_version = versions.swap_remove(pos);
                     messages.push(set_whitelisted_approval_msg(
                         from,
                         Some(token_ids[0].clone()),
@@ -555,8 +566,8 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                         None,
                         None,
                         BLOCK_SIZE,
-                        versions.swap_remove(pos).code_hash,
-                        versions.swap_remove(pos).address,
+                        own_version.code_hash,
+                        own_version.address,
                     )?);
                 }
                 save(&mut deps.storage, CONFIG_KEY, &config)?;

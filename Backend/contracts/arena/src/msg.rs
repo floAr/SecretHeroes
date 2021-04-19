@@ -101,17 +101,6 @@ pub enum QueryMsg {
     },
 }
 
-/// info of hero waiting to fight
-#[derive(Serialize, Deserialize, JsonSchema, Debug)]
-pub struct WaitingHero {
-    /// name of the hero
-    pub name: String,
-    /// hero's token info
-    pub token_info: TokenInfo,
-    /// hero's stats
-    pub stats: Stats,
-}
-
 /// responses from queries
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -123,6 +112,17 @@ pub enum QueryAnswer {
     BattleHistory {
         history: Vec<Battle>,
     },
+}
+
+/// info of hero waiting to fight
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+pub struct WaitingHero {
+    /// name of the hero
+    pub name: String,
+    /// hero's token info
+    pub token_info: TokenInfo,
+    /// hero's stats
+    pub stats: Stats,
 }
 
 /// battle info
