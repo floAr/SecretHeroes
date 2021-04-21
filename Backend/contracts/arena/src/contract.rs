@@ -463,9 +463,21 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                 };
                 config.heroes.push(new_hero);
                 if config.heroes.len() == 3 {
-                    let rand_slice =
+                    let mut rand_slice =
                         get_rand_slice(&env, &config.prng_seed, config.entropy.as_ref());
-                    let fight_idx = (rand_slice[0] % 4) as usize;
+                    let mut rand_iter = rand_slice.iter();
+                    let fight_idx = (*(rand_iter.next().unwrap()) % 4u8) as usize;
+                    let mut upgrade_rand: Vec<u8> = Vec::new();
+                    while upgrade_rand.len() < 4 {
+                        if let Some(rdm) = rand_iter.next() {
+                            if *rdm < 253 {
+                                upgrade_rand.push(*rdm);
+                            }
+                        } else {
+                            rand_slice = get_rand_slice(&env, &rand_slice, config.entropy.as_ref());
+                            rand_iter = rand_slice.iter();
+                        }
+                    }
                     config.entropy.clear();
                     config.prng_seed = rand_slice.to_vec();
                     let mut win_score = 0u8;
@@ -527,7 +539,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     }
                     let heroes = update_skills(
                         config.heroes.drain(..).collect(),
-                        &rand_slice[1..10],
+                        &upgrade_rand,
                         &winners,
                         &totals,
                         &versions,
