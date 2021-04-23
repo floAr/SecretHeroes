@@ -10,7 +10,7 @@ const UnityFunc: React.FC = () => {
   const isBrowser = typeof window !== 'undefined'
   useEffect(() => {
     if (!isBrowser) return
-    const buildUrl = 'Build'
+    const buildUrl = '/Build'
     const loaderUrl = `${buildUrl}/_build.loader.js`
     const config = {
       dataUrl: `${buildUrl}/_build.data`,
