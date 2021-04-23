@@ -5,7 +5,7 @@ import Container from '../components/Container'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
 import { Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
-import { KeplrContextProvider, KeplrContext } from '../secret/KeplrContext'
+import { KeplrContext } from '../secret/KeplrContext'
 
 interface Token {
   id: string
@@ -179,10 +179,11 @@ const Game = () => {
     await PollBattleHistory()
     await PollFightState()
   }
-
-  window.mint = MintHeroes
-  window.poll = PollAll
-  window.sendToBattle = SendToBattle
+  if (isBrowser) {
+    window.mint = MintHeroes
+    window.poll = PollAll
+    window.sendToBattle = SendToBattle
+  }
 
   useEffect(() => {
     console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
