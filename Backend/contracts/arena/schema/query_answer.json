@@ -55,6 +55,33 @@
           }
         }
       }
+    },
+    {
+      "description": "arena config",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object",
+          "required": [
+            "battles_have_halted",
+            "card_versions"
+          ],
+          "properties": {
+            "battles_have_halted": {
+              "type": "boolean"
+            },
+            "card_versions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
@@ -98,6 +125,28 @@
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
+        }
+      }
+    },
+    "ContractInfo": {
+      "description": "code hash and address of a contract",
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "code_hash": {
+          "description": "contract's code hash string",
+          "type": "string"
         }
       }
     },

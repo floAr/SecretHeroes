@@ -620,8 +620,26 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
             page,
             page_size,
         } => query_history(deps, &address, viewing_key, page, page_size),
+        QueryMsg::Config {} => query_config(deps),
     };
     pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult displaying the contract's config
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+pub fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    to_binary(&QueryAnswer::Config {
+        card_versions: config
+            .card_versions
+            .iter()
+            .map(|v| v.to_humanized(&deps.api))
+            .collect::<StdResult<Vec<ContractInfo>>>()?,
+        battles_have_halted: config.fight_halt,
+    })
 }
 
 pub fn query_history<S: Storage, A: Api, Q: Querier>(

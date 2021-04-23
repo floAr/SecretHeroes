@@ -99,6 +99,8 @@ pub enum QueryMsg {
         /// optional number of battles to display
         page_size: Option<u32>,
     },
+    /// display the arena config
+    Config {},
 }
 
 /// responses from queries
@@ -111,6 +113,11 @@ pub enum QueryAnswer {
     },
     BattleHistory {
         history: Vec<Battle>,
+    },
+    /// arena config
+    Config {
+        card_versions: Vec<ContractInfo>,
+        battles_have_halted: bool,
     },
 }
 

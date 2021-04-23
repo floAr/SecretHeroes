@@ -80,6 +80,18 @@
           }
         }
       }
+    },
+    {
+      "description": "display the arena config",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object"
+        }
+      }
     }
   ],
   "definitions": {
