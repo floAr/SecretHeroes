@@ -7,6 +7,7 @@ import '../styles/normalize'
 
 import LayoutRoot from '../components/LayoutRoot'
 import LayoutMain from '../components/LayoutMain'
+import { KeplrContextProvider } from '../secret/KeplrContext'
 
 // interface StaticQueryProps {
 //   site: {
@@ -21,6 +22,7 @@ import LayoutMain from '../components/LayoutMain'
 const IndexLayout: React.FC = ({ children }) => (
   <LayoutRoot>
     <Helmet title="Secret Heroes" />
+
     <LayoutMain>{children}</LayoutMain>
   </LayoutRoot>
 )
