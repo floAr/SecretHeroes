@@ -1,5 +1,7 @@
 import * as React from 'react'
 import styled from '@emotion/styled'
+import Header from './Header'
+import { colors } from '../styles/variables'
 
 const StyledLayoutMain = styled.main`
   display: flex;
@@ -12,7 +14,10 @@ interface LayoutMainProps {
 }
 
 const LayoutMain: React.FC<LayoutMainProps> = ({ children, className }) => (
-  <StyledLayoutMain className={className}>{children}</StyledLayoutMain>
+  <StyledLayoutMain className={className}>
+    <Header title={'Secret Heroes'} />
+    {children}
+  </StyledLayoutMain>
 )
 
 export default LayoutMain
