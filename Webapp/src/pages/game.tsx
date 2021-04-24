@@ -39,7 +39,7 @@ interface UnityInstance {
 const Game = () => {
   const isBrowser = typeof window !== 'undefined'
 
-  const { connected, account, client, viewingKey } = React.useContext(KeplrContext)
+  const { connected, account, client, viewingKey, setWorking } = React.useContext(KeplrContext)
   const [unityInstance, setUnityInstance] = React.useState<UnityInstance | undefined>(undefined)
 
   const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
@@ -134,10 +134,12 @@ const Game = () => {
   }
 
   const SendToBattle = async (tokenId: string) => {
-    if (client != null) {
+    if (client != null && setWorking != null) {
       try {
+        setWorking(true)
         await Contracts.cards.sendHero(client, tokenId)
         await PollFightState()
+        setWorking(false)
       } catch (e) {
         console.log(e)
       }
@@ -145,8 +147,10 @@ const Game = () => {
   }
 
   const ReturnFighter = async () => {
-    if (client != null) {
+    if (client != null && setWorking != null) {
+      setWorking(true)
       await Contracts.arena.returnFigher(client)
+      setWorking(false)
     }
   }
 
@@ -160,9 +164,10 @@ const Game = () => {
     const name2 = getSaveName(prompt('Enter the name of your second hero'))
     const name3 = getSaveName(prompt('Enter the name of your third hero'))
 
-    if (client != null) {
+    if (client != null && setWorking != null) {
+      setWorking(true)
       const mint = await Contracts.minter.mint(client, [name1, name2, name3])
-      console.log(mint)
+
       if (mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
         newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
@@ -171,6 +176,7 @@ const Game = () => {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
         }
       }
+      setWorking(false)
     }
   }
 

@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react'
 import Modal from 'react-modal'
 
 const UnityFunc: React.FC = () => {
-  const [howToPlayOpen, setHowToPlayOpen] = useState<boolean>(false)
-  const [aboutOpen, setAboutOpen] = useState<boolean>(false)
+  // const [howToPlayOpen, setHowToPlayOpen] = useState<boolean>(false)
+  // const [aboutOpen, setAboutOpen] = useState<boolean>(false)
 
   const isBrowser = typeof window !== 'undefined'
   useEffect(() => {
@@ -68,7 +68,7 @@ const UnityFunc: React.FC = () => {
       id="unity-container"
       className="unity-desktop"
       css={css`
-        width: 100%;
+        width: 70vw;
       `}
     >
       <canvas id="unity-canvas" />
@@ -78,13 +78,13 @@ const UnityFunc: React.FC = () => {
           <div id="unity-progress-bar-full" />
         </div>
       </div>
-      <div
+      {/* <div
         css={css`
           display: flex;
           flex-direction: row;
         `}
       >
-        <button
+       <button
           onClick={e => {
             setHowToPlayOpen(true)
           }}
@@ -138,7 +138,7 @@ const UnityFunc: React.FC = () => {
         <h4>Found and issues?</h4>
         We are trying to make Secret Heroes into something as close as possible to a real game. So please feel free to report any issues you
         encouter <Link to="https://github.com/floAr/NFTHack-SecretHeroes/issues">here.</Link>
-      </Modal>
+      </Modal> */}
     </div>
   )
 }

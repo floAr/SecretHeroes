@@ -12,7 +12,7 @@ library.add(fas)
 
 const SlatedSection = styled.section`
   position: relative;
-  padding: 200px 0;
+  padding: 150px 0;
   background: ${colors.black};
   overflow: visible;
   z-index: 1;
@@ -21,7 +21,7 @@ const SlatedSection = styled.section`
 
   &:after {
     content: '';
-    width: 100%;
+    width: 120%;
     height: 100%;
     position: absolute;
     background: inherit;
@@ -33,12 +33,12 @@ const SlatedSection = styled.section`
 `
 
 const KeywordDiv = styled.div`
-  margin: 5px;
-  font-family: Bright Star;
+  margin-top: 5px;
+  font-family: Zen Dots;
   font-style: normal;
   font-weight: normal;
-  font-size: 42px;
-  line-height: 150%;
+  font-size: 65px;
+  line-height: 80%;
 
   /* or 63px */
   letter-spacing: -0.025em;
@@ -65,7 +65,7 @@ const StyledButton = styled.button`
 `
 
 const Spacer = styled.div`
-  width: 20vw;
+  width: 10vw;
   background: ${colors.black};
 `
 
@@ -111,9 +111,8 @@ const IndexPage = () => {
           <KeywordDiv>Dominate.</KeywordDiv>
           <div
             css={css`
-              font-family: Inter;
               font-style: normal;
-              font-weight: normal;
+              font-weight: 400;
               font-size: 20px;
               line-height: 28px;
 

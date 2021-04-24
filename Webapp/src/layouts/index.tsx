@@ -21,7 +21,10 @@ import { KeplrContextProvider } from '../secret/KeplrContext'
 
 const IndexLayout: React.FC = ({ children }) => (
   <LayoutRoot>
-    <Helmet title="Secret Heroes" />
+    <Helmet title="Secret Heroes">
+      <link rel="preconnect" href="https://fonts.gstatic.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&family=Zen+Dots&display=swap" rel="stylesheet" />
+    </Helmet>
 
     <LayoutMain>{children}</LayoutMain>
   </LayoutRoot>

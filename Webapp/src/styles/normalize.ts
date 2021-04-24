@@ -15,13 +15,14 @@ export default `
   html {
     font-size: ${dimensions.fontSize.regular}px !important;
     line-height: ${dimensions.lineHeight.regular} !important;
+
   }
 
   body {
     width: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
-    font-family: ${fonts.sansSerif};
+    font-family: 'Roboto' 400;
     color: ${colors.white};
     background-color: ${colors.gray.c900};
     -webkit-text-size-adjust: 100%;

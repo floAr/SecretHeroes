@@ -7,6 +7,7 @@ import { heights, dimensions, colors } from '../styles/variables'
 import Container from './Container'
 import { KeplrContext } from '../secret/KeplrContext'
 import { css } from '@emotion/core'
+import WalletConnect from '../secret/WalletConnect'
 
 const StyledHeader = styled.header`
   height: ${heights.header}px;
@@ -18,20 +19,22 @@ const StyledHeader = styled.header`
 const HeaderInner = styled(Container)`
   display: flex;
   flex-direction: row;
-  align-items: baseline;
-  justify-content: space-evenly;
+  align-items: center;
+  justify-content: flex-start;
   height: 100%;
+  max-width: 100%;
 `
 
 const HomepageLink = styled(Link)`
   color: ${colors.white};
   font-size: 1.5rem;
-  font-weight: 600;
-
+  font-weight: 500;
   &:hover,
   &:focus {
     text-decoration: none;
   }
+  margin-left: 2vw;
+  margin-right: 2vw;
 `
 
 interface HeaderProps {
@@ -39,35 +42,44 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
-  const { connect, account, connected, resetViewingKey } = React.useContext(KeplrContext)
   return (
     <StyledHeader>
       <HeaderInner>
         <HomepageLink to="/">{title}</HomepageLink>
-        <p>About</p>
-        <p>How to play</p>
-        <p
+        <HomepageLink to="/">About</HomepageLink>
+        <HomepageLink to="/">How to play</HomepageLink>
+        <HomepageLink
           css={css`
-            justify-self: flex-end;
             color: ${colors.red};
           `}
+          to="/game"
         >
           Launch Game
-        </p>
-        <button
+        </HomepageLink>
+        {/* <button
           onClick={_ => {
             connect('holodeck-2')
           }}
         >
           {connected ? account?.address : 'Connect'}
-        </button>
-        <button
+        </button> */}
+        {/* <button
           onClick={_ => {
             resetViewingKey()
           }}
         >
           Reset
-        </button>
+        </button> */}
+        <div
+          css={css`
+            margin-left: auto;
+            height: 100%;
+            display: grid;
+            align-items: center;
+          `}
+        >
+          <WalletConnect chaindId="holodeck-2" />
+        </div>
       </HeaderInner>
     </StyledHeader>
   )

@@ -11,6 +11,7 @@ module.exports = {
       url: 'https://twitter.com/florianuhde'
     }
   },
+  flags: { PRESERVE_WEBPACK_CACHE: true },
   plugins: [
     'gatsby-plugin-emotion',
     'gatsby-plugin-typescript',
