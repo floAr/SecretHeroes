@@ -1,4 +1,5 @@
 import React, { useReducer, useState } from 'react';
+import { toast } from 'react-toastify';
 // eslint-disable-next-line prettier/prettier
 import type { SigningCosmWasmClient, Account } from 'secretjs';
 import { Contracts } from '../secret-heroes/contracts';
@@ -6,10 +7,14 @@ import { Contracts } from '../secret-heroes/contracts';
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keplr: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOfflineSigner: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getEnigmaUtils: any,
     cosmJS: SigningCosmWasmClient,
+    Contracts: typeof Contracts
   }
 }
 
@@ -38,7 +43,6 @@ export type KeplrReducerActions = { type: 'init', chainId: ChainId } |
 { type: 'error', errorMsg: string } |
 { type: 'transact' } |
 { type: 'success' }
-
 
 function reducer(state: KeplrState, action: KeplrReducerActions) {
   switch (action.type) {
@@ -85,11 +89,6 @@ interface KeplrContextProviderProps {
 
 }
 
-
-
-
-
-
 const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }) => {
 
   const isBrowser = typeof window !== 'undefined'
@@ -106,20 +105,25 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
       const newKey = Contracts.helper.getEntropy()
       const respArena = await Contracts.arena.setViewingKey(keplrState.client, newKey)
       if (!(respArena.viewing_key.key === newKey)) {
-        // error
+        toast.error("Error setting viewing key for arena contract")
       }
       const respCards = await Contracts.cards.setViewingKey(keplrState.client, newKey)
       if (!(respCards.viewing_key.key === newKey)) {
-        // error
+        toast.error("Error setting viewing key for card contract")
       }
       localStorage.setItem('viewingKey', newKey)
       setViewingKey(newKey)
       dispatch({ type: 'success' })
+      toast.info(`Success: Viewing Key set to ${viewingKey}`)
     }
   }
 
+
   const setBrowserProvider = async (chainId: ChainId) => {
-    if (!window.getOfflineSigner || !window.keplr) throw new Error('Please authorize browser extension (Keplr or similar)')
+    if (!window.getOfflineSigner || !window.keplr) {
+      toast.error('Please install and authorize Keplr browser extension')
+      return;
+    }
     dispatch({ type: 'init', chainId })
     if (chainId === 'holodeck-2') {
       await window.keplr.experimentalSuggestChain({
@@ -167,7 +171,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
       });
 
     }
-    const res = window.keplr.enable(chainId).then(async () => {
+    window.keplr.enable(chainId).then(async () => {
       const keplrOfflineSigner = window.getOfflineSigner(chainId);
       const accounts = await keplrOfflineSigner.getAccounts();
       const { address } = accounts[0];
@@ -196,6 +200,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
       window.cosmJS = cosmJS
       window.Contracts = Contracts
       if (account !== undefined) {
+        toast.success("Connected succesfully")
         dispatch({
           type: 'connected',
           account,
@@ -207,11 +212,10 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
           // status: 'connected'
         })
         if (viewingKey === undefined)
-         await resetViewingKey()
+          await resetViewingKey()
       }
-    }).catch((e: any) => {
-      console.log(e)
-      // _toast?.error("Error", e)
+    }).catch((e: string) => {
+      toast.error(`Error connecting: ${e}`)
       dispatch({
         type: 'error',
         errorMsg: e

@@ -10,7 +10,7 @@ export interface WalletConnectProps {
 }
 
 const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
-  const { status, connect, resetViewingKey, account } = useContext(KeplrContext)
+  const { status, connect, account } = useContext(KeplrContext)
   const rx = status === 'working' ? 128 : 64
   const loaderOpacity = status === 'working' ? 0.75 : 0
 
@@ -34,7 +34,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
     color = colors.yellow
   }
 
-  console.log(status)
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <div
@@ -45,7 +44,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
         border-radius: 15px;
       `}
       onClick={_ => {
-        connect(chaindId)
+        if (connect) connect(chaindId)
       }}
     >
       <svg height="100%" viewBox="0 0 1900 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -86,7 +85,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
               <polygon
                 id="Path"
                 fill="#FFFFFF"
-                points="67 54.75 95.4172414 54.75 95.4172414 119.496204 152.675862 54.75 190 54.75 123.18131 127.75 190 200.75 152.675862 200.75 95.4172414 136.003796 95.4172414 200.75 67 200.75"
+                points="67 54.75 95.4172414 54.75 95.4172414 119.496204 152.675862 54.75 190 54.75 123.18131 127.75 190 200.75
+                152.675862 200.75 95.4172414 136.003796 95.4172414 200.75 67 200.75"
               />
 
               <svg width="200" height="200" x="28px" y="28px" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">

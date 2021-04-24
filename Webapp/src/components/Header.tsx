@@ -3,10 +3,9 @@ import styled from '@emotion/styled'
 import { transparentize } from 'polished'
 import { Link } from 'gatsby'
 
+import { css } from '@emotion/core'
 import { heights, dimensions, colors } from '../styles/variables'
 import Container from './Container'
-import { KeplrContext } from '../secret/KeplrContext'
-import { css } from '@emotion/core'
 import WalletConnect from '../secret/WalletConnect'
 
 const StyledHeader = styled.header`

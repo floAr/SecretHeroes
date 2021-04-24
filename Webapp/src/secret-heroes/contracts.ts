@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase */
+
+import { toast } from "react-toastify"
+// eslint-disable-next-line prettier/prettier
 import type { SigningCosmWasmClient } from "secretjs"
+// eslint-disable-next-line import/no-unresolved
 import { Coin } from "secretjs/types/types"
 
 
@@ -178,7 +182,7 @@ async function query<IN extends object, OUT>(client: SigningCosmWasmClient, addr
     return resp
   }
   catch (err) {
-    console.log("error: ", err)
+    toast.error(`Error running query: ${err}`)
   }
   const resp = await client.queryContractSmart(address, query_msg)
   return resp

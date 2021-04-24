@@ -1,4 +1,4 @@
-import { dimensions, fonts, colors, breakpoints } from './variables'
+import { dimensions, colors, breakpoints } from './variables'
 import { getEmSize } from './mixins'
 
 export default `

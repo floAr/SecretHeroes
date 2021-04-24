@@ -14,11 +14,14 @@ export const colors = {
     c400: '#9AA5B1',
     c300: '#CBD2D9',
     c200: '#E4E7EB',
-    c100: '#F5F9FA',
+    c100: '#F5F9FA'
   },
   white: '#F5F9FA',
   black: '#1F2933'
 }
+
+export const fontMain = 'Roboto'
+export const fontHightlight = 'Zen Dots'
 
 export const breakpoints = {
   xs: 0,

@@ -1,11 +1,22 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
+// import Modal from 'react-modal'
 import Container from '../components/Container'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
 import { Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
+
+declare global {
+  interface Window {
+    mint: () => Promise<void>
+    poll: () => Promise<void>
+    sendToBattle: (tokenId: string) => Promise<void>
+    registerUnityInstance: React.Dispatch<React.SetStateAction<UnityInstance | undefined>>
+  }
+}
 
 interface Token {
   id: string
@@ -39,22 +50,22 @@ interface UnityInstance {
 const Game = () => {
   const isBrowser = typeof window !== 'undefined'
 
-  const { connected, account, client, viewingKey, resetViewingKey } = React.useContext(KeplrContext)
+  const { connected, account, client, viewingKey, resetViewingKey, setWorking } = React.useContext(KeplrContext)
   const [unityInstance, setUnityInstance] = React.useState<UnityInstance | undefined>(undefined)
 
   const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
   const [registeredTokens, setRegisteredTokens] = useState<string[]>([])
 
+  // const [modalIsOpen, setmodalIsOpen] = useState(false)
+
   if (isBrowser) window.registerUnityInstance = setUnityInstance
 
-  const getUpgradeValue = (stats: HeroStats, index: number) => {
-    return stats.current[index] - stats.base[index]
-  }
+  // const getUpgradeValue = (stats: HeroStats, index: number) => {
+  //   return stats.current[index] - stats.base[index]
+  // }
 
-  console.log(viewingKey)
-  const PollFightState = async () => {
+  async function PollFightState() {
     if (client != null && account?.address != null && viewingKey != null) {
-      // const fightState = await client?.queryContractSmart(contracts.bullpen.address, contracts.bullpen.queries.fightStatus(account.address))
       const fightState = await Contracts.arena.fightStatusQuery(client, account?.address, viewingKey)
       // eslint-disable-next-line @typescript-eslint/camelcase
       const newBattleState: BattleState = { heroes_waiting: fightState.bullpen.heroes_waiting, your_hero: undefined }
@@ -81,7 +92,7 @@ const Game = () => {
   const PollBattleHistory = async () => {
     if (client != null && account?.address != null && viewingKey != null) {
       const battleHistory = await Contracts.arena.fightHistoryQuery(client, account.address, viewingKey)
-      console.log(battleHistory)
+      // TODO do stuff with battle history
     }
   }
 
@@ -89,7 +100,6 @@ const Game = () => {
     if (client != null && account?.address != null && viewingKey != null) {
       const token = await Contracts.cards.getTokenInfo(client, tokenId, account?.address, viewingKey)
       const image = JSON.parse(token.private_metadata.image) as { base: number[]; current: number[] }
-      console.log('token ', token, 'image ', image)
       return {
         id: tokenId,
         name: token.private_metadata.name,
@@ -107,24 +117,19 @@ const Game = () => {
     if (client != null && account?.address != null && viewingKey != null) {
       const allTokens = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
       const tokenIds: string[] = allTokens.token_list.tokens
-      console.log('old ', registeredTokens, ' new ', tokenIds)
       if (JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)) {
         // eslint-disable-next-line no-restricted-syntax
-        console.log(tokenIds)
-        for (let i = 0; i < tokenIds.length; i++) {
+
+        for (let i = 0; i < tokenIds.length; i += 1) {
           const tokenId = tokenIds[i]
-          console.log(tokenId)
           if (!registeredTokens.includes(tokenId)) {
-            console.log('querying ', tokenId)
             // eslint-disable-next-line no-await-in-loop
             const t = await getToken(tokenId)
             newTokens.push(t)
           }
         }
-        // await tokenIds.forEach(async tokenId => {})
-        console.log('registering', newTokens)
+
         if (unityInstance !== undefined && newTokens.length > 0) {
-          console.log('registered', newTokens)
           unityInstance.SendMessage('WebGlBridge', 'ReportTokens', JSON.stringify(newTokens))
           setRegisteredTokens(tokenIds)
         }
@@ -141,7 +146,7 @@ const Game = () => {
         await PollFightState()
         setWorking(false)
       } catch (e) {
-        console.log(e)
+        toast.error(`Error sending hero to battle: ${e}`)
       }
     }
   }
@@ -171,7 +176,6 @@ const Game = () => {
       if (mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
         newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
-        console.log('new from mint', newTokens)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
         }
@@ -194,19 +198,33 @@ const Game = () => {
   useEffect(() => {
     console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
 
-    if (unityInstance !== undefined && connected) {
-      let test = PollNewTokens()
+    if (unityInstance !== undefined && connected && client && account && viewingKey) {
+      Contracts.cards
+        .getAllTokens(client, account?.address, viewingKey)
         .then(() => {
           unityInstance.SendMessage('WebGlBridge', 'Connect')
           PollAll()
         })
-        .catch(async err => await resetViewingKey())
+        .catch(async _ => {
+          if (resetViewingKey) {
+            resetViewingKey()
+          }
+        })
     }
   }, [connected, unityInstance, viewingKey])
 
   return (
     <div>
       <UnityFunc />
+      {/* <Modal
+        isOpen={modalIsOpen}
+        // onAfterOpen={afterOpenModal}
+        // onRequestClose={closeModal}
+        // style={customStyles}
+        contentLabel="Mint Heroes"
+      >
+        Mint heroes
+      </Modal> */}
     </div>
   )
 }

@@ -1,13 +1,14 @@
 import * as React from 'react'
 import Helmet from 'react-helmet'
-import { StaticQuery, graphql } from 'gatsby'
-
 import 'modern-normalize'
 import '../styles/normalize'
 
+import { ToastContainer } from 'react-toastify'
+import styled from '@emotion/styled'
 import LayoutRoot from '../components/LayoutRoot'
 import LayoutMain from '../components/LayoutMain'
-import { KeplrContextProvider } from '../secret/KeplrContext'
+import 'react-toastify/dist/ReactToastify.min.css'
+import { colors, fontMain } from '../styles/variables'
 
 // interface StaticQueryProps {
 //   site: {
@@ -19,6 +20,38 @@ import { KeplrContextProvider } from '../secret/KeplrContext'
 //   }
 // }
 
+const StyledContainer = styled(ToastContainer)`
+  .Toastify__toast-container {
+  }
+  .Toastify__toast {
+    background: ${colors.gray.c200};
+    color: ${colors.gray.c800};
+    font-family: ${fontMain};
+  }
+  .Toastify__toast--error {
+    background: ${colors.red};
+    color: ${colors.gray.c200};
+    font-family: ${fontMain};
+  }
+  .Toastify__toast--warning {
+    background: ${colors.yellow};
+    color: ${colors.gray.c800};
+    font-family: ${fontMain};
+  }
+  .Toastify__toast--success {
+    background: ${colors.cyan};
+    color: ${colors.gray.c800};
+    font-family: ${fontMain};
+  }
+  .Toastify__toast-body {
+  }
+  .Toastify__progress-bar {
+  }
+  .Toastify__close-button {
+    color: ${colors.gray.c500};
+  }
+`
+
 const IndexLayout: React.FC = ({ children }) => (
   <LayoutRoot>
     <Helmet title="Secret Heroes">
@@ -27,6 +60,7 @@ const IndexLayout: React.FC = ({ children }) => (
     </Helmet>
 
     <LayoutMain>{children}</LayoutMain>
+    <StyledContainer autoClose={6000} pauseOnFocusLoss={false} position="bottom-right" />
   </LayoutRoot>
 )
 
