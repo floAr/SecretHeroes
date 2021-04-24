@@ -39,7 +39,7 @@ interface UnityInstance {
 const Game = () => {
   const isBrowser = typeof window !== 'undefined'
 
-  const { connected, account, client, viewingKey, setWorking } = React.useContext(KeplrContext)
+  const { connected, account, client, viewingKey, resetViewingKey } = React.useContext(KeplrContext)
   const [unityInstance, setUnityInstance] = React.useState<UnityInstance | undefined>(undefined)
 
   const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
@@ -193,11 +193,16 @@ const Game = () => {
 
   useEffect(() => {
     console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
+
     if (unityInstance !== undefined && connected) {
-      unityInstance.SendMessage('WebGlBridge', 'Connect')
-      PollNewTokens()
+      let test = PollNewTokens()
+        .then(() => {
+          unityInstance.SendMessage('WebGlBridge', 'Connect')
+          PollAll()
+        })
+        .catch(async err => await resetViewingKey())
     }
-  }, [connected, unityInstance])
+  }, [connected, unityInstance, viewingKey])
 
   return (
     <div>

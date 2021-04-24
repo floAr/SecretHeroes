@@ -207,7 +207,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
           // status: 'connected'
         })
         if (viewingKey === undefined)
-          resetViewingKey()
+         await resetViewingKey()
       }
     }).catch((e: any) => {
       console.log(e)
