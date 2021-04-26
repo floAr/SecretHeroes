@@ -171,7 +171,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
               </text>
             )}
 
-            {status === 'idle' && account?.address === undefined ? (
+            {status === 'idle' && account?.address === undefined && (
               <text
                 x="300"
                 y="155"
@@ -192,7 +192,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ chaindId }) => {
               >
                 Connected
               </text>
-            ) : (
+            )}
+            {status === 'idle' && account?.address !== undefined && (
               <text
                 x="300"
                 y="155"
