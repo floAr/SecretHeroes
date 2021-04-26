@@ -46,6 +46,7 @@ const UnityFunc: React.FC = () => {
     script.onload = () => {
       createUnityInstance(canvas, config, progress => {
         progressBarFull.style.width = `${100 * progress}%`
+        console.log(progress)
       })
         .then(unityInstance => {
           window.unityInstance = unityInstance
@@ -68,14 +69,51 @@ const UnityFunc: React.FC = () => {
       id="unity-container"
       className="unity-desktop"
       css={css`
-        width: 70vw;
+        height: 31vw; // vw / 1.6
+        width: 50vw; //vh *1.6
+        display: flex;
+        height: 100%;
+        min-width: 960px;
+        min-height: 600px;
       `}
     >
-      <canvas id="unity-canvas" />
-      <div id="unity-loading-bar">
-        <div id="unity-logo" />
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full" />
+      <canvas id="unity-canvas" css={css``} />
+      <div
+        id="unity-loading-bar"
+        css={css`
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          display: none;
+        `}
+      >
+        <div
+          id="unity-logo"
+          css={css`
+            width: 154px;
+            height: 130px;
+            background: url('unity-logo-dark.png') no-repeat center;
+          `}
+        />
+        <div
+          id="unity-progress-bar-empty"
+          css={css`
+            width: 141px;
+            height: 18px;
+            margin-top: 10px;
+            background: url('progress-bar-empty-dark.png') no-repeat center;
+          `}
+        >
+          <div
+            id="unity-progress-bar-full"
+            css={css`
+              width: 0%;
+              height: 18px;
+              margin-top: 10px;
+              background: url('progress-bar-full-dark.png') no-repeat center;
+            `}
+          />
         </div>
       </div>
       {/* <div

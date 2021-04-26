@@ -1,12 +1,15 @@
+import { css } from '@emotion/core'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import BattleReportRender from '../components/BattleReport'
+import BattleStateRender from '../components/BattleState'
 
 // import Modal from 'react-modal'
 import Container from '../components/Container'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
-import { Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
+import { Battle, Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
 
 declare global {
@@ -54,15 +57,20 @@ const Game = () => {
   const [unityInstance, setUnityInstance] = React.useState<UnityInstance | undefined>(undefined)
 
   const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
+  const [battleHistory, setBattleHistory] = useState<Battle[]>([])
   const [registeredTokens, setRegisteredTokens] = useState<string[]>([])
 
   // const [modalIsOpen, setmodalIsOpen] = useState(false)
 
   if (isBrowser) window.registerUnityInstance = setUnityInstance
 
-  // const getUpgradeValue = (stats: HeroStats, index: number) => {
-  //   return stats.current[index] - stats.base[index]
-  // }
+  // update the historic battles
+  const PollBattleHistory = async () => {
+    if (client != null && account?.address != null && viewingKey != null) {
+      const newBattleHistory = await Contracts.arena.fightHistoryQuery(client, account.address, viewingKey)
+      if (JSON.stringify(newBattleHistory) !== JSON.stringify(battleHistory)) setBattleHistory(newBattleHistory.battle_history.history)
+    }
+  }
 
   async function PollFightState() {
     if (client != null && account?.address != null && viewingKey != null) {
@@ -80,19 +88,13 @@ const Game = () => {
           psychics: fightState.bullpen.your_hero?.stats.current[3]
         }
         if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
+          PollBattleHistory()
           if (unityInstance !== undefined) {
             unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
             setBattleState(newBattleState)
           }
         }
       }
-    }
-  }
-
-  const PollBattleHistory = async () => {
-    if (client != null && account?.address != null && viewingKey != null) {
-      const battleHistory = await Contracts.arena.fightHistoryQuery(client, account.address, viewingKey)
-      // TODO do stuff with battle history
     }
   }
 
@@ -130,6 +132,7 @@ const Game = () => {
         }
 
         if (unityInstance !== undefined && newTokens.length > 0) {
+          JSON.stringify(newTokens)
           unityInstance.SendMessage('WebGlBridge', 'ReportTokens', JSON.stringify(newTokens))
           setRegisteredTokens(tokenIds)
         }
@@ -201,9 +204,9 @@ const Game = () => {
     if (unityInstance !== undefined && connected && client && account && viewingKey) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
-        .then(() => {
+        .then(async () => {
+          await PollAll()
           unityInstance.SendMessage('WebGlBridge', 'Connect')
-          PollAll()
         })
         .catch(async _ => {
           if (resetViewingKey) {
@@ -214,26 +217,63 @@ const Game = () => {
   }, [connected, unityInstance, viewingKey])
 
   return (
-    <div>
-      <UnityFunc />
-      {/* <Modal
+    <div
+      css={css`
+        margin: 1vw;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      `}
+    >
+      <div
+        css={css`
+          display: contents;
+        `}
+      >
+        <UnityFunc />
+        {/* <Modal
         isOpen={modalIsOpen}
         // onAfterOpen={afterOpenModal}
         // onRequestClose={closeModal}
         // style={customStyles}
         contentLabel="Mint Heroes"
-      >
+        >
         Mint heroes
       </Modal> */}
+      </div>
+      <div
+        css={css`
+          display: flex;
+          flex-direction: column;
+          width: 15vw;
+          min-width: 300px;
+        `}
+      >
+        <h3>Battle Results</h3>
+        {battleHistory !== undefined &&
+          battleHistory.map(battle => {
+            return <BattleReportRender report={battle} />
+          })}
+      </div>
+      <div
+        css={css`
+          display: flex;
+          flex-direction: column;
+          width: 15vw;
+          min-width: 300px;
+        `}
+      >
+        <h3>Currently fighting</h3>
+        {battleState !== undefined && <BattleStateRender report={battleState} />}
+      </div>
     </div>
   )
 }
 
 const GamePage = () => (
   <IndexLayout>
-    <Container>
-      <Game />
-    </Container>
+    <Game />
   </IndexLayout>
 )
 
