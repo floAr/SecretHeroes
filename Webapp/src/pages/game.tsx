@@ -1,4 +1,5 @@
 import { css } from '@emotion/core'
+import { navigate } from 'gatsby'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -60,7 +61,11 @@ const Game = () => {
   const [battleHistory, setBattleHistory] = useState<Battle[]>([])
   const [registeredTokens, setRegisteredTokens] = useState<string[]>([])
 
-  // const [modalIsOpen, setmodalIsOpen] = useState(false)
+  useEffect(() => {
+    if (!connected) {
+      navigate('/connect')
+    }
+  }, [connected])
 
   if (isBrowser) window.registerUnityInstance = setUnityInstance
 
@@ -231,7 +236,7 @@ const Game = () => {
           display: contents;
         `}
       >
-        <UnityFunc />
+        {connected && <UnityFunc />}
         {/* <Modal
         isOpen={modalIsOpen}
         // onAfterOpen={afterOpenModal}

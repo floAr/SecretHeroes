@@ -143,7 +143,7 @@ const IndexPage = () => {
                 color: ${colors.gray.c200};
               `}
               onClick={_ => {
-                navigate('/game')
+                navigate('/connect')
               }}
             >
               Launch Game
