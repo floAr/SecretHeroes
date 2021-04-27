@@ -61,6 +61,8 @@ const Game = () => {
   const [battleHistory, setBattleHistory] = useState<Battle[]>([])
   const [registeredTokens, setRegisteredTokens] = useState<string[]>([])
 
+  const permToastId = React.useRef<string | null | number>(null)
+
   useEffect(() => {
     if (!connected) {
       navigate('/connect')
@@ -193,13 +195,23 @@ const Game = () => {
   }
 
   const PollAll = async () => {
-    await PollNewTokens()
-    await PollBattleHistory()
-    await PollFightState()
+    if (setWorking != null) {
+      setWorking(true)
+      permToastId.current = toast.info('Finding your heroes', { closeButton: false })
+      await PollNewTokens()
+      toast.dismiss(permToastId.current)
+      permToastId.current = toast.info('Investigating previous battles', { closeButton: false })
+      await PollBattleHistory()
+      toast.dismiss(permToastId.current)
+      permToastId.current = toast.info('Checking for current battles', { closeButton: false })
+      await PollFightState()
+      toast.dismiss(permToastId.current)
+      setWorking(false)
+    }
   }
   if (isBrowser) {
     window.mint = MintHeroes
-    window.poll = PollAll
+    window.poll = PollFightState
     window.sendToBattle = SendToBattle
   }
 
