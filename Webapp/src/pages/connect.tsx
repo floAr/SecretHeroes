@@ -43,7 +43,7 @@ const PleaseConnectPage = () => {
           css={css`
             display: flex;
             flex-direction: column;
-            margin-right: 24px;
+            margin-right: 32px;
             align-items: flex-start;
           `}
         >
