@@ -135,8 +135,10 @@ pub struct WaitingHero {
 /// battle info
 #[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
 pub struct Battle {
-    /// batlle id number
+    /// battle id number
     pub battle_number: u64,
+    /// number of seconds since epoch time 01/01/1970 in which the battle took place
+    pub timestamp: u64, 
     /// querier's hero in the battle
     pub my_hero: Hero,
     /// skill used to determine battle results

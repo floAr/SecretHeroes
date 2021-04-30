@@ -93,11 +93,12 @@
         "i_won",
         "my_hero",
         "skill_used",
+        "timestamp",
         "winning_skill_value"
       ],
       "properties": {
         "battle_number": {
-          "description": "batlle id number",
+          "description": "battle id number",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
@@ -118,6 +119,12 @@
           "description": "skill used to determine battle results",
           "type": "integer",
           "format": "uint8",
+          "minimum": 0.0
+        },
+        "timestamp": {
+          "description": "number of seconds since epoch time 01/01/1970 in which the battle took place",
+          "type": "integer",
+          "format": "uint64",
           "minimum": 0.0
         },
         "winning_skill_value": {

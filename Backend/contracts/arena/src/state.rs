@@ -102,6 +102,8 @@ pub struct StoreTokenInfo {
 pub struct StoreBattle {
     /// battle id number
     pub battle_number: u64,
+    /// number of seconds since epoch time 01/01/1970 in which the battle took place
+    pub timestamp: u64,
     /// heroes that fought
     pub heroes: Vec<StoreHero>,
     /// skill used to determine the winner
@@ -127,6 +129,7 @@ impl StoreBattle {
         if let Some(pos) = self.heroes.iter().position(|h| h.owner == *address) {
             let battle = Battle {
                 battle_number: self.battle_number,
+                timestamp: self.timestamp,
                 my_hero: self.heroes.swap_remove(pos).into_humanized(versions)?,
                 skill_used: self.skill_used,
                 winning_skill_value: self.winning_skill_value,

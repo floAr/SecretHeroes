@@ -556,6 +556,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     }
                     let battle = StoreBattle {
                         battle_number: config.battle_cnt,
+                        timestamp: env.block.time,
                         heroes,
                         skill_used: fight_idx as u8,
                         winner: opt_winner,
