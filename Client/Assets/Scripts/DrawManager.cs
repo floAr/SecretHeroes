@@ -66,7 +66,6 @@ public class DrawManager : MonoBehaviour
                 allFilled = false;
                 break;
             }
-            
         }
        
         if (!allFilled&&_tokensToDrop.Count > 0)
@@ -83,5 +82,6 @@ public class DrawManager : MonoBehaviour
                
             }
         }
+
     }
 }

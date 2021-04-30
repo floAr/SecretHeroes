@@ -15,6 +15,7 @@ public class CardRenderer : MonoBehaviour
     public Animator Animator;
 
     public string Name;
+    public string Id;
     public TMPro.TMP_Text NameText;
 
     public Skill Weapons;
@@ -41,6 +42,8 @@ public class CardRenderer : MonoBehaviour
     [Range(1, 100)]
     public int SkillPsychics;
 
+    public int[] BaseSkills = new int[4];
+
     LTDescr _scaling;
 
     public void DoUpdate()
@@ -53,12 +56,14 @@ public class CardRenderer : MonoBehaviour
 
     public void ReadToken(Token token)
     {
+        Id = token.id;
         Name = token.name;
         NameText.text = Name;
         SkillWeapons = token.weapons;
         SkillEngineering = token.engineering;
         SkillBiotech = token.biotech;
         SkillPsychics = token.psychics;
+        BaseSkills = new int[4] { token.base_weapons, token.base_engineering, token.base_biotech, token.base_psychics };
         DoUpdate();
     }
 
@@ -89,8 +94,8 @@ public class CardRenderer : MonoBehaviour
     private void SetVisuals()
     {
         NameText.text = Name;
-        int modelId = (SkillWeapons * 3 + SkillEngineering * 2 + SkillBiotech + SkillPsychics) % Models.Length;
-        int materialId = (SkillWeapons + SkillEngineering + SkillBiotech * 3 + SkillPsychics * 2) % Variants.Length;
+        int modelId = (BaseSkills[0] * 3 + BaseSkills[1] * 2 + BaseSkills[2] + BaseSkills[3]) % Models.Length;
+        int materialId = (BaseSkills[0] + BaseSkills[1] + BaseSkills[2] * 3 + BaseSkills[3] * 2) % Variants.Length;
 
         SetModel(modelId);
         SetMaterial(materialId);

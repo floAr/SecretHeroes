@@ -24,16 +24,24 @@ public class Rooster : MonoBehaviour
 
     internal void UpdateTokens(Token[] tokens)
     {
-        //foreach (var item in tokens)
-        //{
-        //    if(MyHeroes.Find(t => { return t.name.Equals(item.name); }) == null)
-        //    {
-        //        MyHeroes.Add(item);
-        //    }
-        //}
+        foreach (var item in tokens)
+        {
+            var hero = MyHeroes.Find(t => { return t.id.Equals(item.id); });
+            if (hero == null)
+            {
+                MyHeroes.Add(item);
+            }
+            else
+            {
+                hero.weapons = item.weapons;
+                hero.engineering = item.engineering;
+                hero.biotech = item.biotech;
+                hero.psychics = item.psychics;
+            }
+        }
 
-        MyHeroes.Clear();
-        MyHeroes.AddRange(tokens);
+        //MyHeroes.Clear();
+        //MyHeroes.AddRange(tokens);
 
 
     }

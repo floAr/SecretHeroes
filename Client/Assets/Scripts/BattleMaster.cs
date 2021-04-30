@@ -14,6 +14,9 @@ public class BattleMaster : MonoBehaviour
 
     public void AddBattleState(BattleState state)
     {
+        MyHero.Deactivate();
+        Enemy1.Deactivate();
+        Enemy2.Deactivate();
         int counter = 0;
         if (state.your_hero != null)
         {
@@ -29,10 +32,20 @@ public class BattleMaster : MonoBehaviour
             }
             catch (Exception e) { }
         }
+  
         if (state.heroes_waiting > counter)
         {
-            Enemy1.Activate(null);
+            if (UnityEngine.Random.value < 0.5f)
+            {
+                Enemy1.Activate(null);
+            }
+            else
+            {
+                Enemy2.Activate(null);
+            }
+           
         }
+    
     }
 
     [ContextMenu("Test single")]

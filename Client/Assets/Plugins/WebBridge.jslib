@@ -1,25 +1,15 @@
 mergeInto(LibraryManager.library, {
 
   MintTokens: function (){
-	window.scrtMint()
+	window.mint()
   },
   
   SendToBattle: function (tokenId){
 	var token = Pointer_stringify(tokenId);
-	window.scrtSentToBattle(token)
+	window.sendToBattle(token)
   },
 
   PollData: function (){
-	window.scrtPoll()
-  },
-
-   GetPrivateMetadata: function (str_json){
-	var content = JSON.parse(Pointer_stringify(str_json));
-	updateChart(content);
-  },
-
-   GetTokens: function (str_json){
-	var content = JSON.parse(Pointer_stringify(str_json));
-	updateChart(content);
+	window.poll()
   }
 });

@@ -38,6 +38,15 @@ public class BattleSlot : MonoBehaviour
         }
     }
 
+    public void Deactivate()
+    {
+        MainSystem.SetActive(false);
+        CharacterRenderer.gameObject.SetActive(false);
+        WinningBeam.SetActive(false);
+        CharacterRenderer.IsSelected = false;
+        Spotlight.enabled = false;
+    }
+
     private void Update()
     {
         if (isActive)

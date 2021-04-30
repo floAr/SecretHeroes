@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TransitionManager : MonoBehaviour
 {
@@ -31,6 +32,11 @@ public class TransitionManager : MonoBehaviour
     public ClickableObject Arena;
     public BattleMaster ArenaMaster;
 
+    public TMPro.TMP_Text CTA;
+    public Button MenuButton;
+    public Button MintButton;
+    public Button SendButton;
+
     public Location CurrentLocation = Location.MAIN;
 
     [ContextMenu("Market Transition")]
@@ -53,6 +59,11 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = DrawHall.DrawCamera.transform.position;
         MainCam.transform.rotation = DrawHall.DrawCamera.transform.rotation;
         MainCamFade.FadeIn();
+        CTA.text = "Reveal Heroes";
+        CTA.gameObject.SetActive(true);
+        MenuButton.gameObject.SetActive(true);
+        MintButton.gameObject.SetActive(true);
+        SendButton.gameObject.SetActive(false);
         yield return true;
     }
 
@@ -77,6 +88,12 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = Selection.SectionCamera.transform.position;
         MainCam.transform.rotation = Selection.SectionCamera.transform.rotation;
         MainCamFade.FadeIn();
+
+        CTA.text = "Reveal Heroes";
+        CTA.gameObject.SetActive(false);
+        MenuButton.gameObject.SetActive(true);
+        MintButton.gameObject.SetActive(false);
+        SendButton.gameObject.SetActive(true);
         yield return true;
     }
 
@@ -101,6 +118,11 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = ArenaMaster.BattleCamera.transform.position;
         MainCam.transform.rotation = ArenaMaster.BattleCamera.transform.rotation;
         MainCamFade.FadeIn();
+        CTA.text = "Prepare for Battle";
+        CTA.gameObject.SetActive(true);
+        MenuButton.gameObject.SetActive(true);
+        MintButton.gameObject.SetActive(false);
+        SendButton.gameObject.SetActive(false);
         yield return true;
     }
 
@@ -125,6 +147,12 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.rotation = ResetTransform.rotation;
         MainCamFade.FadeIn();
         CurrentLocation = Location.MAIN;
+
+        CTA.text = "Reveal Heroes";
+        CTA.gameObject.SetActive(false);
+        MenuButton.gameObject.SetActive(false);
+        MintButton.gameObject.SetActive(false);
+        SendButton.gameObject.SetActive(false);
         yield return true;
     }
 }

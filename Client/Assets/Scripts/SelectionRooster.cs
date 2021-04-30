@@ -82,7 +82,7 @@ public class SelectionRooster : MonoBehaviour
         {
             if (CardHolders[i].IsSelected)
             {
-                GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(CardHolders[i].Name);
+                GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(CardHolders[i].Id);
             }
         }
     }
