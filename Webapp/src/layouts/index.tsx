@@ -56,7 +56,10 @@ const IndexLayout: React.FC = ({ children }) => (
   <LayoutRoot>
     <Helmet title="Secret Heroes">
       <link rel="preconnect" href="https://fonts.gstatic.com" />
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&family=Zen+Dots&display=swap" rel="stylesheet" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&family=Roboto:ital,wght@0,400;0,700;1,100&display=swap"
+        rel="stylesheet"
+      />
     </Helmet>
 
     <LayoutMain>{children}</LayoutMain>

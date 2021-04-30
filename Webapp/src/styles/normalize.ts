@@ -91,6 +91,7 @@ export default `
     font-weight: 600;
     line-height: ${dimensions.lineHeight.heading};
     text-rendering: optimizeLegibility;
+    font-family: 'Inter', sans-serif;
   }
 
   h1 {

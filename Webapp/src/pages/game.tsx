@@ -4,10 +4,12 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import BattleReportRender from '../components/BattleReport'
+import BattleReportFrame from '../components/BattleReport/BattleReportFrame'
 import BattleStateRender from '../components/BattleState'
 
 // import Modal from 'react-modal'
 import Container from '../components/Container'
+import NewBattleReportRender from '../components/NewBattleReport'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
 import { Battle, Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
@@ -121,12 +123,14 @@ const Game = () => {
     return {} as Token
   }
 
-  const PollNewTokens = async () => {
+  const PollNewTokens = async (paginate?: boolean) => {
     const newTokens: Token[] = []
+    let hasChanges = false
     if (client != null && account?.address != null && viewingKey != null) {
       const allTokens = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
       const tokenIds: string[] = allTokens.token_list.tokens
-      if (JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)) {
+      hasChanges = JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)
+      if (hasChanges) {
         // eslint-disable-next-line no-restricted-syntax
 
         for (let i = 0; i < tokenIds.length; i += 1) {
@@ -135,15 +139,25 @@ const Game = () => {
             // eslint-disable-next-line no-await-in-loop
             const t = await getToken(tokenId)
             newTokens.push(t)
+            if (paginate && i >= 4) {
+              break
+            }
           }
         }
 
         if (unityInstance !== undefined && newTokens.length > 0) {
           JSON.stringify(newTokens)
           unityInstance.SendMessage('WebGlBridge', 'ReportTokens', JSON.stringify(newTokens))
-          setRegisteredTokens(tokenIds)
+          setRegisteredTokens(
+            newTokens.map(token => {
+              return token.id
+            })
+          )
         }
       }
+    }
+    if (paginate && hasChanges) {
+      PollNewTokens()
     }
     return newTokens
   }
@@ -197,13 +211,13 @@ const Game = () => {
   const PollAll = async () => {
     if (setWorking != null) {
       setWorking(true)
-      permToastId.current = toast.info('Finding your heroes', { closeButton: false })
-      await PollNewTokens()
+      permToastId.current = toast.info('Assembling your heroes', { closeButton: false, autoClose: false, closeOnClick: true })
+      await PollNewTokens(true)
       toast.dismiss(permToastId.current)
-      permToastId.current = toast.info('Investigating previous battles', { closeButton: false })
+      permToastId.current = toast.info('Investigating previous battles', { closeButton: false, autoClose: false, closeOnClick: true })
       await PollBattleHistory()
       toast.dismiss(permToastId.current)
-      permToastId.current = toast.info('Checking for current battles', { closeButton: false })
+      permToastId.current = toast.info('Checking for current battles', { closeButton: false, autoClose: false, closeOnClick: true })
       await PollFightState()
       toast.dismiss(permToastId.current)
       setWorking(false)
@@ -240,7 +254,7 @@ const Game = () => {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: center;
       `}
     >
       <div
@@ -263,27 +277,49 @@ const Game = () => {
         css={css`
           display: flex;
           flex-direction: column;
-          width: 15vw;
-          min-width: 300px;
+          width: 100%;
+          min-width: 700px;
+          flex: 1 1 500px;
         `}
       >
-        <h3>Battle Results</h3>
-        {battleHistory !== undefined &&
+        <h3
+          css={css`
+            padding-left: 40px;
+          `}
+        >
+          Battle Results
+        </h3>
+        {/* {battleHistory !== undefined &&
           battleHistory.map(battle => {
             return <BattleReportRender report={battle} />
           })}
+        <BattleReportRender
+          report={{
+            i_won: true,
+            battle_number: 0,
+            skill_used: 1,
+            winning_skill_value: 2,
+            my_hero: {
+              name: 'pete',
+              post_battle_skills: [2, 3, 4, 5],
+              pre_battle_skills: [2, 2, 3, 5],
+              token_info: { address: 'peter', token_id: '5' }
+            }
+          }}
+        /> */}
+        <BattleReportFrame battles={battleHistory} />
       </div>
-      <div
+      {/* <div
         css={css`
           display: flex;
           flex-direction: column;
-          width: 15vw;
+          width: 20vw;
           min-width: 300px;
         `}
       >
         <h3>Currently fighting</h3>
         {battleState !== undefined && <BattleStateRender report={battleState} />}
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -190,8 +190,8 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
             gas: '300000',
           },
           exec: {
-            amount: [{ amount: '500000', denom: 'uscrt' }],
-            gas: '500000',
+            amount: [{ amount: '5000000', denom: 'uscrt' }],
+            gas: '5000000',
           },
         },
       );

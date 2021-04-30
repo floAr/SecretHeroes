@@ -72,7 +72,8 @@ export type Battle = {
   i_won: boolean
   my_hero: Hero
   skill_used: number
-  winning_skill_value: number
+  winning_skill_value: number,
+  timestamp: number
 }
 
 export interface BattleHistoryRsp {
@@ -198,7 +199,7 @@ async function transact<IN extends object, OUT>(client: SigningCosmWasmClient, a
 }
 
 const minter_address = "secret1wepvw2r9sdfddu528j3p4lh0v6t46l6c43h43e" as HumanAddr
-const arena_address = "secret1tnseuvhc752k4y6tpqm3fng66zgz6w2435ylt9" as HumanAddr
+const arena_address = "secret178tpwgj0f9dtvuzn3ezarafr8qrxz3kpr95ssz" as HumanAddr
 const card_address = "secret13s6fpyw95rtxkvy38dmaqdxc9le86ntev33eye" as HumanAddr
 
 export const mintHeroes = async (client: SigningCosmWasmClient, names: string[]): Promise<MintRsp> => {

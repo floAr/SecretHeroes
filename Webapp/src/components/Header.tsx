@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           css={css`
             margin-left: auto;
             height: 100%;
-            display: grid;
+            display: flex;
             align-items: center;
           `}
         >
