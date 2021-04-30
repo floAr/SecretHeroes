@@ -94,7 +94,7 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
         {skillsCurrent.map((v, i) => {
           const changeValue = skillsCurrent[i] - skillsBefore[i]
           // eslint-disable-next-line no-nested-ternary
-          const sign = changeValue > 0 ? '+' : changeValue < 0 ? '-' : ''
+          const sign = changeValue > 0 ? '+' : ''
           // eslint-disable-next-line no-nested-ternary
           const color = changeValue > 0 ? colors.cyan : changeValue < 0 ? colors.red : 'none'
           const textColor = changeValue <= 0 ? colors.gray.c200 : colors.gray.c900
@@ -124,6 +124,7 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
                 css={css`
                   font-size: 20;
                   color: ${textColor};
+                  text-align: center;
                 `}
               >
                 {sign}

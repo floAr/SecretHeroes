@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { css } from '@emotion/core'
 import { navigate } from 'gatsby'
 import * as React from 'react'
@@ -31,6 +32,10 @@ interface Token {
   engineering: number
   biotech: number
   psychics: number
+  base_weapons: number
+  base_engineering: number
+  base_biotech: number
+  base_psychics: number
 }
 
 export interface BattleResult {
@@ -94,7 +99,11 @@ const Game = () => {
           weapons: fightState.bullpen.your_hero?.stats.current[0],
           engineering: fightState.bullpen.your_hero?.stats.current[1],
           biotech: fightState.bullpen.your_hero?.stats.current[2],
-          psychics: fightState.bullpen.your_hero?.stats.current[3]
+          psychics: fightState.bullpen.your_hero?.stats.current[3],
+          base_weapons: fightState.bullpen.your_hero?.stats.base[0],
+          base_engineering: fightState.bullpen.your_hero?.stats.base[1],
+          base_biotech: fightState.bullpen.your_hero?.stats.base[2],
+          base_psychics: fightState.bullpen.your_hero?.stats.base[3]
         }
         if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
           PollBattleHistory()
@@ -117,7 +126,11 @@ const Game = () => {
         weapons: image.current[0],
         engineering: image.current[1],
         biotech: image.current[2],
-        psychics: image.current[3]
+        psychics: image.current[3],
+        base_weapons: image.base[0],
+        base_engineering: image.base[1],
+        base_biotech: image.base[2],
+        base_psychics: image.base[3]
       } as Token
     }
     return {} as Token
