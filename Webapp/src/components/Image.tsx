@@ -38,7 +38,7 @@ const Image: React.FC<ImageProps> = ({ fileName, alt, style }) => {
           width: 100%;
         `}
       >
-        <Img fluid={fluid} alt={alt} style={{ width: '60vh' }} />
+        <Img fluid={fluid} alt={alt} style={style} />
       </figure>
     </div>
   )

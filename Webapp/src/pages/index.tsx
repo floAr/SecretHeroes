@@ -1,5 +1,5 @@
 import { css } from '@emotion/core'
-import { graphql, navigate, useStaticQuery } from 'gatsby'
+import { graphql, Link, navigate, useStaticQuery } from 'gatsby'
 import * as React from 'react'
 import Image from '../components/Image'
 
@@ -13,6 +13,7 @@ import ContentSection from '../components/ContentSection'
 library.add(fas)
 
 const SlatedSection = styled.section`
+  width: 45vw;
   position: relative;
   padding: 150px 0;
   background: ${colors.black};
@@ -20,6 +21,9 @@ const SlatedSection = styled.section`
   z-index: 1;
   display: flex;
   flex-direction: column;
+
+  /* or 107% */
+  letter-spacing: -0.025em;
 
   &:after {
     content: '';
@@ -36,11 +40,12 @@ const SlatedSection = styled.section`
 
 const KeywordDiv = styled.div`
   margin-top: 5px;
-  font-family: Zen Dots;
-  font-style: normal;
+  /* font-family: Zen Dots; */
+  font-style: bold;
   font-weight: normal;
-  font-size: 65px;
+  font-size: 50px;
   line-height: 80%;
+  font-weight: 800;
 
   /* or 63px */
   letter-spacing: -0.025em;
@@ -56,13 +61,21 @@ const StyledButton = styled.button`
   align-items: center;
   padding: 17px 41px;
 
-  width: 200px;
+  min-width: 160px;
+  width: 10vw;
   height: 62px;
   left: 3px;
   top: 3px;
 
+  font-family: Inter;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 26px;
+  margin-right: 1vw;
+
   background: ${colors.gray.c200};
-  box-shadow: 0px 1px 3px rgba(50, 63, 75, 0.1), 0px 1px 2px rgba(50, 63, 75, 0.06);
+  /* box-shadow: 0px 1px 3px rgba(50, 63, 75, 0.1), 0px 1px 2px rgba(50, 63, 75, 0.06); */
   border-radius: 6px;
 `
 
@@ -108,15 +121,15 @@ const IndexPage = () => {
         >
           <Spacer />
           <SlatedSection>
-            <KeywordDiv>Collect.</KeywordDiv>
+            <KeywordDiv>Collect Heroes.</KeywordDiv>
             <KeywordDiv
               css={css`
                 color: ${colors.red};
               `}
             >
-              Battle.
+              Battle Other Players.
             </KeywordDiv>
-            <KeywordDiv>Dominate.</KeywordDiv>
+            <KeywordDiv>Dominate the Arena.</KeywordDiv>
             <div
               css={css`
                 font-style: normal;
@@ -142,7 +155,13 @@ const IndexPage = () => {
             <div
               css={css`
                 display: flex;
-                justify-content: space-between;
+                justify-content: end;
+                flex-wrap: wrap;
+                margin: -10px 0 0 0;
+
+                > * {
+                  margin-top: 10px;
+                }
               `}
             >
               <StyledButton
@@ -157,7 +176,13 @@ const IndexPage = () => {
                 Launch Game
               </StyledButton>
 
-              <StyledButton disabled>How to play</StyledButton>
+              <StyledButton
+                onClick={_ => {
+                  navigate('/howto')
+                }}
+              >
+                How to play
+              </StyledButton>
             </div>
           </SlatedSection>
           <div
@@ -197,6 +222,85 @@ const IndexPage = () => {
           backgroundImg="images/build_bg.png"
           mainImg="build.png"
         />
+      </div>
+      <div
+        css={css`
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: black;
+        `}
+      >
+        <div
+          css={css`
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: stretch;
+            width: 75vw;
+          `}
+        >
+          <div
+            css={css`
+              width: 50%;
+              display: flex;
+              flex-direction: column;
+            `}
+          >
+            <h3
+              css={css`
+                font-family: Inter;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 24px;
+                line-height: 29px;
+
+                /* identical to box height */
+                letter-spacing: -0.5px;
+
+                color: #ffffff;
+              `}
+            >
+              Secured by Secret Network
+            </h3>
+            <p
+              css={css`
+                font-family: Roboto Mono;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 16px;
+                line-height: 150%;
+              `}
+            >
+              Secret Manufaktur's secretNFTs are created using the SNIP-721 standard on Secret Network. Your image is encrpyted and stored
+              within the private metadata, so only the current owner can ever access it. Secret Network is the first blockchain with
+              privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone,
+              even the nodes in the network.
+            </p>
+            <Link to="https://scrt.network/" target="new">
+              Learn More
+            </Link>
+          </div>
+          <div
+            css={css`
+              display: grid;
+              place-items: center;
+              width: 20vw;
+              padding: 3vh;
+            `}
+          >
+            <div
+              css={css`
+                background: url('images/secret.png');
+                width: 100%;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: 50% 50%;
+                height: 100%;
+              `}
+            />
+          </div>
+        </div>
       </div>
     </IndexLayout>
   )

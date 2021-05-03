@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       <HeaderInner>
         <HomepageLink to="/">{title}</HomepageLink>
         <HomepageLink to="/">About</HomepageLink>
-        <HomepageLink to="/">How to play</HomepageLink>
+        <HomepageLink to="/howto">How to play</HomepageLink>
         <HomepageLink
           css={css`
             color: ${colors.red};

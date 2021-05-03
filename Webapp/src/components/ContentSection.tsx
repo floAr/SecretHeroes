@@ -26,6 +26,9 @@ const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, ma
         background-position: 50% 50%;
         background-size: cover;
         border-top: solid;
+
+        padding-top: 5vh;
+        padding-bottom: 5vh;
       `}
     >
       <div
@@ -36,7 +39,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, ma
           justify-content: center;
         `}
       >
-        <Image fileName={mainImg} alt="" style={{ height: '100%' }} />
+        <Image fileName={mainImg} alt="" style={{ width: '60vh' }} />
       </div>
       <div
         css={css`

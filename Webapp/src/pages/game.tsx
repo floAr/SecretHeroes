@@ -4,16 +4,13 @@ import { navigate } from 'gatsby'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import BattleReportRender from '../components/BattleReport'
 import BattleReportFrame from '../components/BattleReport/BattleReportFrame'
-import BattleStateRender from '../components/BattleState'
+import BattleStateFrame from '../components/BattleReport/BattleStateFrame'
 
 // import Modal from 'react-modal'
-import Container from '../components/Container'
-import NewBattleReportRender from '../components/NewBattleReport'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
-import { Battle, Contracts, getEntropy, HeroStats } from '../secret-heroes/contracts'
+import { Battle, Contracts, getEntropy } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
 
 declare global {
@@ -302,37 +299,28 @@ const Game = () => {
         >
           Battle Results
         </h3>
-        {/* {battleHistory !== undefined &&
-          battleHistory.map(battle => {
-            return <BattleReportRender report={battle} />
-          })}
-        <BattleReportRender
-          report={{
-            i_won: true,
-            battle_number: 0,
-            skill_used: 1,
-            winning_skill_value: 2,
-            my_hero: {
-              name: 'pete',
-              post_battle_skills: [2, 3, 4, 5],
-              pre_battle_skills: [2, 2, 3, 5],
-              token_info: { address: 'peter', token_id: '5' }
-            }
-          }}
-        /> */}
+
         <BattleReportFrame battles={battleHistory} />
       </div>
-      {/* <div
+      <div
         css={css`
           display: flex;
           flex-direction: column;
-          width: 20vw;
-          min-width: 300px;
+          width: 100%;
+          min-width: 700px;
+          flex: 1 1 500px;
         `}
       >
-        <h3>Currently fighting</h3>
-        {battleState !== undefined && <BattleStateRender report={battleState} />}
-      </div> */}
+        <h3
+          css={css`
+            padding-left: 40px;
+          `}
+        >
+          Battle Results
+        </h3>
+
+        <BattleStateFrame battles={battleHistory} />
+      </div>
     </div>
   )
 }
