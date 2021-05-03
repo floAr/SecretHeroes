@@ -273,10 +273,9 @@ const IndexPage = () => {
                 line-height: 150%;
               `}
             >
-              Secret Manufaktur's secretNFTs are created using the SNIP-721 standard on Secret Network. Your image is encrpyted and stored
-              within the private metadata, so only the current owner can ever access it. Secret Network is the first blockchain with
-              privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone,
-              even the nodes in the network.
+              Secret Heroes’ secretNFTs are created using the SNIP-721 standard on Secret Network. Secret Network is the first blockchain
+              with privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to
+              anyone, even the nodes in the network.
             </p>
             <Link to="https://scrt.network/" target="new">
               Learn More
