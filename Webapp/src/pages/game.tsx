@@ -302,7 +302,7 @@ const Game = () => {
 
         <BattleReportFrame battles={battleHistory} />
       </div>
-      <div
+      {/* <div
         css={css`
           display: flex;
           flex-direction: column;
@@ -320,7 +320,7 @@ const Game = () => {
         </h3>
 
         <BattleStateFrame battles={battleHistory} />
-      </div>
+      </div> */}
     </div>
   )
 }
