@@ -26,7 +26,6 @@ public class CameraController : MonoBehaviour
             }
         if (Input.GetMouseButtonUp(0) && _current == null)
         {
-            Debug.Log("Clicked!");
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 

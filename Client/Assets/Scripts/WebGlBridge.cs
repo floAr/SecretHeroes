@@ -25,7 +25,6 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerBattle(string id)
     {
-        //Debug.Log(payload);
         SendToBattle(id);
     }
 
