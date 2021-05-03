@@ -1,7 +1,6 @@
 import { css } from '@emotion/core'
 import { graphql, Link, navigate, useStaticQuery } from 'gatsby'
 import * as React from 'react'
-import Image from '../components/Image'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
@@ -9,6 +8,7 @@ import styled from '@emotion/styled'
 import IndexLayout from '../layouts'
 import { colors } from '../styles/variables'
 import ContentSection from '../components/ContentSection'
+import Launch from '../components/Launch'
 
 library.add(fas)
 
@@ -172,8 +172,9 @@ const IndexPage = () => {
                 onClick={_ => {
                   navigate('/connect')
                 }}
+                disabled
               >
-                Launch Game
+                <Launch />
               </StyledButton>
 
               <StyledButton

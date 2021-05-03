@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import BattleReportFrame from '../components/BattleReport/BattleReportFrame'
 import BattleStateFrame from '../components/BattleReport/BattleStateFrame'
+import Launch from '../components/Launch'
 
 // import Modal from 'react-modal'
 import UnityFunc from '../components/UnityFunc'
 import IndexLayout from '../layouts'
 import { Battle, Contracts, getEntropy } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
+import { colors } from '../styles/variables'
 
 declare global {
   interface Window {
@@ -327,7 +329,61 @@ const Game = () => {
 
 const GamePage = () => (
   <IndexLayout>
-    <Game />
+    <div
+      css={css`
+        display: grid;
+        place-content: center;
+        width: 100%;
+        height: 70vh;
+      `}
+    >
+      <div
+        css={css`
+          min-width: 500px;
+          width: 30vw;
+          height: 30vh;
+          display: grid;
+          place-content: center;
+          background: ${colors.red};
+          border-radius: 15px;
+        `}
+      >
+        <h1
+          css={css`
+            font-style: bold;
+            font-weight: normal;
+            font-size: 50px;
+            line-height: 80%;
+            font-weight: 800;
+
+            /* or 63px */
+            letter-spacing: -0.025em;
+            text-transform: uppercase;
+
+            color: #f5f9fa;
+          `}
+        >
+          Join the fight in
+        </h1>
+        <h1
+          css={css`
+            font-style: bold;
+            font-weight: normal;
+            font-size: 50px;
+            line-height: 80%;
+            font-weight: 800;
+
+            /* or 63px */
+            letter-spacing: -0.025em;
+            text-transform: uppercase;
+
+            color: #f5f9fa;
+          `}
+        >
+          <Launch css={css``} />
+        </h1>
+      </div>
+    </div>
   </IndexLayout>
 )
 
