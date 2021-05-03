@@ -7,6 +7,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import styled from '@emotion/styled'
 import IndexLayout from '../layouts'
 import { colors } from '../styles/variables'
+import ContentSection from '../components/ContentSection'
 
 library.add(fas)
 
@@ -90,74 +91,110 @@ const IndexPage = () => {
 
   return (
     <IndexLayout>
-      {/* content  */}
       <div
         css={css`
           display: flex;
-          flex-direction: row;
+          flex-direction: column;
           width: 100%;
         `}
       >
-        <Spacer />
-        <SlatedSection>
-          <KeywordDiv>Collect.</KeywordDiv>
-          <KeywordDiv
-            css={css`
-              color: ${colors.red};
-            `}
-          >
-            Battle.
-          </KeywordDiv>
-          <KeywordDiv>Dominate.</KeywordDiv>
-          <div
-            css={css`
-              font-style: normal;
-              font-weight: 400;
-              font-size: 20px;
-              line-height: 28px;
-
-              /* or 140% */
-
-              /* Neutral/#100 */
-              color: #f5f9fa;
-
-              /* Inside Auto Layout */
-              flex: none;
-              align-self: stretch;
-              flex-grow: 0;
-              margin: 20px 0px;
-              max-width: 33vw;
-            `}
-          >
-            Welcome to Secret Heroes, an auto-battler based on collectible secretNFTs.
-          </div>
-          <div
-            css={css`
-              display: flex;
-              justify-content: space-between;
-            `}
-          >
-            <StyledButton
-              css={css`
-                background: ${colors.red};
-                color: ${colors.gray.c200};
-              `}
-              onClick={_ => {
-                navigate('/connect')
-              }}
-            >
-              Launch Game
-            </StyledButton>
-
-            <StyledButton disabled>How to play</StyledButton>
-          </div>
-        </SlatedSection>
         <div
           css={css`
-            background: ${colors.gray.c900};
+            display: flex;
+            flex-direction: row;
             width: 100%;
           `}
-        ></div>
+        >
+          <Spacer />
+          <SlatedSection>
+            <KeywordDiv>Collect.</KeywordDiv>
+            <KeywordDiv
+              css={css`
+                color: ${colors.red};
+              `}
+            >
+              Battle.
+            </KeywordDiv>
+            <KeywordDiv>Dominate.</KeywordDiv>
+            <div
+              css={css`
+                font-style: normal;
+                font-weight: 400;
+                font-size: 20px;
+                line-height: 28px;
+
+                /* or 140% */
+
+                /* Neutral/#100 */
+                color: #f5f9fa;
+
+                /* Inside Auto Layout */
+                flex: none;
+                align-self: stretch;
+                flex-grow: 0;
+                margin: 20px 0px;
+                max-width: 33vw;
+              `}
+            >
+              Welcome to Secret Heroes, an auto-battler based on collectible secretNFTs.
+            </div>
+            <div
+              css={css`
+                display: flex;
+                justify-content: space-between;
+              `}
+            >
+              <StyledButton
+                css={css`
+                  background: ${colors.red};
+                  color: ${colors.gray.c200};
+                `}
+                onClick={_ => {
+                  navigate('/connect')
+                }}
+              >
+                Launch Game
+              </StyledButton>
+
+              <StyledButton disabled>How to play</StyledButton>
+            </div>
+          </SlatedSection>
+          <div
+            css={css`
+              background: ${colors.gray.c900};
+
+              width: 100%;
+            `}
+          ></div>
+        </div>
+        <hr />
+        <ContentSection
+          content="In Secret Heroes, each hero comes with a unique skin and a randomly-generated statline across 4 different skills:
+          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs for three for just 1 SCRT and there endless
+          combinations to collect."
+          cta="Mint"
+          title="Collect Unique Heroes"
+          backgroundImg=""
+          mainImg="collect.png"
+        />
+        <hr />
+        <ContentSection
+          content="Choose a hero and send it to battle against to two other players. In each battle, the game randomly chooses a skill.
+          The hero with the highest stat for the chosen skills is crowned the victor."
+          cta="Battle"
+          title="Fight Other Players"
+          backgroundImg=""
+          mainImg="fight.png"
+        />
+        <hr />
+        <ContentSection
+          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat
+          increase. Be careful though, losing battles can cause you to lose stats*"
+          cta="Win"
+          title="Build the Best Hero"
+          backgroundImg=""
+          mainImg="build.png"
+        />
       </div>
     </IndexLayout>
   )
