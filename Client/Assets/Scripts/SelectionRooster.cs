@@ -83,6 +83,8 @@ public class SelectionRooster : MonoBehaviour
             if (CardHolders[i].IsSelected)
             {
                 GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(CardHolders[i].Id);
+                // TODO transition to battle arena
+                GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
             }
         }
     }

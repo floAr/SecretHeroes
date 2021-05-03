@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleMaster : MonoBehaviour
 {
@@ -12,27 +13,34 @@ public class BattleMaster : MonoBehaviour
     public BattleSlot Enemy1;
     public BattleSlot Enemy2;
 
+
+    public Button SendButton;
+
+
     public void AddBattleState(BattleState state)
     {
         MyHero.Deactivate();
         Enemy1.Deactivate();
         Enemy2.Deactivate();
+        SendButton.interactable = true;
         int counter = 0;
         if (state.your_hero != null)
         {
 
             try
             {
-                var name = state.your_hero.name; if (name.Length > 0)
+                var name = state.your_hero.name;
+                if (name.Length > 0)
                 {
-                    Debug.Log("fighting with " + name);
                     counter += 1;
                     MyHero.Activate(state.your_hero);
+                    SendButton.interactable = false;
+
                 }
             }
             catch (Exception e) { }
         }
-  
+
         if (state.heroes_waiting > counter)
         {
             if (UnityEngine.Random.value < 0.5f)
@@ -43,9 +51,9 @@ public class BattleMaster : MonoBehaviour
             {
                 Enemy2.Activate(null);
             }
-           
+
         }
-    
+
     }
 
     [ContextMenu("Test single")]
