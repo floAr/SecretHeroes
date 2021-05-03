@@ -1,6 +1,5 @@
 import { css } from '@emotion/core'
 import React from 'react'
-import { heights } from '../styles/variables'
 import Image from './Image'
 
 export interface ContentSectionProps {
@@ -16,13 +15,17 @@ const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, ma
     <div
       className="section-background"
       css={css`
-        /* height: 55vh; */
         width: 100%;
         display: flex;
         flex-direction: row;
         align-items: center;
         flex-wrap: wrap;
         justify-content: center;
+
+        background: url(${backgroundImg});
+        background-position: 50% 50%;
+        background-size: cover;
+        border-top: solid;
       `}
     >
       <div

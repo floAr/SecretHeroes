@@ -1,6 +1,7 @@
 import { css } from '@emotion/core'
 import { graphql, navigate, useStaticQuery } from 'gatsby'
 import * as React from 'react'
+import Image from '../components/Image'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
@@ -161,38 +162,39 @@ const IndexPage = () => {
           </SlatedSection>
           <div
             css={css`
-              background: ${colors.gray.c900};
-
+              background: url('images/banner.png');
+              background-size: cover;
+              background-position: 50% 30%;
               width: 100%;
             `}
-          ></div>
+          />
         </div>
-        <hr />
+
         <ContentSection
           content="In Secret Heroes, each hero comes with a unique skin and a randomly-generated statline across 4 different skills:
           Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs for three for just 1 SCRT and there endless
           combinations to collect."
           cta="Mint"
           title="Collect Unique Heroes"
-          backgroundImg=""
+          backgroundImg="images/collect_bg.png"
           mainImg="collect.png"
         />
-        <hr />
+
         <ContentSection
           content="Choose a hero and send it to battle against to two other players. In each battle, the game randomly chooses a skill.
           The hero with the highest stat for the chosen skills is crowned the victor."
           cta="Battle"
           title="Fight Other Players"
-          backgroundImg=""
+          backgroundImg="images/fight_bg.png"
           mainImg="fight.png"
         />
-        <hr />
+
         <ContentSection
           content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat
           increase. Be careful though, losing battles can cause you to lose stats*"
           cta="Win"
           title="Build the Best Hero"
-          backgroundImg=""
+          backgroundImg="images/build_bg.png"
           mainImg="build.png"
         />
       </div>
