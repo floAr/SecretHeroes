@@ -58,6 +58,16 @@ pub enum HandleMsg {
         /// new card ContractInfo
         card_contract: ContractInfo,
     },
+    /// add bot addresses
+    AddBots {
+        /// list of addresses that auto-send fighters to shorten user wait
+        bots: Vec<HumanAddr>,
+    },
+    /// remove bot addresses
+    RemoveBots {
+        /// list of addresses that no longer auto-send fighters
+        bots: Vec<HumanAddr>,
+    },
 }
 
 /// Responses from handle functions
@@ -74,6 +84,10 @@ pub enum HandleAnswer {
     SetBattleStatus { battles_have_halted: bool },
     /// response from adding a new card contract
     AddCardContract { card_contract: HumanAddr },
+    /// response from adding auto-send addresses
+    AddBots { added_bots: Vec<HumanAddr> },
+    /// response from removing auto-send addresses
+    RemoveBots { removed_bots: Vec<HumanAddr> },
 }
 
 /// Query messages
@@ -101,6 +115,17 @@ pub enum QueryMsg {
     },
     /// display the arena config
     Config {},
+    /// display list of auto-send addresses
+    Bots {},
+    /// display the leaderboards
+    Leaderboards {},
+    /// display a player's stats
+    PlayerStats {
+        /// querier's address
+        address: HumanAddr,
+        /// querier's viewing key
+        viewing_key: String,
+    },
 }
 
 /// responses from queries
@@ -118,6 +143,24 @@ pub enum QueryAnswer {
     Config {
         card_versions: Vec<ContractInfo>,
         battles_have_halted: bool,
+    },
+    /// list of auto-send addresses
+    Bots {
+        bots: Vec<HumanAddr>,
+    },
+    /// point leaderboards
+    Leaderboards {
+        /// tournament leaderboard
+        tournament: Vec<PlayerStats>,
+        /// all time leaderboard
+        all_time: Vec<PlayerStats>,
+    },
+    /// player's stats
+    PlayerStats {
+        /// tournament stats
+        tournament: PlayerStats,
+        /// all time stats
+        all_time: PlayerStats,
     },
 }
 
@@ -138,7 +181,7 @@ pub struct Battle {
     /// battle id number
     pub battle_number: u64,
     /// number of seconds since epoch time 01/01/1970 in which the battle took place
-    pub timestamp: u64, 
+    pub timestamp: u64,
     /// querier's hero in the battle
     pub my_hero: Hero,
     /// skill used to determine battle results
@@ -178,4 +221,23 @@ pub struct ContractInfo {
     pub code_hash: String,
     /// contract's address
     pub address: HumanAddr,
+}
+
+/// player stats and point leaderboard entry
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct PlayerStats {
+    /// player's score
+    pub score: i32,
+    /// player's address
+    pub address: HumanAddr,
+    /// number of battles
+    pub battles: u32,
+    /// number of wins
+    pub wins: u32,
+    /// number of ties
+    pub ties: u32,
+    /// number of times took 3rd place in a 2-way tie
+    pub third_in_two_way_ties: u32,
+    /// number of losses
+    pub losses: u32,
 }

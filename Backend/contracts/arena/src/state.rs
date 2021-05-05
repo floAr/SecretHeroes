@@ -11,14 +11,20 @@ use secret_toolkit::{
     storage::{AppendStore, AppendStoreMut},
 };
 
-use crate::msg::{Battle, ContractInfo, Hero, TokenInfo};
+use crate::msg::{Battle, ContractInfo, Hero, PlayerStats, TokenInfo};
 use crate::stats::Stats;
 
 pub const CONFIG_KEY: &[u8] = b"config";
 pub const PREFIX_VIEW_KEY: &[u8] = b"viewkey";
 pub const PREFIX_HISTORY: &[u8] = b"history";
 pub const PREFIX_BATTLE_ID: &[u8] = b"battleids";
+pub const PREFIX_TOURN_STATS: &[u8] = b"trnstat";
+pub const PREFIX_ALL_STATS: &[u8] = b"allstat";
+pub const PREFIX_PLAYERS: &[u8] = b"players";
+pub const PREFIX_SEEN: &[u8] = b"seen";
 pub const ADMIN_KEY: &[u8] = b"admin";
+pub const BOTS_KEY: &[u8] = b"bots";
+pub const LEADERBOARDS_KEY: &[u8] = b"ldrbds";
 
 /// arena config
 #[derive(Serialize, Deserialize)]
@@ -37,6 +43,100 @@ pub struct Config {
     pub card_versions: Vec<StoreContractInfo>,
     /// true if battles are halted
     pub fight_halt: bool,
+    /// total number of players
+    pub player_cnt: u16,
+}
+
+/// stored leaderboard entry
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Rank {
+    /// player's score
+    pub score: i32,
+    /// player's address
+    pub address: CanonicalAddr,
+}
+
+/// tournament data
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Tourney {
+    /// tournament start time
+    pub start: u64,
+    /// tournament leaderboard
+    pub leaderboard: Vec<Rank>,
+}
+
+/// leaderboards
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Leaderboards {
+    /// tournament leaderboard
+    pub tourney: Tourney,
+    /// all time leaderboard
+    pub all_time: Vec<Rank>,
+}
+
+/// tournament stats
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TourneyStats {
+    /// time of last update
+    pub last_seen: u64,
+    /// player's stats for this tournament
+    pub stats: StorePlayerStats,
+}
+
+/// stored player stats
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StorePlayerStats {
+    /// player's score
+    pub score: i32,
+    /// number of battles
+    pub battles: u32,
+    /// number of wins
+    pub wins: u32,
+    /// number of ties
+    pub ties: u32,
+    /// number of times took 3rd place in a 2-way tie
+    pub third_in_two_way_ties: u32,
+    /// number of losses
+    pub losses: u32,
+}
+
+impl Default for StorePlayerStats {
+    fn default() -> Self {
+        Self {
+            score: 0,
+            battles: 0,
+            wins: 0,
+            ties: 0,
+            third_in_two_way_ties: 0,
+            losses: 0,
+        }
+    }
+}
+
+impl StorePlayerStats {
+    /// Returns StdResult<PlayerStats> from converting a StorePlayerStats to a displayable
+    /// PlayerStats
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    /// * `address` - a reference to the address corresponding to these stats
+    pub fn into_humanized<A: Api>(
+        self,
+        api: &A,
+        address: &CanonicalAddr,
+    ) -> StdResult<PlayerStats> {
+        let stats = PlayerStats {
+            score: self.score,
+            address: api.human_address(address)?,
+            battles: self.battles,
+            wins: self.wins,
+            ties: self.ties,
+            third_in_two_way_ties: self.third_in_two_way_ties,
+            losses: self.losses,
+        };
+        Ok(stats)
+    }
 }
 
 /// waiting hero's info
@@ -141,6 +241,32 @@ impl StoreBattle {
         }
     }
 }
+
+/// code hash and address of a contract
+#[derive(Serialize, Deserialize, Clone)]
+pub struct StoreContractInfo {
+    /// contract's code hash string
+    pub code_hash: String,
+    /// contract's address
+    pub address: CanonicalAddr,
+}
+
+impl StoreContractInfo {
+    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
+    /// ContractInfo
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
+        let info = ContractInfo {
+            address: api.human_address(&self.address)?,
+            code_hash: self.code_hash.clone(),
+        };
+        Ok(info)
+    }
+}
+
 /// Returns StdResult<()> after saving the battle id
 ///
 /// # Arguments
@@ -208,31 +334,6 @@ pub fn get_history<A: Api, S: ReadonlyStorage>(
         .collect();
 
     battles
-}
-
-/// code hash and address of a contract
-#[derive(Serialize, Deserialize, Clone)]
-pub struct StoreContractInfo {
-    /// contract's code hash string
-    pub code_hash: String,
-    /// contract's address
-    pub address: CanonicalAddr,
-}
-
-impl StoreContractInfo {
-    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
-    /// ContractInfo
-    ///
-    /// # Arguments
-    ///
-    /// * `api` - a reference to the Api used to convert human and canonical addresses
-    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
-        let info = ContractInfo {
-            address: api.human_address(&self.address)?,
-            code_hash: self.code_hash.clone(),
-        };
-        Ok(info)
-    }
 }
 
 pub fn save<T: Serialize, S: Storage>(storage: &mut S, key: &[u8], value: &T) -> StdResult<()> {

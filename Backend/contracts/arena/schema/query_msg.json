@@ -92,6 +92,60 @@
           "type": "object"
         }
       }
+    },
+    {
+      "description": "display list of auto-send addresses",
+      "type": "object",
+      "required": [
+        "bots"
+      ],
+      "properties": {
+        "bots": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "description": "display the leaderboards",
+      "type": "object",
+      "required": [
+        "leaderboards"
+      ],
+      "properties": {
+        "leaderboards": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "description": "display a player's stats",
+      "type": "object",
+      "required": [
+        "player_stats"
+      ],
+      "properties": {
+        "player_stats": {
+          "type": "object",
+          "required": [
+            "address",
+            "viewing_key"
+          ],
+          "properties": {
+            "address": {
+              "description": "querier's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "viewing_key": {
+              "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {

@@ -82,6 +82,95 @@
           }
         }
       }
+    },
+    {
+      "description": "list of auto-send addresses",
+      "type": "object",
+      "required": [
+        "bots"
+      ],
+      "properties": {
+        "bots": {
+          "type": "object",
+          "required": [
+            "bots"
+          ],
+          "properties": {
+            "bots": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "point leaderboards",
+      "type": "object",
+      "required": [
+        "leaderboards"
+      ],
+      "properties": {
+        "leaderboards": {
+          "type": "object",
+          "required": [
+            "all_time",
+            "tournament"
+          ],
+          "properties": {
+            "all_time": {
+              "description": "all time leaderboard",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerStats"
+              }
+            },
+            "tournament": {
+              "description": "tournament leaderboard",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerStats"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "player's stats",
+      "type": "object",
+      "required": [
+        "player_stats"
+      ],
+      "properties": {
+        "player_stats": {
+          "type": "object",
+          "required": [
+            "all_time",
+            "tournament"
+          ],
+          "properties": {
+            "all_time": {
+              "description": "all time stats",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/PlayerStats"
+                }
+              ]
+            },
+            "tournament": {
+              "description": "tournament stats",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/PlayerStats"
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
@@ -201,6 +290,64 @@
     },
     "HumanAddr": {
       "type": "string"
+    },
+    "PlayerStats": {
+      "description": "player stats and point leaderboard entry",
+      "type": "object",
+      "required": [
+        "address",
+        "battles",
+        "losses",
+        "score",
+        "third_in_two_way_ties",
+        "ties",
+        "wins"
+      ],
+      "properties": {
+        "address": {
+          "description": "player's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "battles": {
+          "description": "number of battles",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "losses": {
+          "description": "number of losses",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "score": {
+          "description": "player's score",
+          "type": "integer",
+          "format": "int32"
+        },
+        "third_in_two_way_ties": {
+          "description": "number of times took 3rd place in a 2-way tie",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "ties": {
+          "description": "number of ties",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "wins": {
+          "description": "number of wins",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
     },
     "Stats": {
       "description": "card stats",

@@ -19,18 +19,21 @@ use secret_toolkit::{
 };
 
 use crate::msg::{
-    ContractInfo, HandleAnswer, HandleMsg, InitMsg, QueryAnswer, QueryMsg, TokenInfo, WaitingHero,
+    ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerStats, QueryAnswer, QueryMsg, TokenInfo,
+    WaitingHero,
 };
 use crate::rand::{sha_256, Prng};
 use crate::state::{
-    append_battle_for_addr, get_history, load, may_load, save, Config, StoreBattle,
-    StoreContractInfo, StoreHero, StoreTokenInfo, StoreWaitingHero, ADMIN_KEY, CONFIG_KEY,
-    PREFIX_HISTORY, PREFIX_VIEW_KEY,
+    append_battle_for_addr, get_history, load, may_load, remove, save, Config, Leaderboards, Rank,
+    StoreBattle, StoreContractInfo, StoreHero, StorePlayerStats, StoreTokenInfo, StoreWaitingHero,
+    Tourney, TourneyStats, ADMIN_KEY, BOTS_KEY, CONFIG_KEY, LEADERBOARDS_KEY, PREFIX_ALL_STATS,
+    PREFIX_HISTORY, PREFIX_TOURN_STATS, PREFIX_VIEW_KEY,
 };
 use crate::stats::Stats;
 use crate::viewing_key::{ViewingKey, VIEWING_KEY_SIZE};
 
 pub const BLOCK_SIZE: usize = 256;
+pub const LBOARD_MAX_LEN: usize = 20;
 
 ////////////////////////////////////// Init ///////////////////////////////////////
 /// Returns InitResult
@@ -61,9 +64,18 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
             address: deps.api.canonical_address(&msg.card_contract.address)?,
         }],
         fight_halt: false,
+        player_cnt: 0,
+    };
+    let leaderboards = Leaderboards {
+        tourney: Tourney {
+            start: env.block.time,
+            leaderboard: Vec::new(),
+        },
+        all_time: Vec::new(),
     };
     save(&mut deps.storage, CONFIG_KEY, &config)?;
     save(&mut deps.storage, ADMIN_KEY, &admin)?;
+    save(&mut deps.storage, LEADERBOARDS_KEY, &leaderboards)?;
     let card_contract = config.card_versions.swap_remove(0);
     Ok(InitResponse {
         messages: vec![
@@ -115,8 +127,99 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         HandleMsg::AddCardContract { card_contract } => {
             try_add_card_contract(deps, env, card_contract)
         }
+        HandleMsg::AddBots { bots } => try_add_bots(deps, env, bots),
+        HandleMsg::RemoveBots { bots } => try_remove_bots(deps, env, bots),
     };
     pad_handle_result(response, BLOCK_SIZE)
+}
+
+/// Returns HandleResult
+///
+/// add a list of addresses that auto-send fighters
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `new_bots` - list of bot addresses to add
+pub fn try_add_bots<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    new_bots: Vec<HumanAddr>,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let mut bots: Vec<CanonicalAddr> = may_load(&deps.storage, BOTS_KEY)?.unwrap_or_else(Vec::new);
+    let old_len = bots.len();
+    for bot in new_bots.iter() {
+        let bot_raw = deps.api.canonical_address(bot)?;
+        if !bots.contains(&bot_raw) {
+            bots.push(bot_raw);
+        }
+    }
+    // only save if the list changed
+    if old_len != bots.len() {
+        save(&mut deps.storage, BOTS_KEY, &bots)?;
+    }
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::AddBots {
+            added_bots: new_bots,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// remove a list of auto-send addresses
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `no_bots` - list of bot addresses to remove
+pub fn try_remove_bots<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    no_bots: Vec<HumanAddr>,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let may_bots: Option<Vec<CanonicalAddr>> = may_load(&deps.storage, BOTS_KEY)?;
+    if let Some(mut bots) = may_bots {
+        let old_len = bots.len();
+        let no_raw: Vec<CanonicalAddr> = no_bots
+            .iter()
+            .map(|x| deps.api.canonical_address(x))
+            .collect::<StdResult<Vec<CanonicalAddr>>>()?;
+        bots.retain(|m| !no_raw.contains(m));
+        let new_len = bots.len();
+        if new_len > 0 {
+            if old_len != new_len {
+                save(&mut deps.storage, BOTS_KEY, &bots)?;
+            }
+        } else {
+            remove(&mut deps.storage, BOTS_KEY);
+        }
+    }
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::RemoveBots {
+            removed_bots: no_bots,
+        })?),
+    })
 }
 
 /// Returns HandleResult
@@ -462,6 +565,8 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     stats,
                 };
                 config.heroes.push(new_hero);
+                let bots: Vec<CanonicalAddr> =
+                    may_load(&deps.storage, BOTS_KEY)?.unwrap_or_else(Vec::new);
                 if config.heroes.len() == 3 {
                     let mut rand_slice =
                         get_rand_slice(&env, &config.prng_seed, config.entropy.as_ref());
@@ -486,6 +591,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     let mut version_xfers: Vec<VersionTransfer> = Vec::new();
                     let mut opt_winner = None;
                     let mut totals = vec![0i16; 4];
+                    let mut ignore = vec![false; 3];
                     for (i, hero) in config.heroes.iter().enumerate() {
                         let transfer = Transfer {
                             recipient: deps.api.human_address(&hero.owner)?,
@@ -505,6 +611,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                                 transfers: vec![transfer],
                             });
                         }
+                        ignore[i] = bots.contains(&hero.owner);
                         totals[i] = hero.stats.current.iter().map(|u| *u as i16).sum();
                         totals[3] += totals[i];
                         let cur_score = hero.stats.current[fight_idx];
@@ -538,12 +645,15 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                         totals[3] -= totals[winners[0]];
                     }
                     let heroes = update_skills(
+                        &mut deps.storage,
                         config.heroes.drain(..).collect(),
+                        env.block.time,
                         &upgrade_rand,
                         &winners,
                         &totals,
                         &versions,
                         &mut messages,
+                        &ignore,
                     )?;
                     for vxfer in version_xfers.into_iter() {
                         messages.push(batch_transfer_nft_msg(
@@ -622,8 +732,79 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
             page_size,
         } => query_history(deps, &address, viewing_key, page, page_size),
         QueryMsg::Config {} => query_config(deps),
+        QueryMsg::Bots {} => query_bots(deps),
+        QueryMsg::Leaderboards {} => query_leaderboards(deps),
+        QueryMsg::PlayerStats {
+            address,
+            viewing_key,
+        } => query_player_stats(deps, address, viewing_key),
     };
     pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult displaying the list of auto-send addresses
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+pub fn query_bots<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
+    let bots: Vec<CanonicalAddr> = may_load(&deps.storage, BOTS_KEY)?.unwrap_or_else(Vec::new);
+
+    to_binary(&QueryAnswer::Bots {
+        bots: bots
+            .iter()
+            .map(|m| deps.api.human_address(m))
+            .collect::<StdResult<Vec<HumanAddr>>>()?,
+    })
+}
+
+/// Returns QueryResult displaying a player's tournament stats and all-time stats
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+/// * `address` - querier's address
+/// * `viewing_key` - querier's viewing key
+pub fn query_player_stats<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    address: HumanAddr,
+    viewing_key: String,
+) -> QueryResult {
+    let address_raw = deps.api.canonical_address(&address)?;
+    check_key(&deps.storage, &address_raw, viewing_key)?;
+    let address_slice = address_raw.as_slice();
+    let trn_store = ReadonlyPrefixedStorage::new(PREFIX_TOURN_STATS, &deps.storage);
+    let tourn_stats: TourneyStats =
+        may_load(&trn_store, address_slice)?.unwrap_or_else(|| TourneyStats {
+            last_seen: 0,
+            stats: StorePlayerStats::default(),
+        });
+    let tournament = PlayerStats {
+        score: tourn_stats.stats.score,
+        address: address.clone(),
+        battles: tourn_stats.stats.battles,
+        wins: tourn_stats.stats.wins,
+        ties: tourn_stats.stats.ties,
+        third_in_two_way_ties: tourn_stats.stats.third_in_two_way_ties,
+        losses: tourn_stats.stats.losses,
+    };
+    let all_store = ReadonlyPrefixedStorage::new(PREFIX_ALL_STATS, &deps.storage);
+    let all_stats: StorePlayerStats =
+        may_load(&all_store, address_slice)?.unwrap_or_else(StorePlayerStats::default);
+    let all_time = PlayerStats {
+        score: all_stats.score,
+        address,
+        battles: all_stats.battles,
+        wins: all_stats.wins,
+        ties: all_stats.ties,
+        third_in_two_way_ties: all_stats.third_in_two_way_ties,
+        losses: all_stats.losses,
+    };
+
+    to_binary(&QueryAnswer::PlayerStats {
+        tournament,
+        all_time,
+    })
 }
 
 /// Returns QueryResult displaying the contract's config
@@ -640,6 +821,41 @@ pub fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> Q
             .map(|v| v.to_humanized(&deps.api))
             .collect::<StdResult<Vec<ContractInfo>>>()?,
         battles_have_halted: config.fight_halt,
+    })
+}
+
+/// Returns QueryResult displaying the arena leaderboards
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+pub fn query_leaderboards<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
+    let mut leaderboards: Leaderboards = load(&deps.storage, LEADERBOARDS_KEY)?;
+    leaderboards.all_time.truncate(10);
+    leaderboards.tourney.leaderboard.truncate(10);
+    let trn_store = ReadonlyPrefixedStorage::new(PREFIX_TOURN_STATS, &deps.storage);
+    let tournament = leaderboards
+        .tourney
+        .leaderboard
+        .iter()
+        .map(|r| {
+            load(&trn_store, r.address.as_slice())
+                .and_then(|t: TourneyStats| t.stats.into_humanized(&deps.api, &r.address))
+        })
+        .collect::<StdResult<Vec<PlayerStats>>>()?;
+    let all_store = ReadonlyPrefixedStorage::new(PREFIX_ALL_STATS, &deps.storage);
+    let all_time = leaderboards
+        .all_time
+        .iter()
+        .map(|r| {
+            load(&all_store, r.address.as_slice())
+                .and_then(|s: StorePlayerStats| s.into_humanized(&deps.api, &r.address))
+        })
+        .collect::<StdResult<Vec<PlayerStats>>>()?;
+
+    to_binary(&QueryAnswer::Leaderboards {
+        tournament,
+        all_time,
     })
 }
 
@@ -730,28 +946,51 @@ pub struct VersionTransfer {
     transfers: Vec<Transfer>,
 }
 
-fn update_skills(
+#[allow(clippy::too_many_arguments)]
+fn update_skills<S: Storage>(
+    storage: &mut S,
     fighters: Vec<StoreWaitingHero>,
+    time: u64,
     rand: &[u8],
     winners: &[usize],
     totals: &[i16],
     versions: &[ContractInfo],
     messages: &mut Vec<CosmosMsg>,
+    ignore: &[bool],
 ) -> StdResult<Vec<StoreHero>> {
     let adjust: [i8; 23] = [
         -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2,
     ];
     let mut heroes: Vec<StoreHero> = Vec::new();
     let is_tie = winners.len() != 1;
+    let mut leaderboards: Leaderboards = load(storage, LEADERBOARDS_KEY)?;
+    let mut save_boards = false;
     for (i, hero) in fighters.into_iter().enumerate() {
         let pre_battle_skills = hero.stats.current;
         let base = hero.stats.base;
         let post_battle_skills: Vec<u8>;
-        // no skill changes on ties
+        let mut wins = 0u8;
+        let mut ties = 0u8;
+        let mut lose_ties = 0u8;
+        let mut losses = 0u8;
+        let delta: i8;
         if is_tie {
+            // no skill changes on ties
             post_battle_skills = pre_battle_skills.clone();
+            // tying fighter gets 1
+            if winners.contains(&i) {
+                ties = 1;
+                delta = 1;
+            // loser gets 0
+            } else {
+                lose_ties = 1;
+                delta = 0;
+            }
         // if this is the winner, give him an upgrade
         } else if i == winners[0] {
+            // winners get 3 points
+            wins = 1;
+            delta = 3;
             let power_diff = 2 * totals[i] - totals[3];
             let mut rand_iter = rand.iter();
             let base_upgrade: i8 = if power_diff > 160 {
@@ -789,6 +1028,9 @@ fn update_skills(
                 .collect();
         // otherwise fracture a losing hero
         } else {
+            // losers lose a point
+            losses = 1;
+            delta = -1;
             let mut base_iter = base.iter();
             post_battle_skills = pre_battle_skills
                 .iter()
@@ -800,6 +1042,56 @@ fn update_skills(
                     }
                 })
                 .collect();
+        }
+        if !ignore[i] {
+            let owner_slice = hero.owner.as_slice();
+            let mut all_store = PrefixedStorage::new(PREFIX_ALL_STATS, storage);
+            let may_all: Option<StorePlayerStats> = may_load(&all_store, owner_slice)?;
+            let mut all_stats = if let Some(all) = may_all {
+                all
+            } else {
+                StorePlayerStats::default()
+            };
+            all_stats.score += delta as i32;
+            all_stats.battles += 1;
+            all_stats.wins += wins as u32;
+            all_stats.ties += ties as u32;
+            all_stats.third_in_two_way_ties += lose_ties as u32;
+            all_stats.losses += losses as u32;
+            save(&mut all_store, owner_slice, &all_stats)?;
+            update_leaderboard(
+                &mut leaderboards.all_time,
+                &hero.owner,
+                all_stats.score,
+                delta,
+                LBOARD_MAX_LEN,
+            );
+            let mut trn_store = PrefixedStorage::new(PREFIX_TOURN_STATS, storage);
+            let mut tourn_stats: TourneyStats =
+                may_load(&trn_store, owner_slice)?.unwrap_or_else(|| TourneyStats {
+                    last_seen: 0,
+                    stats: StorePlayerStats::default(),
+                });
+            // check if tourney stats are from an older tournament
+            if tourn_stats.last_seen < leaderboards.tourney.start {
+                tourn_stats.stats = StorePlayerStats::default();
+            }
+            tourn_stats.last_seen = time;
+            tourn_stats.stats.score += delta as i32;
+            tourn_stats.stats.battles += 1;
+            tourn_stats.stats.wins += wins as u32;
+            tourn_stats.stats.ties += ties as u32;
+            tourn_stats.stats.third_in_two_way_ties += lose_ties as u32;
+            tourn_stats.stats.losses += losses as u32;
+            save(&mut trn_store, owner_slice, &tourn_stats)?;
+            update_leaderboard(
+                &mut leaderboards.tourney.leaderboard,
+                &hero.owner,
+                tourn_stats.stats.score,
+                delta,
+                LBOARD_MAX_LEN,
+            );
+            save_boards = true;
         }
         if pre_battle_skills != post_battle_skills {
             let stats = Stats {
@@ -831,5 +1123,89 @@ fn update_skills(
             post_battle_skills,
         });
     }
+    // if leaderboards have been updated
+    if save_boards {
+        save(storage, LEADERBOARDS_KEY, &leaderboards)?;
+    }
     Ok(heroes)
+}
+
+fn update_leaderboard(
+    leaderboard: &mut Vec<Rank>,
+    player: &CanonicalAddr,
+    score: i32,
+    delta: i8,
+    max_len: usize,
+) {
+    let mut insert_pos = 0usize;
+    let mut old_pos = None;
+    let mut last_of_group = 0usize;
+    for (i, rank) in leaderboard.iter().enumerate().rev() {
+        // track the player's old position
+        if old_pos.is_none() && rank.address == *player {
+            old_pos = Some(i);
+        // determine where the player should be with his new score
+        } else if insert_pos == 0 {
+            match rank.score.cmp(&score) {
+                Ordering::Greater => {
+                    insert_pos = i + 1;
+                }
+                Ordering::Equal => {
+                    // save the end of this score group
+                    if last_of_group == 0 {
+                        last_of_group = i + 1;
+                    }
+                    // if player did not get knocked down to this group
+                    if delta >= 0 {
+                        insert_pos = i + 1;
+                    }
+                }
+                _ => (),
+            };
+        }
+        // if we found both the insertion point and the old position, we're done
+        if insert_pos > 0 && old_pos.is_some() {
+            break;
+        }
+    }
+    // if the player was already ranked
+    if let Some(old) = old_pos {
+        // don't do anything if the score didn't change
+        if delta != 0 {
+            // rank didn't change
+            if insert_pos == old {
+                leaderboard[insert_pos].score = score;
+            } else {
+                let mut append = leaderboard.split_off(old + 1);
+                let mut leader = leaderboard.pop().unwrap();
+                leader.score = score;
+                // if rose in rank, insert before append
+                if insert_pos < old {
+                    leaderboard.insert(insert_pos, leader);
+                    leaderboard.append(&mut append);
+                // if fell in rank, insert position is one less after removing old spot
+                } else {
+                    leaderboard.append(&mut append);
+                    leaderboard.insert(insert_pos - 1, leader);
+                }
+            }
+        }
+    // new arrival to leaderboard; don't grow past max len
+    } else if insert_pos < max_len {
+        // new arrivals should be at the lowest end of a group
+        if delta < 0 && last_of_group != 0 {
+            insert_pos = last_of_group;
+        }
+        // need to check if being last of a group is past the max len
+        if insert_pos < max_len {
+            leaderboard.insert(
+                insert_pos,
+                Rank {
+                    score,
+                    address: player.clone(),
+                },
+            );
+            leaderboard.truncate(max_len);
+        }
+    }
 }

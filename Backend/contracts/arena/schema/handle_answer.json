@@ -102,6 +102,52 @@
           }
         }
       }
+    },
+    {
+      "description": "response from adding auto-send addresses",
+      "type": "object",
+      "required": [
+        "add_bots"
+      ],
+      "properties": {
+        "add_bots": {
+          "type": "object",
+          "required": [
+            "added_bots"
+          ],
+          "properties": {
+            "added_bots": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "response from removing auto-send addresses",
+      "type": "object",
+      "required": [
+        "remove_bots"
+      ],
+      "properties": {
+        "remove_bots": {
+          "type": "object",
+          "required": [
+            "removed_bots"
+          ],
+          "properties": {
+            "removed_bots": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {

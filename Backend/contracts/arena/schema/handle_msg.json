@@ -187,6 +187,54 @@
           }
         }
       }
+    },
+    {
+      "description": "add bot addresses",
+      "type": "object",
+      "required": [
+        "add_bots"
+      ],
+      "properties": {
+        "add_bots": {
+          "type": "object",
+          "required": [
+            "bots"
+          ],
+          "properties": {
+            "bots": {
+              "description": "list of addresses that auto-send fighters to shorten user wait",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "remove bot addresses",
+      "type": "object",
+      "required": [
+        "remove_bots"
+      ],
+      "properties": {
+        "remove_bots": {
+          "type": "object",
+          "required": [
+            "bots"
+          ],
+          "properties": {
+            "bots": {
+              "description": "list of addresses that no longer auto-send fighters",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HumanAddr"
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
