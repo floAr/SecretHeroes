@@ -60,6 +60,11 @@ const IndexLayout: React.FC = ({ children }) => (
         href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&family=Roboto:ital,wght@0,400;0,700;1,100&display=swap"
         rel="stylesheet"
       />
+      <meta property="og:title" content="Secret Heroes - NFT Gaming" />
+      <meta property="og:type" content="website" />
+      <meta property="og:image" content="https://secrethero.es/images/og.png" />
+      <meta property="og:url" content="https://secrethero.es/" />
+      <meta property="og:description" content="Collect. Battle. Dominate. An NFT-based game secured by Secret Network." />
     </Helmet>
 
     <LayoutMain>{children}</LayoutMain>
