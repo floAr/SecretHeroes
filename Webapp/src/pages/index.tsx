@@ -237,8 +237,9 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat
-          increase. Be careful though, losing battles can cause you to lose stats*"
+          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
+          newLine="*Note: Heroes never drop below the base stats they have when minted."
+          visibleNewLine="block"
           cta="Win"
           title="Build the Best Hero"
           backgroundImg="images/build_bg.png"
