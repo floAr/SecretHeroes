@@ -36,6 +36,7 @@ const Image: React.FC<ImageProps> = ({ fileName, alt, style }) => {
         css={css`
           height: 100%;
           width: 100%;
+          max-width: 100%;
         `}
       >
         <Img fluid={fluid} alt={alt} style={style} />

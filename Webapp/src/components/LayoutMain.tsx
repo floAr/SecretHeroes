@@ -15,7 +15,7 @@ interface LayoutMainProps {
 
 const LayoutMain: React.FC<LayoutMainProps> = ({ children, className }) => (
   <StyledLayoutMain className={className}>
-    <Header title={'Secret Heroes'} />
+    {/* <Header title={'Secret Heroes'} /> */}
     {children}
   </StyledLayoutMain>
 )
