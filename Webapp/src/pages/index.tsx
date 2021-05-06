@@ -220,7 +220,7 @@ const IndexPage = () => {
           cta="Mint"
           title="Collect Unique Heroes"
           backgroundImg="images/collect_bg.png"
-          mainImg="collect.png"
+          mainImg="collectv2.png"
           visible="grid"
           secondaryImage="images/logo_icon.png"
           secondaryTitle="Based on secretNFTs"
@@ -242,7 +242,7 @@ const IndexPage = () => {
           cta="Win"
           title="Build the Best Hero"
           backgroundImg="images/build_bg.png"
-          mainImg="build.png"
+          mainImg="buildv2.png"
         />
       </div>
       <section css={css`
