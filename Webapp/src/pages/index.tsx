@@ -200,6 +200,7 @@ const IndexPage = () => {
                   margin: 0 auto;
                   margin-top: 24px;
                   transition: .2s ease;
+                  height: 56px;
                   &:hover {
                     background: #a1021a;
                   }
