@@ -129,7 +129,7 @@ const IndexPage = () => {
             <div className="logo" css={css`
               width:382px;
               height: 249px;
-              background: url('images/sh-hero-logo.svg');
+              background: url('images/sh-hero-logo.png');
               background-size: contain;
               background-repeat: no-repeat;
               background-position: center;
@@ -219,7 +219,7 @@ const IndexPage = () => {
           backgroundImg="images/collect_bg.png"
           mainImg="collect.png"
           visible="grid"
-          secondaryImage="images/logo_icon.svg"
+          secondaryImage="images/logo_icon.png"
           secondaryTitle="Based on secretNFTs"
           secondaryContent="Each hero is a secretNFT. This means you own all your heroes and their skin and statlines are private metadata, allowing for privacy-preserving gameplay not found on any other blockchain."
         />
@@ -407,14 +407,14 @@ const IndexPage = () => {
           width: 24px;
           height: 24px;
           display: inline-block;
-          background: url('images/twitter.svg');
+          background: url('images/twitter.png');
           `}></Link>
           <Link to="https://discord.gg/JpTnNRVzpw" target="new" css={css`
           width: 24px;
           height: 24px;
           display: inline-block;
           margin-left: 16px;
-          background: url('images/discord.svg');
+          background: url('images/discord.png');
           `}></Link>
         </div>
         <p>© Secret Heroes</p>
