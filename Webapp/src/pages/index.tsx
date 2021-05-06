@@ -220,7 +220,7 @@ const IndexPage = () => {
           cta="Mint"
           title="Collect Unique Heroes"
           backgroundImg="images/collect_bg.png"
-          mainImg="collect.png"
+          mainImg="collectv2.png"
           visible="grid"
           secondaryImage="images/logo_icon.png"
           secondaryTitle="Based on secretNFTs"
@@ -242,7 +242,7 @@ const IndexPage = () => {
           cta="Win"
           title="Build the Best Hero"
           backgroundImg="images/build_bg.png"
-          mainImg="build.png"
+          mainImg="buildv2.png"
         />
       </div>
       <section css={css`
@@ -356,7 +356,7 @@ const IndexPage = () => {
 
               <p>Secret Network is the first blockchain with privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone, even the nodes in the network. </p>
             </p>
-            <Link to="https://scrt.network/" target="new" css={css`
+            <Link to="https://scrt.network/blog/secret-nft-update-reference-implementation-new-tutorial" target="new" css={css`
             font-family: Inter;
             font-style: normal;
             font-weight: bold;
