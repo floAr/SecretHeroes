@@ -246,7 +246,7 @@ const IndexPage = () => {
           mainImg="buildv2.png"
         />
       </div>
-      <section css={css`
+      {/* <section css={css`
                     display: grid;
                     align-content: center;
                     justify-content: center;
@@ -294,7 +294,7 @@ const IndexPage = () => {
         >
           Read Blog Post
           </StyledButton>
-      </section>
+      </section> */}
       <div
         css={css`
           display: flex;
