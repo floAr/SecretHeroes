@@ -386,7 +386,7 @@ const IndexPage = () => {
           >
             <div
               css={css`
-                background: url('images/secret.png');
+                background: url('images/secret-logo.png');
                 width: 100%;
                 background-size: 200px;
                 background-repeat: no-repeat;
