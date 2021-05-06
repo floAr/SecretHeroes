@@ -6,6 +6,8 @@ export interface ContentSectionProps {
   backgroundImg: string
   mainImg: string
   content: string
+  newLine: string
+  visibleNewLine: string
   secondaryTitle: string
   secondaryContent: string
   secondaryImage: string
@@ -15,7 +17,7 @@ export interface ContentSectionProps {
 }
 
 
-const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, secondaryTitle, secondaryContent, secondaryImage, visible, mainImg, backgroundImg }) => {
+const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, newLine, visibleNewLine, secondaryTitle, secondaryContent, secondaryImage, visible, mainImg, backgroundImg }) => {
   return (
     <div
       className="section-background"
@@ -121,6 +123,21 @@ const ContentSection: React.FC<ContentSectionProps> = ({ cta, title, content, se
             `}
           >
             {content}
+          </div>
+          <div
+            css={css`
+            display: none;
+            display:${visibleNewLine};
+            font-family: Inter;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 16px;
+            line-height: 24px;
+            margin-bottom: 20px;
+            color: #9AA5B1;
+            `}
+          >
+            {newLine}
           </div>
           <div
             css={css`
