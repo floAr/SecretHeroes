@@ -356,7 +356,7 @@ const IndexPage = () => {
 
               <p>Secret Network is the first blockchain with privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone, even the nodes in the network. </p>
             </p>
-            <Link to="https://scrt.network/" target="new" css={css`
+            <Link to="https://scrt.network/blog/secret-nft-update-reference-implementation-new-tutorial" target="new" css={css`
             font-family: Inter;
             font-style: normal;
             font-weight: bold;
