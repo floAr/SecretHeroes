@@ -9,7 +9,12 @@ module.exports = {
     author: {
       name: 'Florian Uhde',
       url: 'https://twitter.com/florianuhde'
-    }
+    },
+    "og:title": 'SecretHeroes',
+    "og:type": 'website',
+    "og:image": 'https://secrethero.es/image/og.png',
+    "og:url": 'https://secrethero.es/',
+    "og:description": 'Collect. Battle. Dominate. An NFT-based game secured by Secret Network.'
   },
   flags: { PRESERVE_WEBPACK_CACHE: true },
   plugins: [
