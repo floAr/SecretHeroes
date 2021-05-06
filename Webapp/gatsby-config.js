@@ -24,7 +24,6 @@ module.exports = {
       }
     },
     'gatsby-transformer-sharp',
-    'gatsby-plugin-react-helmet',
-    'gatsby-plugin-open-graph-images'
+    'gatsby-plugin-react-helmet'
   ]
 }
