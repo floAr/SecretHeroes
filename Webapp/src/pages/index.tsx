@@ -121,7 +121,7 @@ const IndexPage = () => {
                     justify-content: center;
                     text-align: center;
                     background: #0F1419;
-                    gap: 16px;
+                    //gap: 16px;
                     `}>
           <div class="logo-container" css={css`
             height:250px;
@@ -144,6 +144,8 @@ const IndexPage = () => {
                 font-size: 24px;
                 line-height: 28px;
                 text-align: center;
+                margin-top: 4px;
+                margin-bottom: 0px;
                 /* Neutral/#100 */
                 color: #F5F9FA;`}>Collect. <span css={css`color:#FC2748;`}>Battle.</span> Dominate.</h2>
           <div class="launch" css={css`
@@ -151,19 +153,19 @@ const IndexPage = () => {
             gap: 0;
           `}>
             <p css={css`
-            margin: 0;
+            margin: 30px 0 0 0;
             font-family: Inter;
             font-style: normal;
             font-weight: normal;
             font-size: 16px;
-            line-height: 28px;
+            //line-height: 28px;
             /* identical to box height, or 175% */
 
             text-align: center;
 
             /* Neutral/#200 */
 
-            color: #E4E7EB;`}>Launching In</p>
+            color: #9AA5B1;`}>Launching In</p>
             <div css={css`
                 font-family: Inter;
                 font-style: normal;
@@ -176,7 +178,7 @@ const IndexPage = () => {
                 /* gray/100 */
                 color: #F3F4F6;
                 text-align: left;
-                padding-left: 3rem;
+                padding-left: 3.3rem;
               `}>
               <Launch />
             </div>
@@ -191,12 +193,12 @@ const IndexPage = () => {
                   line-height: 24px;
                   border: 0;
                   cursor: pointer;
-
+                  min-width: 190px;
                   color: #FFFFFF;
                   padding: 0;
                   display: inline-block;
                   margin: 0 auto;
-                  margin-top: 20px;
+                  margin-top: 24px;
                   transition: .2s ease;
                   &:hover {
                     background: #a1021a;
@@ -206,7 +208,7 @@ const IndexPage = () => {
               window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
             }}
           >
-            Notify Me
+            Claim your Hero Now
           </StyledButton>
         </section>
 
