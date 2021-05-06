@@ -203,7 +203,7 @@ const IndexPage = () => {
                   }
                 `}
             onClick={_ => {
-              navigate('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+              window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
             }}
           >
             Notify Me
