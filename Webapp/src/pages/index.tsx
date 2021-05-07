@@ -215,7 +215,7 @@ const IndexPage = () => {
 
         <ContentSection
           content="In Secret Heroes, each hero comes with a unique skin and a randomly-generated statline across 4 different skills:
-          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs for three for just 1 SCRT and there endless
+          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs of three for just 1 SCRT and there are endless
           combinations to collect."
           cta="Mint"
           title="Collect Unique Heroes"
