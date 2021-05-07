@@ -215,7 +215,7 @@ const IndexPage = () => {
 
         <ContentSection
           content="In Secret Heroes, each hero comes with a unique skin and a randomly-generated statline across 4 different skills:
-          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs for three for just 1 SCRT and there endless
+          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs of three for just 1 SCRT and there are endless
           combinations to collect."
           cta="Mint"
           title="Collect Unique Heroes"
@@ -228,7 +228,7 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Choose a hero and send it to battle against to two other players. In each battle, the game randomly chooses a skill.
+          content="Choose a hero and send it to battle against two other players. In each battle, the game randomly chooses a skill.
           The hero with the highest stat for the chosen skills is crowned the victor."
           cta="Battle"
           title="Fight Other Players"
@@ -237,7 +237,7 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
+          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
           newLine="*Note: Heroes never drop below the base stats they have when minted."
           visibleNewLine="block"
           cta="Win"
