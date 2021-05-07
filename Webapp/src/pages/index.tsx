@@ -228,7 +228,7 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Choose a hero and send it to battle against to two other players. In each battle, the game randomly chooses a skill.
+          content="Choose a hero and send it to battle against two other players. In each battle, the game randomly chooses a skill.
           The hero with the highest stat for the chosen skills is crowned the victor."
           cta="Battle"
           title="Fight Other Players"
@@ -237,7 +237,7 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
+          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
           newLine="*Note: Heroes never drop below the base stats they have when minted."
           visibleNewLine="block"
           cta="Win"
