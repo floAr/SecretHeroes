@@ -9,7 +9,7 @@ module.exports = {
     author: {
       name: 'Florian Uhde',
       url: 'https://twitter.com/florianuhde'
-    }
+    },
   },
   flags: { PRESERVE_WEBPACK_CACHE: true },
   plugins: [

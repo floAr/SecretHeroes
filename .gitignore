@@ -10,3 +10,5 @@ Client/Assets/Content/PolygonSciFiCity
 Webapp/index copy.tsx
 Client/Recordings
 Client/Assets/MeshCombineStudio/TestScenes
+node_modules
+yarn.lock

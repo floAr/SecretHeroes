@@ -8,6 +8,7 @@ import styled from '@emotion/styled'
 import IndexLayout from '../layouts'
 import { colors } from '../styles/variables'
 import ContentSection from '../components/ContentSection'
+import Image from '../components/Image'
 import Launch from '../components/Launch'
 
 library.add(fas)
@@ -112,102 +113,122 @@ const IndexPage = () => {
           width: 100%;
         `}
       >
-        <div
-          css={css`
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-          `}
-        >
-          <Spacer />
-          <SlatedSection>
-            <KeywordDiv>Collect Heroes.</KeywordDiv>
-            <KeywordDiv
-              css={css`
-                color: ${colors.red};
-              `}
-            >
-              Battle Other Players.
-            </KeywordDiv>
-            <KeywordDiv>Dominate the Arena.</KeywordDiv>
-            <div
-              css={css`
+
+        <section css={css`
+                    display: grid;
+                    height: 100vh;
+                    align-content: center;
+                    justify-content: center;
+                    text-align: center;
+                    background: #0F1419;
+                    //gap: 16px;
+                    `}>
+          <div class="logo-container" css={css`
+            height:250px;
+          `}>
+            <div className="logo" css={css`
+              width:382px;
+              height: 249px;
+              background: url('images/sh-hero-logo.png');
+              background-size: contain;
+              background-repeat: no-repeat;
+              background-position: center;
+              `}>
+            </div>
+          </div>
+
+          <h2 css={css`
+                font-family: Inter;
                 font-style: normal;
-                font-weight: 400;
-                font-size: 20px;
+                font-weight: bold;
+                font-size: 24px;
                 line-height: 28px;
-
-                /* or 140% */
-
+                text-align: center;
+                margin-top: 4px;
+                margin-bottom: 0px;
                 /* Neutral/#100 */
-                color: #f5f9fa;
+                color: #F5F9FA;`}>Collect. <span css={css`color:#FC2748;`}>Battle.</span> Dominate.</h2>
+          <div class="launch" css={css`
+            display: grid;
+            gap: 0;
+          `}>
+            <p css={css`
+            margin: 30px 0 0 0;
+            font-family: Inter;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 16px;
+            //line-height: 28px;
+            /* identical to box height, or 175% */
 
-                /* Inside Auto Layout */
-                flex: none;
-                align-self: stretch;
-                flex-grow: 0;
-                margin: 20px 0px;
-                max-width: 33vw;
-              `}
-            >
-              Welcome to Secret Heroes, an auto-battler based on collectible secretNFTs.
+            text-align: center;
+
+            /* Neutral/#200 */
+
+            color: #9AA5B1;`}>Launching In</p>
+            <div css={css`
+                font-family: Inter;
+                font-style: normal;
+                font-weight: 800;
+                font-size: 60px;
+                line-height: 60px;
+                /* identical to box height, or 100% */
+                text-align: center;
+                letter-spacing: -0.025em;
+                /* gray/100 */
+                color: #F3F4F6;
+                text-align: left;
+                padding-left: 3.3rem;
+              `}>
+              <Launch />
             </div>
-            <div
-              css={css`
-                display: flex;
-                justify-content: end;
-                flex-wrap: wrap;
-                margin: -10px 0 0 0;
-
-                > * {
-                  margin-top: 10px;
-                }
-              `}
-            >
-              <StyledButton
-                css={css`
-                  background: ${colors.red};
-                  color: ${colors.gray.c200};
-                `}
-                onClick={_ => {
-                  navigate('/connect')
-                }}
-                disabled
-              >
-                <Launch />
-              </StyledButton>
-
-              <StyledButton
-                onClick={_ => {
-                  navigate('/howto')
-                }}
-              >
-                How to play
-              </StyledButton>
-            </div>
-          </SlatedSection>
-          <div
+          </div>
+          <StyledButton
             css={css`
-              background: url('images/banner.png');
-              background-size: cover;
-              background-position: 50% 30%;
-              width: 100%;
-            `}
-          />
-        </div>
+                  background: ${colors.red};
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 500;
+                  font-size: 16px;
+                  line-height: 24px;
+                  border: 0;
+                  cursor: pointer;
+                  min-width: 190px;
+                  color: #FFFFFF;
+                  padding: 0;
+                  display: inline-block;
+                  margin: 0 auto;
+                  margin-top: 24px;
+                  transition: .2s ease;
+                  height: 56px;
+                  &:hover {
+                    background: #a1021a;
+                  }
+                `}
+            onClick={_ => {
+              window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+            }}
+          >
+            Claim Your Hero Now
+          </StyledButton>
+        </section>
 
         <ContentSection
           content="In Secret Heroes, each hero comes with a unique skin and a randomly-generated statline across 4 different skills:
-          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs for three for just 1 SCRT and there endless
+          Weapons, Engineering, Biotech, and Psychics. Heroes can be minted in packs of three for just 1 SCRT and there are endless
           combinations to collect."
           cta="Mint"
           title="Collect Unique Heroes"
           backgroundImg="images/collect_bg.png"
-          mainImg="collect.png"
+          mainImg="collectv2.png"
+          visible="grid"
+          secondaryImage="images/logo_icon.png"
+          secondaryTitle="Based on secretNFTs"
+          secondaryContent="Each hero is a secretNFT. This means you own all your heroes and their skin and statlines are private metadata, allowing for privacy-preserving gameplay not found on any other blockchain."
         />
 
         <ContentSection
-          content="Choose a hero and send it to battle against to two other players. In each battle, the game randomly chooses a skill.
+          content="Choose a hero and send it to battle against two other players. In each battle, the game randomly chooses a skill.
           The hero with the highest stat for the chosen skills is crowned the victor."
           cta="Battle"
           title="Fight Other Players"
@@ -216,14 +237,64 @@ const IndexPage = () => {
         />
 
         <ContentSection
-          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent  you beat, the greater the stat
-          increase. Be careful though, losing battles can cause you to lose stats*"
+          content="Each time you win a battle, your hero’s stats will improve. The tougher the opponent you beat, the greater the stat increase. Be careful though, losing battles can cause you to lose stats*"
+          newLine="*Note: Heroes never drop below the base stats they have when minted."
+          visibleNewLine="block"
           cta="Win"
           title="Build the Best Hero"
           backgroundImg="images/build_bg.png"
-          mainImg="build.png"
+          mainImg="buildv2.png"
         />
       </div>
+      {/* <section css={css`
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+                    text-align: center;
+                    background: #0F1419;
+                    gap: 32px;
+                    padding-top: 64px;
+                    padding-bottom: 64px;
+
+                    `}>
+
+        <h2 css={css`
+                font-family: Inter;
+                font-style: normal;
+                font-weight: 700;
+                font-size: 36px;
+                line-height: 40px;
+                text-align: center;
+                margin: 0;
+                color: #F5F9FA;
+                `}>Want to learn more?</h2>
+        <StyledButton
+          css={css`
+                  background: ${colors.red};
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 500;
+                  font-size: 16px;
+                  line-height: 24px;
+                  border: 0;
+                  cursor: pointer;
+                  color: #FFFFFF;
+                  padding: 0;
+                  display: inline-block;
+                  margin: 0 auto;
+                  margin-top: 20px;
+                  transition: .2s ease;
+                  cursor: not-allowed;
+                  opacity: 0.15;
+                `}
+          onClick={_ => {
+            navigate('https://www.google.com')
+          }}
+          disabled
+        >
+          Read Blog Post
+          </StyledButton>
+      </section> */}
       <div
         css={css`
           display: flex;
@@ -234,53 +305,69 @@ const IndexPage = () => {
       >
         <div
           css={css`
-            display: flex;
-            flex-direction: row;
+            display: grid;
+            grid-auto-flow: column;
             justify-content: space-around;
             align-items: stretch;
             width: 75vw;
+            @media only screen and (max-width: 768px) {
+              grid-auto-flow: row;
+          }
           `}
         >
           <div
             css={css`
-              width: 50%;
-              display: flex;
-              flex-direction: column;
+              width: 70%;
+              display: grid;
+              gap: 16px;
+              padding-top:64px;
+              padding-bottom:64px;
+              @media only screen and (max-width: 768px) {
+                width: 100%;
+            }
             `}
           >
             <h3
               css={css`
-                font-family: Inter;
-                font-style: normal;
-                font-weight: bold;
-                font-size: 24px;
-                line-height: 29px;
+              font-family: Inter;
+              font-style: normal;
+              font-weight: bold;
+              font-size: 24px;
+              line-height: 29px;
+              /* identical to box height */
 
-                /* identical to box height */
-                letter-spacing: -0.5px;
-
-                color: #ffffff;
+              letter-spacing: -0.5px;
+              margin-top: 0;
+              color: #FFFFFF;
               `}
             >
               Secured by Secret Network
             </h3>
             <p
               css={css`
-                font-family: Roboto Mono;
-                font-style: normal;
-                font-weight: normal;
-                font-size: 16px;
-                line-height: 150%;
+              font-family: Inter;
+              font-style: normal;
+              font-weight: normal;
+              font-size: 18px;
+              line-height: 150%;
+              color: #FFFFFF;
               `}
             >
-              Secret Manufaktur's secretNFTs are created using the SNIP-721 standard on Secret Network. Your image is encrpyted and stored
-              within the private metadata, so only the current owner can ever access it. Secret Network is the first blockchain with
-              privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone,
-              even the nodes in the network.
+              <p>Secret Heroes’ secretNFTs are created using the SNIP-721 standard on Secret Network.</p>
+
+              <p>Secret Network is the first blockchain with privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone, even the nodes in the network. </p>
             </p>
-            <Link to="https://scrt.network/" target="new">
+            <Link to="https://scrt.network/blog/secret-nft-update-reference-implementation-new-tutorial" target="new" css={css`
+            font-family: Inter;
+            font-style: normal;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 150%;
+            text-decoration-line: underline;
+            color: #FFFFFF;
+            `}>
               Learn More
-            </Link>
+              </Link>
           </div>
           <div
             css={css`
@@ -288,21 +375,54 @@ const IndexPage = () => {
               place-items: center;
               width: 20vw;
               padding: 3vh;
+              @media only screen and (max-width: 768px) {
+                padding: 0;
+                width: 60vw;
+                height: 100px;
+                order: -1;
+                margin-top: 64px;
+            }
             `}
           >
             <div
               css={css`
-                background: url('images/secret.png');
+                background: url('images/secret-logo.png');
                 width: 100%;
-                background-size: contain;
+                background-size: 200px;
                 background-repeat: no-repeat;
-                background-position: 50% 50%;
+                background-position: left;
                 height: 100%;
               `}
             />
           </div>
         </div>
       </div>
+      <section clasName="footer" css={css`
+      background: #000;
+      padding-top: 32px;
+      padding-bottom: 32px;
+      display: grid;
+      text-align: center;
+      gap: 16px;
+      `}>
+        <div className="social" css={css`
+          `}>
+          <Link to="https://twitter.com/secretheroesnft" target="new" css={css`
+          width: 24px;
+          height: 24px;
+          display: inline-block;
+          background: url('images/twitter.png');
+          `}></Link>
+          <Link to="https://discord.gg/JpTnNRVzpw" target="new" css={css`
+          width: 24px;
+          height: 24px;
+          display: inline-block;
+          margin-left: 16px;
+          background: url('images/discord.png');
+          `}></Link>
+        </div>
+        <p>© Secret Heroes</p>
+      </section>
     </IndexLayout>
   )
 }
