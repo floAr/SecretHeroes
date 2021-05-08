@@ -75,6 +75,7 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         HandleMsg::SetMintStatus { stop } => try_set_mint_status(deps, env, stop),
         HandleMsg::Mint { names } => try_mint(deps, env, names),
         HandleMsg::ChangeAdmin { address } => try_change_admin(deps, env, address),
+        HandleMsg::AddMintCount { packs_minted } => try_add_count(deps, env, packs_minted),
     };
     pad_handle_result(response, BLOCK_SIZE)
 }
@@ -155,6 +156,40 @@ pub fn try_mint<S: Storage, A: Api, Q: Querier>(
         messages,
         log: vec![],
         data: Some(to_binary(&HandleAnswer::Mint { status: Success })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// add count of previous packs minted
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `packs_minted` - number of previous packs minted
+pub fn try_add_count<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    packs_minted: u32,
+) -> HandleResult {
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    if admin != sender_raw {
+        return Err(StdError::generic_err(
+            "This is an admin command and can only be run from the admin address",
+        ));
+    }
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    config.mint_cnt += packs_minted;
+    save(&mut deps.storage, CONFIG_KEY, &config)?;
+
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::AddMintCount {
+            packs_added: packs_minted,
+        })?),
     })
 }
 

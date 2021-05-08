@@ -248,6 +248,54 @@
           }
         }
       }
+    },
+    {
+      "description": "admin dump history of all battles",
+      "type": "object",
+      "required": [
+        "dump_battle_history"
+      ],
+      "properties": {
+        "dump_battle_history": {
+          "type": "object",
+          "required": [
+            "admin",
+            "viewing_key"
+          ],
+          "properties": {
+            "admin": {
+              "description": "admin's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "limit": {
+              "description": "optional number of battles to display",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "start_from": {
+              "description": "optional index of battle to start display.  Use this for pagination",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "viewing_key": {
+              "description": "admin's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {

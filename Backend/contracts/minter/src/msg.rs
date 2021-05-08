@@ -43,6 +43,11 @@ pub enum HandleMsg {
         /// true if minting should be halted
         stop: bool,
     },
+    /// add number of packs minted (admin only)
+    AddMintCount {
+        /// number of packs minted in previous contracts
+        packs_minted: u32,
+    },
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -70,6 +75,7 @@ pub enum HandleAnswer {
     NewCardContract { card_contract: HumanAddr },
     NewMultiSig { multi_sig: HumanAddr },
     SetMintStatus { minting_has_halted: bool },
+    AddMintCount { packs_added: u32 },
 }
 
 /// Responses from queries

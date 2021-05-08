@@ -239,7 +239,7 @@
       }
     },
     {
-      "description": "import player stats.  This can only be called by the authorized old arena",
+      "description": "import player stats and battle count.  This can only be called by the authorized old arena",
       "type": "object",
       "required": [
         "import"
@@ -251,6 +251,14 @@
             "stats"
           ],
           "properties": {
+            "battle_count": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "stats": {
               "type": "array",
               "items": {

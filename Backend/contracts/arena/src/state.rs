@@ -11,7 +11,7 @@ use secret_toolkit::{
     storage::{AppendStore, AppendStoreMut},
 };
 
-use crate::msg::{Battle, ContractInfo, Hero, PlayerStats, TokenInfo};
+use crate::msg::{Battle, BattleDump, ContractInfo, Hero, HeroDump, PlayerStats, TokenInfo};
 use crate::stats::Stats;
 
 pub const CONFIG_KEY: &[u8] = b"config";
@@ -37,8 +37,10 @@ pub struct Config {
     pub prng_seed: Vec<u8>,
     /// combined entropy strings supplied with the heroes
     pub entropy: String,
-    /// current battle count
+    /// current battle count in this arena
     pub battle_cnt: u64,
+    /// battle count from previous arenas
+    pub previous_battles: u64,
     /// viewing key used with the card contracts
     pub viewing_key: String,
     /// contract info of all the card versions
@@ -199,6 +201,27 @@ impl StoreHero {
 
         Ok(hero)
     }
+
+    /// Returns StdResult<HeroDump> from converting a StoreHero to a displayable HeroDump
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    /// * `versions` - a slice of ContractInfo of token contract versions
+    pub fn into_dump<A: Api>(self, api: &A, versions: &[ContractInfo]) -> StdResult<HeroDump> {
+        let hero = HeroDump {
+            owner: api.human_address(&self.owner)?,
+            name: self.name,
+            token_info: TokenInfo {
+                token_id: self.token_info.token_id,
+                address: versions[self.token_info.version as usize].address.clone(),
+            },
+            pre_battle_skills: self.pre_battle_skills,
+            post_battle_skills: self.post_battle_skills,
+        };
+
+        Ok(hero)
+    }
 }
 
 /// a hero's token info
@@ -252,6 +275,32 @@ impl StoreBattle {
         } else {
             Err(StdError::generic_err("Battle History corupted"))
         }
+    }
+
+    /// Returns StdResult<BattleDump> from converting a StoreBattle to a displayable BattleDump
+    ///
+    /// # Arguments
+    ///
+    /// * `api` - a reference to the Api used to convert human and canonical addresses
+    /// * `versions` - a slice of ContractInfo of token contract versions
+    pub fn into_dump<A: Api>(
+        mut self,
+        api: &A,
+        versions: &[ContractInfo],
+    ) -> StdResult<BattleDump> {
+        let battle = BattleDump {
+            battle_number: self.battle_number,
+            timestamp: self.timestamp,
+            heroes: self
+                .heroes
+                .drain(..)
+                .map(|h| h.into_dump(api, versions))
+                .collect::<StdResult<Vec<HeroDump>>>()?,
+            skill_used: self.skill_used,
+            winner: self.winner,
+            winning_skill_value: self.winning_skill_value,
+        };
+        Ok(battle)
     }
 }
 

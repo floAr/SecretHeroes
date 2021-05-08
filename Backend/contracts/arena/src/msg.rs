@@ -68,8 +68,11 @@ pub enum HandleMsg {
         /// old arena contract address
         old_arena: HumanAddr,
     },
-    /// import player stats.  This can only be called by the authorized old arena
-    Import { stats: Vec<PlayerStats> },
+    /// import player stats and battle count.  This can only be called by the authorized old arena
+    Import {
+        stats: Vec<PlayerStats>,
+        battle_count: Option<u64>,
+    },
     /// export player stats to a new arena.  This will continue with the next block of an on-going export
     /// process.
     Export {},
@@ -175,6 +178,17 @@ pub enum QueryMsg {
         /// optional number of players' stats to display
         limit: Option<u32>,
     },
+    /// admin dump history of all battles
+    DumpBattleHistory {
+        /// admin's address
+        admin: HumanAddr,
+        /// admin's viewing key
+        viewing_key: String,
+        /// optional index of battle to start display.  Use this for pagination
+        start_from: Option<u64>,
+        /// optional number of battles to display
+        limit: Option<u64>,
+    },
 }
 
 /// responses from queries
@@ -222,8 +236,12 @@ pub enum QueryAnswer {
     },
     /// game usage metrics
     Usage {
+        /// number of players
         player_count: u32,
-        battle_count: u64,
+        /// number of battles that occurred in this arena
+        arena_battle_count: u64,
+        /// number of battles in previous arenas
+        previous_arena_battles: u64,
     },
     /// status of player stats export
     ExportStatus {
@@ -234,6 +252,10 @@ pub enum QueryAnswer {
     DumpPlayerStats {
         /// list of players' stats and indexes
         stats: Vec<PlayerDump>,
+    },
+    /// all battle histories for this arena
+    DumpBattleHistory {
+        history: Vec<BattleDump>,
     },
 }
 
@@ -322,4 +344,36 @@ pub struct PlayerDump {
     pub index: u32,
     /// player's stats
     pub stats: PlayerStats,
+}
+
+/// hero info with owner
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct HeroDump {
+    /// hero's owner
+    pub owner: HumanAddr,
+    /// name of the hero
+    pub name: String,
+    /// hero's token info
+    pub token_info: TokenInfo,
+    /// hero's skills before the battle
+    pub pre_battle_skills: Vec<u8>,
+    /// hero's skills after the battle
+    pub post_battle_skills: Vec<u8>,
+}
+
+/// battle info with index
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct BattleDump {
+    /// battle id number
+    pub battle_number: u64,
+    /// number of seconds since epoch time 01/01/1970 in which the battle took place
+    pub timestamp: u64,
+    /// heroes that fought
+    pub heroes: Vec<HeroDump>,
+    /// skill used to determine the winner
+    pub skill_used: u8,
+    /// index of winning hero
+    pub winner: Option<u8>,
+    /// winning skill value
+    pub winning_skill_value: u8,
 }

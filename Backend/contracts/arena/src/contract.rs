@@ -21,8 +21,8 @@ use secret_toolkit::{
 };
 
 use crate::msg::{
-    ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerDump, PlayerStats, QueryAnswer, QueryMsg,
-    TokenInfo, WaitingHero,
+    BattleDump, ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerDump, PlayerStats,
+    QueryAnswer, QueryMsg, TokenInfo, WaitingHero,
 };
 use crate::rand::{sha_256, Prng};
 use crate::state::{
@@ -43,7 +43,10 @@ pub const LBOARD_MAX_LEN: usize = 20;
 #[serde(rename_all = "snake_case")]
 pub enum ImportHandleMsg {
     /// import player stats from this arena
-    Import { stats: Vec<PlayerStats> },
+    Import {
+        stats: Vec<PlayerStats>,
+        battle_count: Option<u64>,
+    },
 }
 
 impl HandleCallback for ImportHandleMsg {
@@ -73,6 +76,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
         prng_seed,
         entropy: String::default(),
         battle_cnt: 0,
+        previous_battles: 0,
         viewing_key,
         card_versions: vec![StoreContractInfo {
             code_hash: msg.card_contract.code_hash,
@@ -149,7 +153,10 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         HandleMsg::SetImportFromAddress { old_arena } => {
             try_set_import_from_addr(deps, env, old_arena)
         }
-        HandleMsg::Import { stats } => try_import(deps, env, stats),
+        HandleMsg::Import {
+            stats,
+            battle_count,
+        } => try_import(deps, env, stats, battle_count),
         HandleMsg::Export {} => try_export(deps, env),
         HandleMsg::SetExportToContract { new_arena } => try_set_export_to(deps, env, new_arena),
     };
@@ -186,6 +193,7 @@ pub fn try_export<S: Storage, A: Api, Q: Querier>(
     }
     let may_export_conf: Option<ExportConfig> = may_load(&deps.storage, EXPORT_CONFIG_KEY)?;
     if let Some(mut export_conf) = may_export_conf {
+        let mut battle_count = None;
         let last_block = (config.player_cnt - 1) / 256;
         let play_store = ReadonlyPrefixedStorage::new(PREFIX_PLAYERS, &deps.storage);
         let players: Vec<CanonicalAddr> = load(&play_store, &export_conf.next.to_le_bytes())?;
@@ -197,12 +205,16 @@ pub fn try_export<S: Storage, A: Api, Q: Querier>(
             stats.push(all_stats.into_humanized(&deps.api, player)?);
         }
         export_conf.next = if export_conf.next == last_block {
+            battle_count = Some(config.battle_cnt + config.previous_battles);
             0
         } else {
             export_conf.next + 1
         };
         save(&mut deps.storage, EXPORT_CONFIG_KEY, &export_conf)?;
-        let import_msg = ImportHandleMsg::Import { stats };
+        let import_msg = ImportHandleMsg::Import {
+            stats,
+            battle_count,
+        };
         return Ok(HandleResponse {
             messages: vec![import_msg.to_cosmos_msg(
                 export_conf.new_arena.code_hash,
@@ -266,10 +278,12 @@ pub fn try_set_export_to<S: Storage, A: Api, Q: Querier>(
 /// * `deps` - mutable reference to Extern containing all the contract's external dependencies
 /// * `env` - Env of contract's environment
 /// * `stats` - old player stats
+/// * `battle_count` - Optional count of past battles
 pub fn try_import<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
     stats: Vec<PlayerStats>,
+    battle_count: Option<u64>,
 ) -> HandleResult {
     let sender_raw = deps.api.canonical_address(&env.message.sender)?;
     let may_exporter: Option<CanonicalAddr> = may_load(&deps.storage, IMPORT_FROM_KEY)?;
@@ -317,6 +331,10 @@ pub fn try_import<S: Storage, A: Api, Q: Querier>(
     // put new players in storage
     if !config.new_players.is_empty() {
         add_new_players(&mut deps.storage, &mut config)?;
+    }
+    // add the battle count if present
+    if let Some(battles) = battle_count {
+        config.previous_battles += battles;
     }
     save(&mut deps.storage, LEADERBOARDS_KEY, &leaderboards)?;
     save(&mut deps.storage, CONFIG_KEY, &config)?;
@@ -1034,8 +1052,61 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
             start_from,
             limit,
         } => query_dump_stats(deps, &admin, viewing_key, start_from, limit),
+        QueryMsg::DumpBattleHistory {
+            admin,
+            viewing_key,
+            start_from,
+            limit,
+        } => query_dump_history(deps, &admin, viewing_key, start_from, limit),
     };
     pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult dumping all battle histories
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+/// * `admin` - a reference to the admin's address
+/// * `viewing_key` - admin's viewing key
+/// * `start_from` - Optional battle index to start display from
+/// * `limit` - Optional number of battles to display
+pub fn query_dump_history<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    admin: &HumanAddr,
+    viewing_key: String,
+    start_from: Option<u64>,
+    limit: Option<u64>,
+) -> QueryResult {
+    let real_admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let input_raw = deps.api.canonical_address(admin)?;
+    if real_admin != input_raw {
+        return Err(StdError::generic_err(
+            "This is an admin query. Admin queries can only be run from admin address",
+        ));
+    }
+    check_key(&deps.storage, &input_raw, viewing_key)?;
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let versions = config
+        .card_versions
+        .iter()
+        .map(|v| v.to_humanized(&deps.api))
+        .collect::<StdResult<Vec<ContractInfo>>>()?;
+    let start = start_from.unwrap_or(0);
+    let count = limit.unwrap_or(256);
+    let mut end = start + count;
+    if end > config.battle_cnt {
+        end = config.battle_cnt;
+    }
+    let his_store = ReadonlyPrefixedStorage::new(PREFIX_HISTORY, &deps.storage);
+    let mut history: Vec<BattleDump> = Vec::new();
+    for index in start..end {
+        let may_btl: Option<StoreBattle> = may_load(&his_store, &index.to_le_bytes())?;
+        if let Some(battle) = may_btl {
+            history.push(battle.into_dump(&deps.api, &versions)?);
+        }
+    }
+    to_binary(&QueryAnswer::DumpBattleHistory { history })
 }
 
 /// Returns QueryResult dumping all players' all-time stats
@@ -1139,7 +1210,8 @@ pub fn query_usage<S: ReadonlyStorage>(storage: &S) -> QueryResult {
 
     to_binary(&QueryAnswer::Usage {
         player_count: config.player_cnt,
-        battle_count: config.battle_cnt,
+        arena_battle_count: config.battle_cnt,
+        previous_arena_battles: config.previous_battles,
     })
 }
 

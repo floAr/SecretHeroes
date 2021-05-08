@@ -97,6 +97,27 @@
           }
         }
       }
+    },
+    {
+      "type": "object",
+      "required": [
+        "add_mint_count"
+      ],
+      "properties": {
+        "add_mint_count": {
+          "type": "object",
+          "required": [
+            "packs_added"
+          ],
+          "properties": {
+            "packs_added": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
