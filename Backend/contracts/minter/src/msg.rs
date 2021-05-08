@@ -50,6 +50,8 @@ pub enum HandleMsg {
 pub enum QueryMsg {
     /// display the minter config
     Config {},
+    /// display the number of packs minted
+    PacksMinted {},
 }
 
 /// success or failure response
@@ -80,6 +82,8 @@ pub enum QueryAnswer {
         multi_sig_contract: HumanAddr,
         minting_has_halted: bool,
     },
+    /// number of packs minted
+    PacksMinted { packs_minted: u32 },
 }
 
 /// code hash and address of a contract

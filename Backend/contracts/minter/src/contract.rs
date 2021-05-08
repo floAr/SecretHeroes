@@ -1,7 +1,7 @@
 use cosmwasm_std::{
     to_binary, Api, BankMsg, CanonicalAddr, Coin, CosmosMsg, Env, Extern, HandleResponse,
-    HandleResult, HumanAddr, InitResponse, InitResult, Querier, QueryResult, StdError, StdResult,
-    Storage, Uint128,
+    HandleResult, HumanAddr, InitResponse, InitResult, Querier, QueryResult, ReadonlyStorage,
+    StdError, StdResult, Storage, Uint128,
 };
 
 use secret_toolkit::{
@@ -45,6 +45,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
         minting_halt: false,
         multi_sig: deps.api.canonical_address(&msg.multi_sig)?,
         prng_seed,
+        mint_cnt: 0,
     };
 
     save(&mut deps.storage, CONFIG_KEY, &config)?;
@@ -127,6 +128,7 @@ pub fn try_mint<S: Storage, A: Api, Q: Querier>(
         )?);
     }
     config.prng_seed = rdm_bytes;
+    config.mint_cnt += 1;
     save(&mut deps.storage, CONFIG_KEY, &config)?;
     let card_contract = config
         .card_versions
@@ -328,8 +330,22 @@ pub fn try_set_mint_status<S: Storage, A: Api, Q: Querier>(
 pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryMsg) -> QueryResult {
     let response = match msg {
         QueryMsg::Config {} => query_config(deps),
+        QueryMsg::PacksMinted {} => query_packs_minted(&deps.storage),
     };
     pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult displaying the number of packs minted
+///
+/// # Arguments
+///
+/// * `storage` - a reference to the contract's storage
+pub fn query_packs_minted<S: ReadonlyStorage>(storage: &S) -> QueryResult {
+    let config: Config = load(storage, CONFIG_KEY)?;
+
+    to_binary(&QueryAnswer::PacksMinted {
+        packs_minted: config.mint_cnt,
+    })
 }
 
 /// Returns QueryResult displaying the contract's config

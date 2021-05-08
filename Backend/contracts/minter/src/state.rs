@@ -26,6 +26,8 @@ pub struct Config {
     //    pub tourney: CanonicalAddr,
     /// prng seed
     pub prng_seed: Vec<u8>,
+    /// number of packs minted
+    pub mint_cnt: u32,
 }
 
 /// code hash and address of a contract

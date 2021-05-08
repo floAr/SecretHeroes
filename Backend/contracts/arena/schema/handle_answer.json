@@ -148,6 +148,108 @@
           }
         }
       }
+    },
+    {
+      "description": "response from resetting the tournament leaderboard",
+      "type": "object",
+      "required": [
+        "reset_leaderboard"
+      ],
+      "properties": {
+        "reset_leaderboard": {
+          "type": "object",
+          "required": [
+            "timestamp"
+          ],
+          "properties": {
+            "timestamp": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "response from setting an old arena contract allowed to export player stats",
+      "type": "object",
+      "required": [
+        "set_import_from_address"
+      ],
+      "properties": {
+        "set_import_from_address": {
+          "type": "object",
+          "required": [
+            "old_arena"
+          ],
+          "properties": {
+            "old_arena": {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "response from importing player stats",
+      "type": "object",
+      "required": [
+        "import"
+      ],
+      "properties": {
+        "import": {
+          "type": "object",
+          "required": [
+            "successful"
+          ],
+          "properties": {
+            "successful": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "response from exporting player stats",
+      "type": "object",
+      "required": [
+        "export"
+      ],
+      "properties": {
+        "export": {
+          "type": "object",
+          "required": [
+            "completed"
+          ],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "response from setting a new arena contract to export to",
+      "type": "object",
+      "required": [
+        "set_export_to_contract"
+      ],
+      "properties": {
+        "set_export_to_contract": {
+          "type": "object",
+          "required": [
+            "new_arena"
+          ],
+          "properties": {
+            "new_arena": {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {

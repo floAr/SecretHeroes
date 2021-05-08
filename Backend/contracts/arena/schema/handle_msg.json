@@ -189,6 +189,91 @@
       }
     },
     {
+      "description": "set export_to contract info",
+      "type": "object",
+      "required": [
+        "set_export_to_contract"
+      ],
+      "properties": {
+        "set_export_to_contract": {
+          "type": "object",
+          "required": [
+            "new_arena"
+          ],
+          "properties": {
+            "new_arena": {
+              "description": "new arena ContractInfo",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ContractInfo"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "set the address of an old arena contract that is allowed to export player stats",
+      "type": "object",
+      "required": [
+        "set_import_from_address"
+      ],
+      "properties": {
+        "set_import_from_address": {
+          "type": "object",
+          "required": [
+            "old_arena"
+          ],
+          "properties": {
+            "old_arena": {
+              "description": "old arena contract address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "import player stats.  This can only be called by the authorized old arena",
+      "type": "object",
+      "required": [
+        "import"
+      ],
+      "properties": {
+        "import": {
+          "type": "object",
+          "required": [
+            "stats"
+          ],
+          "properties": {
+            "stats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerStats"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "export player stats to a new arena.  This will continue with the next block of an on-going export process.",
+      "type": "object",
+      "required": [
+        "export"
+      ],
+      "properties": {
+        "export": {
+          "type": "object"
+        }
+      }
+    },
+    {
       "description": "add bot addresses",
       "type": "object",
       "required": [
@@ -235,6 +320,18 @@
           }
         }
       }
+    },
+    {
+      "description": "reset the tournament leaderboard",
+      "type": "object",
+      "required": [
+        "reset_leaderboard"
+      ],
+      "properties": {
+        "reset_leaderboard": {
+          "type": "object"
+        }
+      }
     }
   ],
   "definitions": {
@@ -266,6 +363,64 @@
     },
     "HumanAddr": {
       "type": "string"
+    },
+    "PlayerStats": {
+      "description": "player stats and point leaderboard entry",
+      "type": "object",
+      "required": [
+        "address",
+        "battles",
+        "losses",
+        "score",
+        "third_in_two_way_ties",
+        "ties",
+        "wins"
+      ],
+      "properties": {
+        "address": {
+          "description": "player's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "battles": {
+          "description": "number of battles",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "losses": {
+          "description": "number of losses",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "score": {
+          "description": "player's score",
+          "type": "integer",
+          "format": "int32"
+        },
+        "third_in_two_way_ties": {
+          "description": "number of times took 3rd place in a 2-way tie",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "ties": {
+          "description": "number of ties",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "wins": {
+          "description": "number of wins",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
     }
   }
 }

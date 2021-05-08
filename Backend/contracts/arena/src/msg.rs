@@ -58,6 +58,21 @@ pub enum HandleMsg {
         /// new card ContractInfo
         card_contract: ContractInfo,
     },
+    /// set export_to contract info
+    SetExportToContract {
+        /// new arena ContractInfo
+        new_arena: ContractInfo,
+    },
+    /// set the address of an old arena contract that is allowed to export player stats
+    SetImportFromAddress {
+        /// old arena contract address
+        old_arena: HumanAddr,
+    },
+    /// import player stats.  This can only be called by the authorized old arena
+    Import { stats: Vec<PlayerStats> },
+    /// export player stats to a new arena.  This will continue with the next block of an on-going export
+    /// process.
+    Export {},
     /// add bot addresses
     AddBots {
         /// list of addresses that auto-send fighters to shorten user wait
@@ -68,6 +83,8 @@ pub enum HandleMsg {
         /// list of addresses that no longer auto-send fighters
         bots: Vec<HumanAddr>,
     },
+    /// reset the tournament leaderboard
+    ResetLeaderboard {},
 }
 
 /// Responses from handle functions
@@ -88,6 +105,16 @@ pub enum HandleAnswer {
     AddBots { added_bots: Vec<HumanAddr> },
     /// response from removing auto-send addresses
     RemoveBots { removed_bots: Vec<HumanAddr> },
+    /// response from resetting the tournament leaderboard
+    ResetLeaderboard { timestamp: u64 },
+    /// response from setting an old arena contract allowed to export player stats
+    SetImportFromAddress { old_arena: HumanAddr },
+    /// response from importing player stats
+    Import { successful: bool },
+    /// response from exporting player stats
+    Export { completed: bool },
+    /// response from setting a new arena contract to export to
+    SetExportToContract { new_arena: HumanAddr },
 }
 
 /// Query messages
@@ -115,16 +142,38 @@ pub enum QueryMsg {
     },
     /// display the arena config
     Config {},
+    /// display player stats export status
+    ExportStatus {
+        /// admin's address
+        admin: HumanAddr,
+        /// admin's viewing key
+        viewing_key: String,
+    },
+    /// display game usage metrics
+    Usage {},
     /// display list of auto-send addresses
     Bots {},
     /// display the leaderboards
     Leaderboards {},
+    /// display tournament info
+    Tournament {},
     /// display a player's stats
     PlayerStats {
         /// querier's address
         address: HumanAddr,
         /// querier's viewing key
         viewing_key: String,
+    },
+    /// admin dump of all players' all-time stats
+    DumpPlayerStats {
+        /// admin's address
+        admin: HumanAddr,
+        /// admin's viewing key
+        viewing_key: String,
+        /// optional index of player to start display.  Use this for pagination
+        start_from: Option<u32>,
+        /// optional number of players' stats to display
+        limit: Option<u32>,
     },
 }
 
@@ -150,6 +199,8 @@ pub enum QueryAnswer {
     },
     /// point leaderboards
     Leaderboards {
+        /// seconds after 01/01/1970 in which the tournament started
+        tournament_started: u64,
         /// tournament leaderboard
         tournament: Vec<PlayerStats>,
         /// all time leaderboard
@@ -161,6 +212,28 @@ pub enum QueryAnswer {
         tournament: PlayerStats,
         /// all time stats
         all_time: PlayerStats,
+    },
+    /// display tournament info
+    Tournament {
+        /// seconds after 01/01/1970 in which the tournament started
+        tournament_started: u64,
+        /// the tournament leaderboard
+        leaderboard: Vec<PlayerStats>,
+    },
+    /// game usage metrics
+    Usage {
+        player_count: u32,
+        battle_count: u64,
+    },
+    /// status of player stats export
+    ExportStatus {
+        next_block: Option<u32>,
+        last_block: Option<u32>,
+    },
+    /// all players' all-time stats
+    DumpPlayerStats {
+        /// list of players' stats and indexes
+        stats: Vec<PlayerDump>,
     },
 }
 
@@ -240,4 +313,13 @@ pub struct PlayerStats {
     pub third_in_two_way_ties: u32,
     /// number of losses
     pub losses: u32,
+}
+
+/// player stats coupled with the player index for better pagination
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
+pub struct PlayerDump {
+    /// index of this player
+    pub index: u32,
+    /// player's stats
+    pub stats: PlayerStats,
 }

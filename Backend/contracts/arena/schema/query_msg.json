@@ -94,6 +94,48 @@
       }
     },
     {
+      "description": "display player stats export status",
+      "type": "object",
+      "required": [
+        "export_status"
+      ],
+      "properties": {
+        "export_status": {
+          "type": "object",
+          "required": [
+            "admin",
+            "viewing_key"
+          ],
+          "properties": {
+            "admin": {
+              "description": "admin's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "viewing_key": {
+              "description": "admin's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "display game usage metrics",
+      "type": "object",
+      "required": [
+        "usage"
+      ],
+      "properties": {
+        "usage": {
+          "type": "object"
+        }
+      }
+    },
+    {
       "description": "display list of auto-send addresses",
       "type": "object",
       "required": [
@@ -113,6 +155,18 @@
       ],
       "properties": {
         "leaderboards": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "description": "display tournament info",
+      "type": "object",
+      "required": [
+        "tournament"
+      ],
+      "properties": {
+        "tournament": {
           "type": "object"
         }
       }
@@ -141,6 +195,54 @@
             },
             "viewing_key": {
               "description": "querier's viewing key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "admin dump of all players' all-time stats",
+      "type": "object",
+      "required": [
+        "dump_player_stats"
+      ],
+      "properties": {
+        "dump_player_stats": {
+          "type": "object",
+          "required": [
+            "admin",
+            "viewing_key"
+          ],
+          "properties": {
+            "admin": {
+              "description": "admin's address",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HumanAddr"
+                }
+              ]
+            },
+            "limit": {
+              "description": "optional number of players' stats to display",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "start_from": {
+              "description": "optional index of player to start display.  Use this for pagination",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "viewing_key": {
+              "description": "admin's viewing key",
               "type": "string"
             }
           }

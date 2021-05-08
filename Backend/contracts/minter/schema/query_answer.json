@@ -33,6 +33,28 @@
           }
         }
       }
+    },
+    {
+      "description": "number of packs minted",
+      "type": "object",
+      "required": [
+        "packs_minted"
+      ],
+      "properties": {
+        "packs_minted": {
+          "type": "object",
+          "required": [
+            "packs_minted"
+          ],
+          "properties": {
+            "packs_minted": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {

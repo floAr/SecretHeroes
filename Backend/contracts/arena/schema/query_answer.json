@@ -117,7 +117,8 @@
           "type": "object",
           "required": [
             "all_time",
-            "tournament"
+            "tournament",
+            "tournament_started"
           ],
           "properties": {
             "all_time": {
@@ -133,6 +134,12 @@
               "items": {
                 "$ref": "#/definitions/PlayerStats"
               }
+            },
+            "tournament_started": {
+              "description": "seconds after 01/01/1970 in which the tournament started",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }
@@ -167,6 +174,119 @@
                   "$ref": "#/definitions/PlayerStats"
                 }
               ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "display tournament info",
+      "type": "object",
+      "required": [
+        "tournament"
+      ],
+      "properties": {
+        "tournament": {
+          "type": "object",
+          "required": [
+            "leaderboard",
+            "tournament_started"
+          ],
+          "properties": {
+            "leaderboard": {
+              "description": "the tournament leaderboard",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerStats"
+              }
+            },
+            "tournament_started": {
+              "description": "seconds after 01/01/1970 in which the tournament started",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "game usage metrics",
+      "type": "object",
+      "required": [
+        "usage"
+      ],
+      "properties": {
+        "usage": {
+          "type": "object",
+          "required": [
+            "battle_count",
+            "player_count"
+          ],
+          "properties": {
+            "battle_count": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "player_count": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "status of player stats export",
+      "type": "object",
+      "required": [
+        "export_status"
+      ],
+      "properties": {
+        "export_status": {
+          "type": "object",
+          "properties": {
+            "last_block": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "next_block": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "all players' all-time stats",
+      "type": "object",
+      "required": [
+        "dump_player_stats"
+      ],
+      "properties": {
+        "dump_player_stats": {
+          "type": "object",
+          "required": [
+            "stats"
+          ],
+          "properties": {
+            "stats": {
+              "description": "list of players' stats and indexes",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerDump"
+              }
             }
           }
         }
@@ -290,6 +410,30 @@
     },
     "HumanAddr": {
       "type": "string"
+    },
+    "PlayerDump": {
+      "description": "player stats coupled with the player index for better pagination",
+      "type": "object",
+      "required": [
+        "index",
+        "stats"
+      ],
+      "properties": {
+        "index": {
+          "description": "index of this player",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "stats": {
+          "description": "player's stats",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PlayerStats"
+            }
+          ]
+        }
+      }
     },
     "PlayerStats": {
       "description": "player stats and point leaderboard entry",

@@ -1,3 +1,5 @@
+use serde::Serialize;
+
 use std::cmp::Ordering;
 
 use cosmwasm_std::{
@@ -15,25 +17,38 @@ use secret_toolkit::{
         set_private_metadata_msg, set_viewing_key_msg, set_whitelisted_approval_msg,
         transfer_nft_msg, AccessLevel, Metadata, Transfer, ViewerInfo,
     },
-    utils::{pad_handle_result, pad_query_result},
+    utils::{pad_handle_result, pad_query_result, HandleCallback},
 };
 
 use crate::msg::{
-    ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerStats, QueryAnswer, QueryMsg, TokenInfo,
-    WaitingHero,
+    ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerDump, PlayerStats, QueryAnswer, QueryMsg,
+    TokenInfo, WaitingHero,
 };
 use crate::rand::{sha_256, Prng};
 use crate::state::{
-    append_battle_for_addr, get_history, load, may_load, remove, save, Config, Leaderboards, Rank,
-    StoreBattle, StoreContractInfo, StoreHero, StorePlayerStats, StoreTokenInfo, StoreWaitingHero,
-    Tourney, TourneyStats, ADMIN_KEY, BOTS_KEY, CONFIG_KEY, LEADERBOARDS_KEY, PREFIX_ALL_STATS,
-    PREFIX_HISTORY, PREFIX_TOURN_STATS, PREFIX_VIEW_KEY,
+    append_battle_for_addr, get_history, load, may_load, remove, save, Config, ExportConfig,
+    Leaderboards, Rank, StoreBattle, StoreContractInfo, StoreHero, StorePlayerStats,
+    StoreTokenInfo, StoreWaitingHero, Tourney, TourneyStats, ADMIN_KEY, BOTS_KEY, CONFIG_KEY,
+    EXPORT_CONFIG_KEY, IMPORT_FROM_KEY, LEADERBOARDS_KEY, PREFIX_ALL_STATS, PREFIX_HISTORY,
+    PREFIX_PLAYERS, PREFIX_SEEN, PREFIX_TOURN_STATS, PREFIX_VIEW_KEY,
 };
 use crate::stats::Stats;
 use crate::viewing_key::{ViewingKey, VIEWING_KEY_SIZE};
 
 pub const BLOCK_SIZE: usize = 256;
 pub const LBOARD_MAX_LEN: usize = 20;
+
+/// import HandlMsg declaration
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ImportHandleMsg {
+    /// import player stats from this arena
+    Import { stats: Vec<PlayerStats> },
+}
+
+impl HandleCallback for ImportHandleMsg {
+    const BLOCK_SIZE: usize = BLOCK_SIZE;
+}
 
 ////////////////////////////////////// Init ///////////////////////////////////////
 /// Returns InitResult
@@ -65,6 +80,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
         }],
         fight_halt: false,
         player_cnt: 0,
+        new_players: Vec::new(),
     };
     let leaderboards = Leaderboards {
         tourney: Tourney {
@@ -129,8 +145,250 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         }
         HandleMsg::AddBots { bots } => try_add_bots(deps, env, bots),
         HandleMsg::RemoveBots { bots } => try_remove_bots(deps, env, bots),
+        HandleMsg::ResetLeaderboard {} => try_reset_leaderboard(deps, env),
+        HandleMsg::SetImportFromAddress { old_arena } => {
+            try_set_import_from_addr(deps, env, old_arena)
+        }
+        HandleMsg::Import { stats } => try_import(deps, env, stats),
+        HandleMsg::Export {} => try_export(deps, env),
+        HandleMsg::SetExportToContract { new_arena } => try_set_export_to(deps, env, new_arena),
     };
     pad_handle_result(response, BLOCK_SIZE)
+}
+
+/// Returns HandleResult
+///
+/// export the next block of player stats to the new arena
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+pub fn try_export<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    if !config.fight_halt {
+        return Err(StdError::generic_err(
+            "Battles must be stopped before player stats can be exported",
+        ));
+    }
+    if config.player_cnt == 0 {
+        return Err(StdError::generic_err("There are no players to export"));
+    }
+    let may_export_conf: Option<ExportConfig> = may_load(&deps.storage, EXPORT_CONFIG_KEY)?;
+    if let Some(mut export_conf) = may_export_conf {
+        let last_block = (config.player_cnt - 1) / 256;
+        let play_store = ReadonlyPrefixedStorage::new(PREFIX_PLAYERS, &deps.storage);
+        let players: Vec<CanonicalAddr> = load(&play_store, &export_conf.next.to_le_bytes())?;
+        let mut stats: Vec<PlayerStats> = Vec::new();
+        let all_store = ReadonlyPrefixedStorage::new(PREFIX_ALL_STATS, &deps.storage);
+        for player in players.iter() {
+            let all_stats: StorePlayerStats =
+                may_load(&all_store, player.as_slice())?.unwrap_or_else(StorePlayerStats::default);
+            stats.push(all_stats.into_humanized(&deps.api, player)?);
+        }
+        export_conf.next = if export_conf.next == last_block {
+            0
+        } else {
+            export_conf.next + 1
+        };
+        save(&mut deps.storage, EXPORT_CONFIG_KEY, &export_conf)?;
+        let import_msg = ImportHandleMsg::Import { stats };
+        return Ok(HandleResponse {
+            messages: vec![import_msg.to_cosmos_msg(
+                export_conf.new_arena.code_hash,
+                deps.api.human_address(&export_conf.new_arena.address)?,
+                None,
+            )?],
+            log: vec![],
+            data: Some(to_binary(&HandleAnswer::Export {
+                completed: export_conf.next == 0,
+            })?),
+        });
+    }
+    Err(StdError::generic_err(
+        "The new arena contract has not been set",
+    ))
+}
+
+/// Returns HandleResult
+///
+/// set the new arena ContractInfo for use when exporting player stats
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `new_arena_human` - new arena ContractInfo
+pub fn try_set_export_to<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    new_arena_human: ContractInfo,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let address = deps.api.canonical_address(&new_arena_human.address)?;
+    let new_arena = StoreContractInfo {
+        address,
+        code_hash: new_arena_human.code_hash,
+    };
+    let export_conf = ExportConfig { new_arena, next: 0 };
+    save(&mut deps.storage, EXPORT_CONFIG_KEY, &export_conf)?;
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::SetExportToContract {
+            new_arena: new_arena_human.address,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// import player stats from an old arena
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `stats` - old player stats
+pub fn try_import<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    stats: Vec<PlayerStats>,
+) -> HandleResult {
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    let may_exporter: Option<CanonicalAddr> = may_load(&deps.storage, IMPORT_FROM_KEY)?;
+    if let Some(exporter) = may_exporter {
+        if exporter != sender_raw {
+            return Err(StdError::generic_err(
+                "This arena will only import from an authorized exporter",
+            ));
+        }
+    } else {
+        return Err(StdError::generic_err(
+            "Player stats exporter has not been set",
+        ));
+    }
+    let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let mut leaderboards: Leaderboards = load(&deps.storage, LEADERBOARDS_KEY)?;
+    for player in stats.iter() {
+        let player_raw = deps.api.canonical_address(&player.address)?;
+        let player_slice = player_raw.as_slice();
+        let mut seen_store = PrefixedStorage::new(PREFIX_SEEN, &mut deps.storage);
+        let may_seen: Option<bool> = may_load(&seen_store, player_slice)?;
+        // save a new player
+        if may_seen.is_none() {
+            config.new_players.push(player_raw.clone());
+            save(&mut seen_store, player_slice, &true)?;
+        }
+        let mut all_store = PrefixedStorage::new(PREFIX_ALL_STATS, &mut deps.storage);
+        let mut all_stats: StorePlayerStats =
+            may_load(&all_store, player_slice)?.unwrap_or_else(StorePlayerStats::default);
+        all_stats.score += player.score;
+        all_stats.battles += player.battles;
+        all_stats.wins += player.wins;
+        all_stats.ties += player.ties;
+        all_stats.third_in_two_way_ties += player.third_in_two_way_ties;
+        all_stats.losses += player.losses;
+        save(&mut all_store, player_slice, &all_stats)?;
+        update_leaderboard(
+            &mut leaderboards.all_time,
+            &player_raw,
+            all_stats.score,
+            1,
+            LBOARD_MAX_LEN,
+        );
+    }
+    // put new players in storage
+    if !config.new_players.is_empty() {
+        add_new_players(&mut deps.storage, &mut config)?;
+    }
+    save(&mut deps.storage, LEADERBOARDS_KEY, &leaderboards)?;
+    save(&mut deps.storage, CONFIG_KEY, &config)?;
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::Import { successful: true })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// set the address of an old arena that is allowed to export its player stats
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+/// * `old_arena` - the old arena address
+pub fn try_set_import_from_addr<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+    old_arena: HumanAddr,
+) -> HandleResult {
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    if admin != sender_raw {
+        return Err(StdError::generic_err(
+            "This is an admin command and can only be run from the admin address",
+        ));
+    }
+    let old_raw = deps.api.canonical_address(&old_arena)?;
+    save(&mut deps.storage, IMPORT_FROM_KEY, &old_raw)?;
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::SetImportFromAddress {
+            old_arena,
+        })?),
+    })
+}
+
+/// Returns HandleResult
+///
+/// reset the tournament leaderboard
+///
+/// # Arguments
+///
+/// * `deps` - mutable reference to Extern containing all the contract's external dependencies
+/// * `env` - Env of contract's environment
+pub fn try_reset_leaderboard<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    env: Env,
+) -> HandleResult {
+    let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let sender_raw = deps.api.canonical_address(&env.message.sender)?;
+    if sender_raw != admin {
+        return Err(StdError::generic_err(
+            "This is an admin command. Admin commands can only be run from admin address",
+        ));
+    }
+    let mut leaderboards: Leaderboards = load(&deps.storage, LEADERBOARDS_KEY)?;
+    leaderboards.tourney.start = env.block.time;
+    leaderboards.tourney.leaderboard.clear();
+    save(&mut deps.storage, LEADERBOARDS_KEY, &leaderboards)?;
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleAnswer::ResetLeaderboard {
+            timestamp: env.block.time,
+        })?),
+    })
 }
 
 /// Returns HandleResult
@@ -306,46 +564,61 @@ pub fn try_set_battle_status<S: Storage, A: Api, Q: Querier>(
             "This is an admin command. Admin commands can only be run from admin address",
         ));
     }
+    let may_export: Option<ExportConfig> = may_load(&deps.storage, EXPORT_CONFIG_KEY)?;
+    if let Some(export) = may_export {
+        if export.next != 0 && !stop {
+            return Err(StdError::generic_err(
+                "You may not restart battles while player stats are being exported",
+            ));
+        }
+    }
     let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
     let mut messages: Vec<CosmosMsg> = Vec::new();
     // if battle status will change
     if config.fight_halt != stop {
-        // if stopping battles and there are heroes in the bullpen
-        if stop && !config.heroes.is_empty() {
-            let mut version_xfers: Vec<VersionTransfer> = Vec::new();
-            let versions = config
-                .card_versions
-                .iter()
-                .map(|v| v.to_humanized(&deps.api))
-                .collect::<StdResult<Vec<ContractInfo>>>()?;
-            for hero in config.heroes.drain(..) {
-                let transfer = Transfer {
-                    recipient: deps.api.human_address(&hero.owner)?,
-                    token_ids: vec![hero.token_info.token_id.clone()],
-                    memo: None,
-                };
-                // if already encountered this version, add the transfer
-                if let Some(vxfers) = version_xfers
-                    .iter_mut()
-                    .find(|v| v.version == hero.token_info.version)
-                {
-                    vxfers.transfers.push(transfer);
-                // otherwise create a new list of transfers for this version
-                } else {
-                    version_xfers.push(VersionTransfer {
-                        version: hero.token_info.version,
-                        transfers: vec![transfer],
-                    });
+        // if stopping battles
+        if stop {
+            // return any heroes in the bullpen
+            if !config.heroes.is_empty() {
+                let mut version_xfers: Vec<VersionTransfer> = Vec::new();
+                let versions = config
+                    .card_versions
+                    .iter()
+                    .map(|v| v.to_humanized(&deps.api))
+                    .collect::<StdResult<Vec<ContractInfo>>>()?;
+                for hero in config.heroes.drain(..) {
+                    let transfer = Transfer {
+                        recipient: deps.api.human_address(&hero.owner)?,
+                        token_ids: vec![hero.token_info.token_id.clone()],
+                        memo: None,
+                    };
+                    // if already encountered this version, add the transfer
+                    if let Some(vxfers) = version_xfers
+                        .iter_mut()
+                        .find(|v| v.version == hero.token_info.version)
+                    {
+                        vxfers.transfers.push(transfer);
+                    // otherwise create a new list of transfers for this version
+                    } else {
+                        version_xfers.push(VersionTransfer {
+                            version: hero.token_info.version,
+                            transfers: vec![transfer],
+                        });
+                    }
+                }
+                for vxfer in version_xfers.into_iter() {
+                    messages.push(batch_transfer_nft_msg(
+                        vxfer.transfers,
+                        None,
+                        BLOCK_SIZE,
+                        versions[vxfer.version as usize].code_hash.clone(),
+                        versions[vxfer.version as usize].address.clone(),
+                    )?);
                 }
             }
-            for vxfer in version_xfers.into_iter() {
-                messages.push(batch_transfer_nft_msg(
-                    vxfer.transfers,
-                    None,
-                    BLOCK_SIZE,
-                    versions[vxfer.version as usize].code_hash.clone(),
-                    versions[vxfer.version as usize].address.clone(),
-                )?);
+            // put new players in storage
+            if !config.new_players.is_empty() {
+                add_new_players(&mut deps.storage, &mut config)?;
             }
         }
         config.fight_halt = stop;
@@ -532,6 +805,14 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                 ));
             }
             if let Some(bin) = msg {
+                let owner_slice = owner_raw.as_slice();
+                let mut seen_store = PrefixedStorage::new(PREFIX_SEEN, &mut deps.storage);
+                let may_seen: Option<bool> = may_load(&seen_store, owner_slice)?;
+                // save a new player
+                if may_seen.is_none() {
+                    config.new_players.push(owner_raw.clone());
+                    save(&mut seen_store, owner_slice, &true)?;
+                }
                 let mut messages = Vec::new();
                 let entropy: String = bin.to_base64();
                 config.entropy.push_str(&entropy);
@@ -679,6 +960,10 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                     }
                     config.battle_cnt += 1;
                 } else {
+                    // put new players in storage
+                    if !config.new_players.is_empty() {
+                        add_new_players(&mut deps.storage, &mut config)?;
+                    }
                     let own_version = versions.swap_remove(pos);
                     messages.push(set_whitelisted_approval_msg(
                         from,
@@ -734,12 +1019,128 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
         QueryMsg::Config {} => query_config(deps),
         QueryMsg::Bots {} => query_bots(deps),
         QueryMsg::Leaderboards {} => query_leaderboards(deps),
+        QueryMsg::Tournament {} => query_tournament(deps),
         QueryMsg::PlayerStats {
             address,
             viewing_key,
         } => query_player_stats(deps, address, viewing_key),
+        QueryMsg::Usage {} => query_usage(&deps.storage),
+        QueryMsg::ExportStatus { admin, viewing_key } => {
+            query_export_status(deps, &admin, viewing_key)
+        }
+        QueryMsg::DumpPlayerStats {
+            admin,
+            viewing_key,
+            start_from,
+            limit,
+        } => query_dump_stats(deps, &admin, viewing_key, start_from, limit),
     };
     pad_query_result(response, BLOCK_SIZE)
+}
+
+/// Returns QueryResult dumping all players' all-time stats
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+/// * `admin` - a reference to the admin's address
+/// * `viewing_key` - admin's viewing key
+/// * `start_from` - Optional player index to start display from
+/// * `limit` - Optional number of players' stats to display
+pub fn query_dump_stats<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    admin: &HumanAddr,
+    viewing_key: String,
+    start_from: Option<u32>,
+    limit: Option<u32>,
+) -> QueryResult {
+    let real_admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let input_raw = deps.api.canonical_address(admin)?;
+    if real_admin != input_raw {
+        return Err(StdError::generic_err(
+            "This is an admin query. Admin queries can only be run from admin address",
+        ));
+    }
+    check_key(&deps.storage, &input_raw, viewing_key)?;
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let start = start_from.unwrap_or(0);
+    let count = limit.unwrap_or(256);
+    let mut end = start + count;
+    if end > config.player_cnt {
+        end = config.player_cnt;
+    }
+    let play_store = ReadonlyPrefixedStorage::new(PREFIX_PLAYERS, &deps.storage);
+    let all_store = ReadonlyPrefixedStorage::new(PREFIX_ALL_STATS, &deps.storage);
+    let mut old_block = u64::MAX;
+    let mut players: Vec<CanonicalAddr> = Vec::new();
+    let mut stats: Vec<PlayerDump> = Vec::new();
+    let mut block: u32;
+    for index in start..end {
+        block = index / 256;
+        // if first player or onto a new block
+        if block as u64 != old_block {
+            players = load(&play_store, &block.to_le_bytes())?;
+        }
+        let offset = index as usize % 256;
+        let player = &players[offset];
+        let player_slice = player.as_slice();
+        let all_stats: StorePlayerStats =
+            may_load(&all_store, player_slice)?.unwrap_or_else(StorePlayerStats::default);
+        stats.push(PlayerDump {
+            index,
+            stats: all_stats.into_humanized(&deps.api, player)?,
+        });
+        old_block = block as u64;
+    }
+    to_binary(&QueryAnswer::DumpPlayerStats { stats })
+}
+
+/// Returns QueryResult displaying the status of player stats exporting
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+/// * `admin` - a reference to the admin's address
+/// * `viewing_key` - admin's viewing key
+pub fn query_export_status<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    admin: &HumanAddr,
+    viewing_key: String,
+) -> QueryResult {
+    let real_admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
+    let input_raw = deps.api.canonical_address(admin)?;
+    if real_admin != input_raw {
+        return Err(StdError::generic_err(
+            "This is an admin query. Admin queries can only be run from admin address",
+        ));
+    }
+    check_key(&deps.storage, &input_raw, viewing_key)?;
+    let config: Config = load(&deps.storage, CONFIG_KEY)?;
+    let may_export_conf: Option<ExportConfig> = may_load(&deps.storage, EXPORT_CONFIG_KEY)?;
+    let mut next_block: Option<u32> = None;
+    let mut last_block: Option<u32> = None;
+    if let Some(export_conf) = may_export_conf {
+        last_block = Some((config.player_cnt - 1) / 256);
+        next_block = Some(export_conf.next);
+    }
+    to_binary(&QueryAnswer::ExportStatus {
+        next_block,
+        last_block,
+    })
+}
+
+/// Returns QueryResult displaying game usage metrics
+///
+/// # Arguments
+///
+/// * `storage` - a reference to the contract's storage
+pub fn query_usage<S: ReadonlyStorage>(storage: &S) -> QueryResult {
+    let config: Config = load(storage, CONFIG_KEY)?;
+
+    to_binary(&QueryAnswer::Usage {
+        player_count: config.player_cnt,
+        battle_count: config.battle_cnt,
+    })
 }
 
 /// Returns QueryResult displaying the list of auto-send addresses
@@ -773,9 +1174,11 @@ pub fn query_player_stats<S: Storage, A: Api, Q: Querier>(
     let address_raw = deps.api.canonical_address(&address)?;
     check_key(&deps.storage, &address_raw, viewing_key)?;
     let address_slice = address_raw.as_slice();
+    let leaderboards: Leaderboards = load(&deps.storage, LEADERBOARDS_KEY)?;
     let trn_store = ReadonlyPrefixedStorage::new(PREFIX_TOURN_STATS, &deps.storage);
-    let tourn_stats: TourneyStats =
-        may_load(&trn_store, address_slice)?.unwrap_or_else(|| TourneyStats {
+    let tourn_stats: TourneyStats = may_load(&trn_store, address_slice)?
+        .filter(|t: &TourneyStats| t.last_seen >= leaderboards.tourney.start)
+        .unwrap_or_else(|| TourneyStats {
             last_seen: 0,
             stats: StorePlayerStats::default(),
         });
@@ -824,6 +1227,31 @@ pub fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> Q
     })
 }
 
+/// Returns QueryResult displaying the tournament info
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+pub fn query_tournament<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
+    let mut leaderboards: Leaderboards = load(&deps.storage, LEADERBOARDS_KEY)?;
+    leaderboards.tourney.leaderboard.truncate(10);
+    let trn_store = ReadonlyPrefixedStorage::new(PREFIX_TOURN_STATS, &deps.storage);
+    let leaderboard = leaderboards
+        .tourney
+        .leaderboard
+        .iter()
+        .map(|r| {
+            load(&trn_store, r.address.as_slice())
+                .and_then(|t: TourneyStats| t.stats.into_humanized(&deps.api, &r.address))
+        })
+        .collect::<StdResult<Vec<PlayerStats>>>()?;
+
+    to_binary(&QueryAnswer::Tournament {
+        tournament_started: leaderboards.tourney.start,
+        leaderboard,
+    })
+}
+
 /// Returns QueryResult displaying the arena leaderboards
 ///
 /// # Arguments
@@ -854,6 +1282,7 @@ pub fn query_leaderboards<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>
         .collect::<StdResult<Vec<PlayerStats>>>()?;
 
     to_binary(&QueryAnswer::Leaderboards {
+        tournament_started: leaderboards.tourney.start,
         tournament,
         all_time,
     })
@@ -878,6 +1307,14 @@ pub fn query_history<S: Storage, A: Api, Q: Querier>(
     to_binary(&QueryAnswer::BattleHistory { history })
 }
 
+/// Returns QueryResult displaying how many fighters are in the bullpen and the hero's
+/// info if the querier has one waiting
+///
+/// # Arguments
+///
+/// * `deps` - a reference to Extern containing all the contract's external dependencies
+/// * `address` - querier's address
+/// * `viewing_key` - querier's viewing key
 pub fn query_bullpen<S: Storage, A: Api, Q: Querier>(
     deps: &Extern<S, A, Q>,
     address: &HumanAddr,
@@ -908,6 +1345,13 @@ pub fn query_bullpen<S: Storage, A: Api, Q: Querier>(
     })
 }
 
+/// Returns StdResult<()> result of validating an address' viewing key
+///
+/// # Arguments
+///
+/// * `storage` - a reference to the contract's storage
+/// * `address` - a reference to the address whose key should be validated
+/// * `viewing_key` - String key used for authentication
 fn check_key<S: ReadonlyStorage>(
     storage: &S,
     address: &CanonicalAddr,
@@ -1046,12 +1490,8 @@ fn update_skills<S: Storage>(
         if !ignore[i] {
             let owner_slice = hero.owner.as_slice();
             let mut all_store = PrefixedStorage::new(PREFIX_ALL_STATS, storage);
-            let may_all: Option<StorePlayerStats> = may_load(&all_store, owner_slice)?;
-            let mut all_stats = if let Some(all) = may_all {
-                all
-            } else {
-                StorePlayerStats::default()
-            };
+            let mut all_stats: StorePlayerStats =
+                may_load(&all_store, owner_slice)?.unwrap_or_else(StorePlayerStats::default);
             all_stats.score += delta as i32;
             all_stats.battles += 1;
             all_stats.wins += wins as u32;
@@ -1067,15 +1507,12 @@ fn update_skills<S: Storage>(
                 LBOARD_MAX_LEN,
             );
             let mut trn_store = PrefixedStorage::new(PREFIX_TOURN_STATS, storage);
-            let mut tourn_stats: TourneyStats =
-                may_load(&trn_store, owner_slice)?.unwrap_or_else(|| TourneyStats {
+            let mut tourn_stats: TourneyStats = may_load(&trn_store, owner_slice)?
+                .filter(|t: &TourneyStats| t.last_seen >= leaderboards.tourney.start)
+                .unwrap_or_else(|| TourneyStats {
                     last_seen: 0,
                     stats: StorePlayerStats::default(),
                 });
-            // check if tourney stats are from an older tournament
-            if tourn_stats.last_seen < leaderboards.tourney.start {
-                tourn_stats.stats = StorePlayerStats::default();
-            }
             tourn_stats.last_seen = time;
             tourn_stats.stats.score += delta as i32;
             tourn_stats.stats.battles += 1;
@@ -1208,4 +1645,29 @@ fn update_leaderboard(
             leaderboard.truncate(max_len);
         }
     }
+}
+
+fn add_new_players<S: Storage>(storage: &mut S, config: &mut Config) -> StdResult<()> {
+    let mut play_store = PrefixedStorage::new(PREFIX_PLAYERS, storage);
+    let mut old_block = u64::MAX;
+    let mut players: Vec<CanonicalAddr> = Vec::new();
+    let mut block = 0u32;
+    for player in config.new_players.drain(..) {
+        block = config.player_cnt / 256u32;
+        // if first player, or filled the last block
+        if block as u64 != old_block {
+            // if filled the last block
+            if old_block != u64::MAX {
+                save(&mut play_store, &(old_block as u32).to_le_bytes(), &players)?;
+                players.clear();
+            } else {
+                players = may_load(&play_store, &block.to_le_bytes())?.unwrap_or_else(Vec::new);
+            }
+        }
+        players.push(player);
+        config.player_cnt += 1;
+        old_block = block as u64;
+    }
+    save(&mut play_store, &block.to_le_bytes(), &players)?;
+    Ok(())
 }

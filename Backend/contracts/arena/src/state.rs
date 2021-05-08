@@ -25,6 +25,8 @@ pub const PREFIX_SEEN: &[u8] = b"seen";
 pub const ADMIN_KEY: &[u8] = b"admin";
 pub const BOTS_KEY: &[u8] = b"bots";
 pub const LEADERBOARDS_KEY: &[u8] = b"ldrbds";
+pub const IMPORT_FROM_KEY: &[u8] = b"import";
+pub const EXPORT_CONFIG_KEY: &[u8] = b"export";
 
 /// arena config
 #[derive(Serialize, Deserialize)]
@@ -44,7 +46,18 @@ pub struct Config {
     /// true if battles are halted
     pub fight_halt: bool,
     /// total number of players
-    pub player_cnt: u16,
+    pub player_cnt: u32,
+    /// list of new players that need to be added
+    pub new_players: Vec<CanonicalAddr>,
+}
+
+/// export config
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ExportConfig {
+    /// new arena contract info
+    pub new_arena: StoreContractInfo,
+    /// next block to export
+    pub next: u32,
 }
 
 /// stored leaderboard entry
@@ -243,7 +256,7 @@ impl StoreBattle {
 }
 
 /// code hash and address of a contract
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StoreContractInfo {
     /// contract's code hash string
     pub code_hash: String,
