@@ -1191,7 +1191,7 @@ pub fn query_export_status<S: Storage, A: Api, Q: Querier>(
     let mut next_block: Option<u32> = None;
     let mut last_block: Option<u32> = None;
     if let Some(export_conf) = may_export_conf {
-        last_block = Some((config.player_cnt - 1) / 256);
+        last_block = Some(config.player_cnt.saturating_sub(1) / 256);
         next_block = Some(export_conf.next);
     }
     to_binary(&QueryAnswer::ExportStatus {
