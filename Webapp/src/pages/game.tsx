@@ -142,6 +142,7 @@ const Game = () => {
       const allTokens = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
       const tokenIds: string[] = allTokens.token_list.tokens
       hasChanges = JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)
+      console.log(tokenIds)
       if (hasChanges) {
         // eslint-disable-next-line no-restricted-syntax
 
@@ -211,6 +212,7 @@ const Game = () => {
 
       if (mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
+        console.log(newTokens)
         newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
@@ -329,61 +331,7 @@ const Game = () => {
 
 const GamePage = () => (
   <IndexLayout>
-    <div
-      css={css`
-        display: grid;
-        place-content: center;
-        width: 100%;
-        height: 70vh;
-      `}
-    >
-      <div
-        css={css`
-          min-width: 500px;
-          width: 30vw;
-          height: 30vh;
-          display: grid;
-          place-content: center;
-          background: ${colors.red};
-          border-radius: 15px;
-        `}
-      >
-        <h1
-          css={css`
-            font-style: bold;
-            font-weight: normal;
-            font-size: 50px;
-            line-height: 80%;
-            font-weight: 800;
-
-            /* or 63px */
-            letter-spacing: -0.025em;
-            text-transform: uppercase;
-
-            color: #f5f9fa;
-          `}
-        >
-          Join the fight in
-        </h1>
-        <h1
-          css={css`
-            font-style: bold;
-            font-weight: normal;
-            font-size: 50px;
-            line-height: 80%;
-            font-weight: 800;
-
-            /* or 63px */
-            letter-spacing: -0.025em;
-            text-transform: uppercase;
-
-            color: #f5f9fa;
-          `}
-        >
-          <Launch css={css``} />
-        </h1>
-      </div>
-    </div>
+    <Game />
   </IndexLayout>
 )
 

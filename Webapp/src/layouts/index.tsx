@@ -9,6 +9,7 @@ import LayoutRoot from '../components/LayoutRoot'
 import LayoutMain from '../components/LayoutMain'
 import 'react-toastify/dist/ReactToastify.min.css'
 import { colors, fontMain } from '../styles/variables'
+import Header from '../components/Header'
 
 // interface StaticQueryProps {
 //   site: {
@@ -66,7 +67,7 @@ const IndexLayout: React.FC = ({ children }) => (
       <meta property="og:url" content="https://secrethero.es/" />
       <meta property="og:description" content="Collect. Battle. Dominate. An NFT-based game secured by Secret Network." />
     </Helmet>
-
+    <Header />
     <LayoutMain>{children}</LayoutMain>
     <StyledContainer autoClose={6000} pauseOnFocusLoss={false} position="bottom-right" />
   </LayoutRoot>

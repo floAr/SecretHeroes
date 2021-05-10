@@ -198,9 +198,9 @@ async function transact<IN extends object, OUT>(client: SigningCosmWasmClient, a
   return JSON.parse(new TextDecoder().decode(resp.data)) as OUT
 }
 
-const minter_address = "secret1wepvw2r9sdfddu528j3p4lh0v6t46l6c43h43e" as HumanAddr
-const arena_address = "secret178tpwgj0f9dtvuzn3ezarafr8qrxz3kpr95ssz" as HumanAddr
-const card_address = "secret13s6fpyw95rtxkvy38dmaqdxc9le86ntev33eye" as HumanAddr
+const minter_address = "secret1mm59ndlh4jxtp9rz030pnap8ygd5f6mumqlhft" as HumanAddr
+const arena_address = "secret1fxfz7d5r79vad2v2zzel5f43a99knhmh92cxy6" as HumanAddr
+const card_address = "secret1d74pa40tfgfu92s4n238t6j0frrzuxs3c8v5lu" as HumanAddr
 
 export const mintHeroes = async (client: SigningCosmWasmClient, names: string[]): Promise<MintRsp> => {
   return transact<MintMsg, MintRsp>(client, minter_address, {
