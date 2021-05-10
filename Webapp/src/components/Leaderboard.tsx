@@ -10,8 +10,8 @@ export interface PlayerStats {
   wins: number //number of wins
 }
 export interface LeaderboardProps {
-  all_time: PlayerStats,
-  tournament: PlayerStats,
+  all_time: PlayerStats[],
+  tournament: PlayerStats[],
   tournament_started: number // "seconds after 01/01/1970 in which the tournament started"
 }
 
