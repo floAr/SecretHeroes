@@ -368,6 +368,13 @@
           "format": "uint64",
           "minimum": 0.0
         },
+        "winner": {
+          "description": "winning hero's name, if any",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "winning_skill_value": {
           "description": "the skill value that won the battle",
           "type": "integer",

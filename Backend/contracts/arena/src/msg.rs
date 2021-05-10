@@ -281,6 +281,8 @@ pub struct Battle {
     pub my_hero: Hero,
     /// skill used to determine battle results
     pub skill_used: u8,
+    /// winning hero's name, if any
+    pub winner: Option<String>,
     /// the skill value that won the battle
     pub winning_skill_value: u8,
     /// true if the querier's hero won the battle
