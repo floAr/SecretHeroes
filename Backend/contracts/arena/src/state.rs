@@ -263,11 +263,13 @@ impl StoreBattle {
         versions: &[ContractInfo],
     ) -> StdResult<Battle> {
         if let Some(pos) = self.heroes.iter().position(|h| h.owner == *address) {
+            let winner = self.winner.map(|u| self.heroes[u as usize].name.clone());
             let battle = Battle {
                 battle_number: self.battle_number,
                 timestamp: self.timestamp,
                 my_hero: self.heroes.swap_remove(pos).into_humanized(versions)?,
                 skill_used: self.skill_used,
+                winner,
                 winning_skill_value: self.winning_skill_value,
                 i_won: self.winner.map_or_else(|| false, |w| w as usize == pos),
             };

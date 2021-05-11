@@ -104,12 +104,28 @@ const Game = () => {
           base_biotech: fightState.bullpen.your_hero?.stats.base[2],
           base_psychics: fightState.bullpen.your_hero?.stats.base[3]
         }
-        if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
-          PollBattleHistory()
-          if (unityInstance !== undefined) {
-            unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
-            setBattleState(newBattleState)
-          }
+      }
+
+      switch (newBattleState.heroes_waiting) {
+        case 0:
+          toast.info('The arena is empty')
+          break
+        case 1:
+          toast.info(newBattleState.your_hero != null ? 'You are waiting in the arena alone' : 'One hero is waiting in the arena')
+          break
+        case 2:
+          toast.info(
+            newBattleState.your_hero != null ? 'You are waiting in the arena with one hero' : 'Two heroes are waiting in the arena for YOU'
+          )
+          break
+        default:
+          toast.info('The battle commences')
+      }
+      if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
+        PollBattleHistory()
+        if (unityInstance !== undefined) {
+          unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
+          setBattleState(newBattleState)
         }
       }
     }
@@ -142,6 +158,7 @@ const Game = () => {
       const allTokens = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
       const tokenIds: string[] = allTokens.token_list.tokens
       hasChanges = JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)
+      console.log(tokenIds)
       if (hasChanges) {
         // eslint-disable-next-line no-restricted-syntax
 
@@ -211,6 +228,7 @@ const Game = () => {
 
       if (mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
+        console.log(newTokens)
         newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
@@ -242,8 +260,6 @@ const Game = () => {
   }
 
   useEffect(() => {
-    console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
-
     if (unityInstance !== undefined && connected && client && account && viewingKey) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
@@ -259,14 +275,24 @@ const Game = () => {
     }
   }, [connected, unityInstance, viewingKey])
 
+  useEffect(() => {
+    const getFightState = setInterval(async () => {
+      await PollFightState()
+    }, 30000)
+
+    // clearing interval
+    return () => clearInterval(getFightState)
+  })
+
   return (
     <div
       css={css`
-        margin: 1vw;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: start;
+        margin-top: 100px;
+        padding-left: 24px;
       `}
     >
       <div
@@ -296,10 +322,11 @@ const Game = () => {
       >
         <h3
           css={css`
-            padding-left: 40px;
+            color: white;
+            margin-bottom: 24px;
           `}
         >
-          Battle Results
+          Battle History
         </h3>
 
         <BattleReportFrame battles={battleHistory} />
@@ -329,61 +356,7 @@ const Game = () => {
 
 const GamePage = () => (
   <IndexLayout>
-    <div
-      css={css`
-        display: grid;
-        place-content: center;
-        width: 100%;
-        height: 70vh;
-      `}
-    >
-      <div
-        css={css`
-          min-width: 500px;
-          width: 30vw;
-          height: 30vh;
-          display: grid;
-          place-content: center;
-          background: ${colors.red};
-          border-radius: 15px;
-        `}
-      >
-        <h1
-          css={css`
-            font-style: bold;
-            font-weight: normal;
-            font-size: 50px;
-            line-height: 80%;
-            font-weight: 800;
-
-            /* or 63px */
-            letter-spacing: -0.025em;
-            text-transform: uppercase;
-
-            color: #f5f9fa;
-          `}
-        >
-          Join the fight in
-        </h1>
-        <h1
-          css={css`
-            font-style: bold;
-            font-weight: normal;
-            font-size: 50px;
-            line-height: 80%;
-            font-weight: 800;
-
-            /* or 63px */
-            letter-spacing: -0.025em;
-            text-transform: uppercase;
-
-            color: #f5f9fa;
-          `}
-        >
-          <Launch css={css``} />
-        </h1>
-      </div>
-    </div>
+    <Game />
   </IndexLayout>
 )
 

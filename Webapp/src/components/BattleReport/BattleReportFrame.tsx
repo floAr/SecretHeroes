@@ -161,7 +161,6 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
       css={css`
         display: flex;
         justify-content: flex-start;
-        padding: 10px;
         /* max-width: 600px; */
       `}
     >
@@ -173,9 +172,10 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
           grid-template-columns: 3fr 4fr 1fr 2fr 2fr 4fr 6fr;
 
           grid-row-gap: 5px;
-          padding: 30px;
           border-radius: 15px;
           width: 100%;
+          padding-right: 24px;
+          padding-bottom: 24px;
         `}
       >
         <BattleReportHeader>Battle Number</BattleReportHeader>

@@ -1,7 +1,7 @@
-import React, { useReducer, useState } from 'react';
+import React, { useCallback, useReducer, useState } from 'react';
 import { toast } from 'react-toastify';
 // eslint-disable-next-line prettier/prettier
-import type { SigningCosmWasmClient, Account } from 'secretjs';
+import type { SigningCosmWasmClient, Account, CosmWasmClient } from 'secretjs';
 import { Contracts } from '../secret-heroes/contracts';
 
 
@@ -26,26 +26,38 @@ export interface KeplrState {
   status?: 'undefined' | 'working' | 'idle' | 'failure'
   account?: Account,
   client?: SigningCosmWasmClient,
+  queryClient: CosmWasmClient
 }
 
 export interface KeplrContextProps extends KeplrState {
+  connectQuery:  (chainId: ChainId) => Promise<void>,
   connect?: (chainId: ChainId) => void,
   resetViewingKey?: () => void
   viewingKey?: string,
-  setWorking?: (running: boolean) => void
-
+  setWorking?: (running: boolean) => void,
+  getQueryClient: () => CosmWasmClient | undefined
 }
 
-export type KeplrReducerActions = { type: 'init', chainId: ChainId } |
-{
-  type: 'connected', account: Account, client: SigningCosmWasmClient
-} |
-{ type: 'error', errorMsg: string } |
-{ type: 'transact' } |
-{ type: 'success' }
+export type KeplrReducerActions =
+  { type: 'connect', chainId: ChainId, queryClient: CosmWasmClient } |
+  { type: 'init', chainId: ChainId } |
+  {
+    type: 'connected', account: Account, client: SigningCosmWasmClient
+  } |
+  { type: 'error', errorMsg: string } |
+  { type: 'transact' } |
+  { type: 'success' }
 
 function reducer(state: KeplrState, action: KeplrReducerActions) {
   switch (action.type) {
+    case 'connect': {
+      return {
+        ...state,
+        chainId: state.chainId,
+        connected: false,
+        queryClient: action.queryClient
+      } as KeplrState;
+    }
     case 'init':
       return {
         chainId: action.chainId,
@@ -80,9 +92,15 @@ function reducer(state: KeplrState, action: KeplrReducerActions) {
   }
 }
 
-const intial = { chainId: '', connected: false, status: 'undefined', keplrFound: false } as KeplrState
+const intial = { chainId: '', connected: false, status: 'undefined', keplrFound: false, } as KeplrState
 
-const keplrContext = React.createContext<KeplrContextProps>(intial)
+const keplrContext = React.createContext<KeplrContextProps>(
+  {
+    ...intial,
+    connectQuery: (_: ChainId) => { return new Promise<void>((resolve, reject) =>{}) },
+    getQueryClient: () => { return undefined }
+  }
+)
 
 interface KeplrContextProviderProps {
   children: React.ReactNode,
@@ -94,6 +112,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
   const isBrowser = typeof window !== 'undefined'
   if (isBrowser) {
     intial.keplrFound = window.keplr !== undefined
+
   }
   const [keplrState, dispatch] = useReducer(reducer, intial);
 
@@ -118,6 +137,18 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
     }
   }
 
+  const connect = async (chainId: ChainId) => {
+    if (!window.getOfflineSigner || !window.keplr) {
+      toast.error('Please install and authorize Keplr browser extension')
+      return;
+    }
+    // eslint-disable-next-line no-shadow
+    const { CosmWasmClient } = await import("secretjs")
+
+    const queryC: CosmWasmClient = new CosmWasmClient(
+      chainId === 'holodeck-2' ? 'https://datahubnode.azurewebsites.net/testnet/' : 'https://datahubnode.azurewebsites.net/node')
+    dispatch({ type: 'connect', chainId, queryClient: queryC })
+  }
 
   const setBrowserProvider = async (chainId: ChainId) => {
     if (!window.getOfflineSigner || !window.keplr) {
@@ -185,14 +216,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
         keplrOfflineSigner,
         window.getEnigmaUtils(chainId),
         {
-          init: {
-            amount: [{ amount: '300000', denom: 'uscrt' }],
-            gas: '300000',
-          },
-          exec: {
-            amount: [{ amount: '5000000', denom: 'uscrt' }],
-            gas: '5000000',
-          },
+
         },
       );
       const account = await cosmJS.getAccount(address);
@@ -235,7 +259,25 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
 
   }
 
-  return <keplrContext.Provider value={{ ...keplrState, connect: setBrowserProvider, resetViewingKey, viewingKey, setWorking }}>
+  const getQueryClient = useCallback(
+    () => {
+      if (keplrState.client != null) return keplrState.client
+      return keplrState.queryClient
+    },
+    [keplrState.queryClient, keplrState.client],
+  )
+
+  return <keplrContext.Provider value={
+    {
+      ...keplrState,
+      connect: setBrowserProvider,
+      resetViewingKey,
+      viewingKey,
+      setWorking,
+      connectQuery: connect,
+      getQueryClient
+    }
+  }>
     {children}
   </keplrContext.Provider>
 }

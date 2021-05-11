@@ -17,6 +17,11 @@ public class BattleMaster : MonoBehaviour
     public Button SendButton;
 
 
+    public void OptimisticResponse(Token hero)
+    {
+        MyHero.Activate(hero);
+    }
+
     public void AddBattleState(BattleState state)
     {
         MyHero.Deactivate();
@@ -40,8 +45,8 @@ public class BattleMaster : MonoBehaviour
             }
             catch (Exception e) { }
         }
-
-        if (state.heroes_waiting > counter)
+        var other = state.heroes_waiting - counter;
+        if (other==1)
         {
             if (UnityEngine.Random.value < 0.5f)
             {
@@ -52,6 +57,11 @@ public class BattleMaster : MonoBehaviour
                 Enemy2.Activate(null);
             }
 
+        }
+        if (other == 2)
+        {
+            Enemy1.Activate(null);
+            Enemy2.Activate(null);
         }
 
     }
