@@ -104,12 +104,12 @@ const Game = () => {
           base_biotech: fightState.bullpen.your_hero?.stats.base[2],
           base_psychics: fightState.bullpen.your_hero?.stats.base[3]
         }
-        if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
-          PollBattleHistory()
-          if (unityInstance !== undefined) {
-            unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
-            setBattleState(newBattleState)
-          }
+      }
+      if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
+        PollBattleHistory()
+        if (unityInstance !== undefined) {
+          unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
+          setBattleState(newBattleState)
         }
       }
     }
