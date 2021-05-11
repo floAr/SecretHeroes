@@ -29,16 +29,16 @@ const Content = styled.div`
 
       // Fixed columns size (a little bit weird)
       th:nth-child(1) {
-        width: 5%;
+        width: 10%;
       }
       th:nth-child(2) {
-        width: 20%;
+        width: 30%;
       }
       th:nth-child(3) {
-        width: 25%;
+        width: 15%;
       }
       th:nth-child(4), th:nth-child(5), th:nth-child(6) {
-        width: 16.6666%;
+        width: 15%;
       }
     }
 
@@ -106,7 +106,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ all_time }) => {
         <tbody>
           {leaderboard.map((it, index) =>
             <tr>
-              <td>{ index + 1 }</td>
+              <td>#{ index + 1 }</td>
               <td>{ it.address }</td>
               <td>{ it.score }</td>
               <td>{ it.battles }</td>
