@@ -244,8 +244,6 @@ const Game = () => {
   }
 
   useEffect(() => {
-    console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
-
     if (unityInstance !== undefined && connected && client && account && viewingKey) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
@@ -260,6 +258,15 @@ const Game = () => {
         })
     }
   }, [connected, unityInstance, viewingKey])
+
+  useEffect(() => {
+    const getFightState = setInterval(async () => {
+      await PollFightState()
+    }, 30000)
+
+    // clearing interval
+    return () => clearInterval(getFightState)
+  })
 
   return (
     <div
