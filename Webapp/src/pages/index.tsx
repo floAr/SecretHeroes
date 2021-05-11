@@ -102,9 +102,9 @@ const IndexPage = () => {
       }
     }
   `)
-  const now = new Date();
-  const launchTime = new Date(`05/11/2021 10:00`);
-  const isLaunched = now > launchTime;
+  const now = new Date()
+  const launchTime = new Date(`2021-05-11T17:00Z`)
+  const isLaunched = now > launchTime
 
   const isBrowser = typeof window !== 'undefined'
 
@@ -117,140 +117,168 @@ const IndexPage = () => {
           width: 100%;
         `}
       >
-
-        <section css={css`
-                    display: grid;
-                    height: 100vh;
-                    align-content: center;
-                    justify-content: center;
-                    text-align: center;
-                    background: #0F1419;
-                    //gap: 16px;
-                    `}>
-          <div class="logo-container" css={css`
-            height:250px;
-          `}>
-            <div className="logo" css={css`
-              width:382px;
-              height: 249px;
-              background: url('images/sh-hero-logo.png');
-              background-size: contain;
-              background-repeat: no-repeat;
-              background-position: center;
-              `}>
-            </div>
+        <section
+          css={css`
+            display: grid;
+            height: 100vh;
+            align-content: center;
+            justify-content: center;
+            text-align: center;
+            background: #0f1419;
+            //gap: 16px;
+          `}
+        >
+          <div
+            class="logo-container"
+            css={css`
+              height: 250px;
+            `}
+          >
+            <div
+              className="logo"
+              css={css`
+                width: 382px;
+                height: 249px;
+                background: url('images/sh-hero-logo.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+              `}
+            ></div>
           </div>
 
-          <h2 css={css`
-                font-family: Inter;
-                font-style: normal;
-                font-weight: bold;
-                font-size: 24px;
-                line-height: 28px;
-                text-align: center;
-                margin-top: 4px;
-                margin-bottom: 0px;
-                /* Neutral/#100 */
-                color: #F5F9FA;`}>Collect. <span css={css`color:#FC2748;`}>Battle.</span> Dominate.</h2>
-          <div class="launch" css={css`
-            display: grid;
-            gap: 0;
-          `}>
-
-            { !isLaunched ? (
-            <div>
-              <p css={css`
-              margin: 30px 0 0 0;
+          <h2
+            css={css`
               font-family: Inter;
               font-style: normal;
-              font-weight: normal;
-              font-size: 16px;
-              //line-height: 28px;
-              /* identical to box height, or 175% */
+              font-weight: bold;
+              font-size: 24px;
+              line-height: 28px;
               text-align: center;
-              /* Neutral/#200 */
-              color: #9AA5B1;`}>Launching In</p>
+              margin-top: 4px;
+              margin-bottom: 0px;
+              /* Neutral/#100 */
+              color: #f5f9fa;
+            `}
+          >
+            Collect.{' '}
+            <span
+              css={css`
+                color: #fc2748;
+              `}
+            >
+              Battle.
+            </span>{' '}
+            Dominate.
+          </h2>
+          <div
+            class="launch"
+            css={css`
+              display: grid;
+              gap: 0;
+            `}
+          >
+            {!isLaunched ? (
+              <div>
+                <p
+                  css={css`
+                    margin: 30px 0 0 0;
+                    font-family: Inter;
+                    font-style: normal;
+                    font-weight: normal;
+                    font-size: 16px;
+                    //line-height: 28px;
+                    /* identical to box height, or 175% */
+                    text-align: center;
+                    /* Neutral/#200 */
+                    color: #9aa5b1;
+                  `}
+                >
+                  Launching In
+                </p>
 
-              <div css={css`
-                  font-family: Inter;
-                  font-style: normal;
-                  font-weight: 800;
-                  font-size: 60px;
-                  line-height: 60px;
-                  /* identical to box height, or 100% */
-                  text-align: center;
-                  letter-spacing: -0.025em;
-                  /* gray/100 */
-                  color: #F3F4F6;
-                  text-align: left;
-                  padding-left: 4.2rem;
-                `}>
-                <Launch />
+                <div
+                  css={css`
+                    font-family: Inter;
+                    font-style: normal;
+                    font-weight: 800;
+                    font-size: 60px;
+                    line-height: 60px;
+                    /* identical to box height, or 100% */
+                    text-align: center;
+                    letter-spacing: -0.025em;
+                    /* gray/100 */
+                    color: #f3f4f6;
+                    text-align: left;
+                    padding-left: 4.2rem;
+                  `}
+                >
+                  <Launch />
+                </div>
               </div>
-            </div>
-
-            ) : <div></div>  }
-
+            ) : (
+              <div></div>
+            )}
           </div>
-          { !isLaunched ?
-          <StyledButton
-            css={css`
-                  background: ${colors.red};
-                  font-family: Inter;
-                  font-style: normal;
-                  font-weight: 500;
-                  font-size: 16px;
-                  line-height: 24px;
-                  border: 0;
-                  cursor: pointer;
-                  min-width: 190px;
-                  color: #FFFFFF;
-                  padding: 0;
-                  display: inline-block;
-                  margin: 0 auto;
-                  margin-top: 24px;
-                  transition: .2s ease;
-                  height: 56px;
-                  &:hover {
-                    background: #a1021a;
-                  }
-                `}
-            onClick={_ => {
-              window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
-            }}
-          >
-            Claim Your Hero Now
-          </StyledButton> :
-
-          <StyledButton
-            css={css`
-                  background: ${colors.red};
-                  font-family: Inter;
-                  font-style: normal;
-                  font-weight: 500;
-                  font-size: 16px;
-                  line-height: 24px;
-                  border: 0;
-                  cursor: pointer;
-                  min-width: 190px;
-                  color: #FFFFFF;
-                  padding: 0;
-                  display: inline-block;
-                  margin: 0 auto;
-                  margin-top: 24px;
-                  transition: .2s ease;
-                  height: 56px;
-                  &:hover {
-                    background: #a1021a;
-                  }
-                `}
-            onClick={_ => {
-              window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
-            }}
-          >
+          {!isLaunched ? (
+            <StyledButton
+              css={css`
+                background: ${colors.red};
+                font-family: Inter;
+                font-style: normal;
+                font-weight: 500;
+                font-size: 16px;
+                line-height: 24px;
+                border: 0;
+                cursor: pointer;
+                min-width: 190px;
+                color: #ffffff;
+                padding: 0;
+                display: inline-block;
+                margin: 0 auto;
+                margin-top: 24px;
+                transition: 0.2s ease;
+                height: 56px;
+                &:hover {
+                  background: #a1021a;
+                }
+              `}
+              onClick={_ => {
+                window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+              }}
+            >
+              Claim Your Hero Now
+            </StyledButton>
+          ) : (
+            <StyledButton
+              css={css`
+                background: ${colors.red};
+                font-family: Inter;
+                font-style: normal;
+                font-weight: 500;
+                font-size: 16px;
+                line-height: 24px;
+                border: 0;
+                cursor: pointer;
+                min-width: 190px;
+                color: #ffffff;
+                padding: 0;
+                display: inline-block;
+                margin: 0 auto;
+                margin-top: 24px;
+                transition: 0.2s ease;
+                height: 56px;
+                &:hover {
+                  background: #a1021a;
+                }
+              `}
+              onClick={_ => {
+                window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+              }}
+            >
               Launch Game
-          </StyledButton>
-          }
+            </StyledButton>
+          )}
         </section>
 
         <ContentSection
@@ -352,7 +380,7 @@ const IndexPage = () => {
             width: 75vw;
             @media only screen and (max-width: 768px) {
               grid-auto-flow: row;
-          }
+            }
           `}
         >
           <div
@@ -360,54 +388,61 @@ const IndexPage = () => {
               width: 70%;
               display: grid;
               gap: 16px;
-              padding-top:64px;
-              padding-bottom:64px;
+              padding-top: 64px;
+              padding-bottom: 64px;
               @media only screen and (max-width: 768px) {
                 width: 100%;
-            }
+              }
             `}
           >
             <h3
               css={css`
-              font-family: Inter;
-              font-style: normal;
-              font-weight: bold;
-              font-size: 24px;
-              line-height: 29px;
-              /* identical to box height */
+                font-family: Inter;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 24px;
+                line-height: 29px;
+                /* identical to box height */
 
-              letter-spacing: -0.5px;
-              margin-top: 0;
-              color: #FFFFFF;
+                letter-spacing: -0.5px;
+                margin-top: 0;
+                color: #ffffff;
               `}
             >
               Secured by Secret Network
             </h3>
             <p
               css={css`
-              font-family: Inter;
-              font-style: normal;
-              font-weight: normal;
-              font-size: 18px;
-              line-height: 150%;
-              color: #FFFFFF;
+                font-family: Inter;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 18px;
+                line-height: 150%;
+                color: #ffffff;
               `}
             >
               <p>Secret Heroes’ secretNFTs are created using the SNIP-721 standard on Secret Network.</p>
 
-              <p>Secret Network is the first blockchain with privacy-preserving smart contracts. Applications built on Secret Network utilize encrypted data without exposing it to anyone, even the nodes in the network. </p>
+              <p>
+                Secret Network is the first blockchain with privacy-preserving smart contracts. Applications built on Secret Network utilize
+                encrypted data without exposing it to anyone, even the nodes in the network.{' '}
+              </p>
             </p>
-            <Link to="https://scrt.network/blog/secret-nft-update-reference-implementation-new-tutorial" target="new" css={css`
-            font-family: Inter;
-            font-style: normal;
-            font-weight: bold;
-            font-size: 16px;
-            line-height: 150%;
-            text-decoration-line: underline;
-            color: #FFFFFF;
-            `}>
+            <Link
+              to="https://scrt.network/blog/secret-nft-update-reference-implementation-new-tutorial"
+              target="new"
+              css={css`
+                font-family: Inter;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 16px;
+                line-height: 150%;
+                text-decoration-line: underline;
+                color: #ffffff;
+              `}
+            >
               Learn More
-              </Link>
+            </Link>
           </div>
           <div
             css={css`
@@ -421,7 +456,7 @@ const IndexPage = () => {
                 height: 100px;
                 order: -1;
                 margin-top: 64px;
-            }
+              }
             `}
           >
             <div
