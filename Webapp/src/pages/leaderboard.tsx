@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import * as React from 'react'
-
+import styled from '@emotion/styled'
+import { useContext, useEffect, useState } from 'react'
 import IndexLayout from '../layouts'
-
-import Leaderboard from '../components/Leaderboard.tsx';
-
-import { css } from '@emotion/core';
-import styled from '@emotion/styled';
-import { colors } from '../styles/variables'
+import Leaderboard from '../components/Leaderboard'
+import { KeplrContext } from '../secret/KeplrContext'
+import { Contracts, LeaderboardPlayerStats } from '../secret-heroes/contracts'
 
 const Container = styled.div`
   display: block;
@@ -35,17 +34,50 @@ const Container = styled.div`
 
     margin-bottom: 24px;
   }
-`;
+`
 
-const LeaderboardPage = () => (
-  <IndexLayout>
-    <Container>
-      <h2>Leaderboard</h2>
-      <h3>All Time Score</h3>
+export interface LeaderboardsData {
+  all_time: LeaderboardPlayerStats[]
+  tournament: LeaderboardPlayerStats[]
+  tournament_started?: number // "seconds after 01/01/1970 in which the tournament started"
+}
 
-      <Leaderboard/>
-    </Container>
-  </IndexLayout>
-)
+const LeaderboardPage = () => {
+  const { client } = useContext(KeplrContext)
+
+  const [leaderboardsData, setLeaderboardsData] = useState<LeaderboardsData>({
+    all_time: [],
+    tournament: [],
+    tournament_started: undefined
+  })
+
+  const updateLeaderboardData = async () => {
+    if (client != null) {
+      const newData = await Contracts.arena.leaderboardsQuery(client)
+      if (JSON.stringify(newData.leaderboards) !== JSON.stringify(leaderboardsData)) {
+        setLeaderboardsData(newData.leaderboards as LeaderboardsData)
+      }
+    }
+  }
+
+  useEffect(() => {
+    const getLeaderboard = setInterval(async () => {
+      await updateLeaderboardData()
+    }, 30000)
+    updateLeaderboardData() // get data once
+    // clearing interval
+    return () => clearInterval(getLeaderboard)
+  })
+
+  return (
+    <IndexLayout>
+      <Container>
+        <h2>Leaderboard</h2>
+        <h3>All Time Score</h3>
+        <Leaderboard leaderboardData={leaderboardsData.all_time} />
+      </Container>
+    </IndexLayout>
+  )
+}
 
 export default LeaderboardPage

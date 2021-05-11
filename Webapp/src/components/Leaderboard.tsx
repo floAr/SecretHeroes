@@ -1,8 +1,9 @@
-import React from 'react'
-
-import { css } from '@emotion/core';
-import styled from '@emotion/styled';
+import React, { useContext } from 'react'
+import { css } from '@emotion/core'
+import styled from '@emotion/styled'
 import { colors, dimensions } from '../styles/variables'
+import { LeaderboardPlayerStats } from '../secret-heroes/contracts'
+import { KeplrContext } from '../secret/KeplrContext'
 
 const Content = styled.div`
   table {
@@ -14,7 +15,8 @@ const Content = styled.div`
     table-layout: fixed;
     width: 100%;
 
-    thead th, tbody td {
+    thead th,
+    tbody td {
       padding: 12px 24px;
     }
 
@@ -37,7 +39,9 @@ const Content = styled.div`
       th:nth-child(3) {
         width: 15%;
       }
-      th:nth-child(4), th:nth-child(5), th:nth-child(6) {
+      th:nth-child(4),
+      th:nth-child(5),
+      th:nth-child(6) {
         width: 15%;
       }
     }
@@ -55,40 +59,13 @@ const Content = styled.div`
       }
     }
   }
-`;
-
-export interface PlayerStats {
-  address: string, // player address
-  battles: number, // number of battles
-  losses: number, // number of losses
-  score: number, // players score
-  third_in_two_way_ties: number, // numbers of taking 3rd place in a tie
-  ties: number, // number ties
-  wins: number //number of wins
-}
-
+`
 export interface LeaderboardProps {
-  all_time: PlayerStats[],
-  tournament: PlayerStats[],
-  tournament_started: number // "seconds after 01/01/1970 in which the tournament started"
+  leaderboardData: LeaderboardPlayerStats[]
 }
 
-const leaderboard = [
-  {
-    address: 'secret1jfdkfj2399fjjfd9jfijfeifjfi',
-    score: 200,
-    battles: 10,
-    wins: 2
-  },
-  {
-    address: 'secretdfffjifjejfijefiefjjfejifejf',
-    score: 100,
-    battles: 20,
-    wins: 12
-  }
-]
-
-const Leaderboard: React.FC<LeaderboardProps> = ({ all_time }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboardData }) => {
+  const { account } = useContext(KeplrContext)
   return (
     <Content>
       <table>
@@ -104,16 +81,24 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ all_time }) => {
         </thead>
 
         <tbody>
-          {leaderboard.map((it, index) =>
-            <tr>
-              <td>#{ index + 1 }</td>
-              <td>{ it.address }</td>
-              <td>{ it.score }</td>
-              <td>{ it.battles }</td>
-              <td>{ it.wins }</td>
-              <td>{ it.wins / it.battles * 100 }%</td>
+          {leaderboardData.map((it, index) => (
+            <tr
+              css={
+                account?.address != null && account.address === it.address
+                  ? css`
+                      font-weight: bold;
+                    `
+                  : css``
+              }
+            >
+              <td>#{index + 1}</td>
+              <td>{it.address}</td>
+              <td>{Math.max(0, it.score)}</td>
+              <td>{it.battles}</td>
+              <td>{it.wins}</td>
+              <td>{(it.wins / it.battles) * 100}%</td>
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </Content>
