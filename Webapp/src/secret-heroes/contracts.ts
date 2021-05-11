@@ -2,7 +2,7 @@
 
 import { toast } from "react-toastify"
 // eslint-disable-next-line prettier/prettier
-import type { SigningCosmWasmClient } from "secretjs"
+import type { CosmWasmClient, SigningCosmWasmClient } from "secretjs"
 // eslint-disable-next-line import/no-unresolved
 import { Coin } from "secretjs/types/types"
 
@@ -199,7 +199,7 @@ const createPadding = (currentLength: number, targetLength: number) => {
   return randomString(targetLength - currentLength)
 }
 
-async function query<IN extends object, OUT>(client: SigningCosmWasmClient, address: HumanAddr, query_msg: IN): Promise<OUT> {
+async function query<IN extends object, OUT>(client: CosmWasmClient, address: HumanAddr, query_msg: IN): Promise<OUT> {
   try {
     const resp = await client.queryContractSmart(address, query_msg)
     return resp
@@ -234,7 +234,7 @@ export const mintHeroes = async (client: SigningCosmWasmClient, names: string[])
   })
 }
 
-export const fightStatus = async (client: SigningCosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
+export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
   return query<FightStatusQry, FightStatusRsp>(client, arena_address, {
     bullpen: {
       address,
@@ -243,7 +243,7 @@ export const fightStatus = async (client: SigningCosmWasmClient, address: HumanA
   })
 }
 export const fightHistory =
-  async (client: SigningCosmWasmClient, address: HumanAddr, viewingKey: string, paging?: { page: number, page_size: number }):
+  async (client: CosmWasmClient, address: HumanAddr, viewingKey: string, paging?: { page: number, page_size: number }):
     Promise<BattleHistoryRsp> => {
     return query<BattleHistoryQry, BattleHistoryRsp>(client, arena_address, {
       battle_history: {
@@ -262,7 +262,7 @@ export const returnFighter = async (client: SigningCosmWasmClient): Promise<With
   })
 }
 
-export const getLeaderboards = async (client: SigningCosmWasmClient): Promise<GetLeaderboardsRsp> => {
+export const getLeaderboards = async (client: CosmWasmClient): Promise<GetLeaderboardsRsp> => {
   return query<GetLeaderboardsQry, GetLeaderboardsRsp>(client, arena_address, { leaderboards: {} })
 }
 
@@ -286,7 +286,7 @@ export const sendHero = async (client: SigningCosmWasmClient, token_id: string):
   })
 }
 
-export const getAllTokens = async (client: SigningCosmWasmClient, address: HumanAddr, viewingKey: string): Promise<GetAllTokensRsp> => {
+export const getAllTokens = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<GetAllTokensRsp> => {
   return query<GetAllTokensQry, GetAllTokensRsp>(client, card_address, {
     tokens: {
       owner: address,
@@ -296,7 +296,7 @@ export const getAllTokens = async (client: SigningCosmWasmClient, address: Human
 }
 
 export const getTokenInfo =
-  async (client: SigningCosmWasmClient, tokenId: string, address: HumanAddr, viewingKey: string): Promise<GetTokenInfoRsp> => {
+  async (client: CosmWasmClient, tokenId: string, address: HumanAddr, viewingKey: string): Promise<GetTokenInfoRsp> => {
     return query<GetTokenInfoQry, GetTokenInfoRsp>(client, card_address, {
       private_metadata: {
         token_id: tokenId,
