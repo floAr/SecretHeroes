@@ -216,14 +216,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
         keplrOfflineSigner,
         window.getEnigmaUtils(chainId),
         {
-          init: {
-            amount: [{ amount: '300000', denom: 'uscrt' }],
-            gas: '300000',
-          },
-          exec: {
-            amount: [{ amount: '5000000', denom: 'uscrt' }],
-            gas: '5000000',
-          },
+
         },
       );
       const account = await cosmJS.getAccount(address);

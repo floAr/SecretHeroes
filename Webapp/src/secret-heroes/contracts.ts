@@ -4,7 +4,7 @@ import { toast } from "react-toastify"
 // eslint-disable-next-line prettier/prettier
 import type { CosmWasmClient, SigningCosmWasmClient } from "secretjs"
 // eslint-disable-next-line import/no-unresolved
-import { Coin } from "secretjs/types/types"
+import { Coin, StdFee } from "secretjs/types/types"
 
 
 export type HumanAddr = string
@@ -199,6 +199,43 @@ const createPadding = (currentLength: number, targetLength: number) => {
   return randomString(targetLength - currentLength)
 }
 
+const getFees = (txName: 'mint' | 'viewingKeys' | 'send' | 'pull'): StdFee => {
+
+  let gas = "1000000";
+  let amount = "0";
+  const denom = "uscrt";
+  switch (txName) {
+    case "mint":
+      gas = "650000";
+      break;
+    case "viewingKeys":
+      gas = "120000";
+      break;
+    case "send":
+      gas = "800000";
+      break;
+    case "pull":
+      gas = "260000";
+      break;
+    default:
+      break
+
+  }
+  if (amount === "0") {
+    amount = gas;
+  }
+  return {
+    amount: [{ amount, denom }],
+    gas
+  }
+  // return {
+  //   exec: {
+  //     amount: [{ amount, denom }],
+  //     gas
+  //   }
+  // }
+}
+
 async function query<IN extends object, OUT>(client: CosmWasmClient, address: HumanAddr, query_msg: IN): Promise<OUT> {
   try {
     const resp = await client.queryContractSmart(address, query_msg)
@@ -211,12 +248,13 @@ async function query<IN extends object, OUT>(client: CosmWasmClient, address: Hu
   return resp
 }
 
-async function transact<IN extends object, OUT>(client: SigningCosmWasmClient, address: HumanAddr, msg: IN, fee?: Coin): Promise<OUT> {
+async function transact<IN extends object, OUT>
+  (client: SigningCosmWasmClient, address: HumanAddr, msg: IN, transfer?: Coin, fee?: StdFee): Promise<OUT> {
   let resp
-  if (fee !== undefined)
-    resp = (await client.execute(address, msg, '', [fee]))
+  if (transfer !== undefined)
+    resp = (await client.execute(address, msg, '', [transfer], fee))
   else
-    resp = (await client.execute(address, msg))
+    resp = (await client.execute(address, msg, '', [], fee))
   return JSON.parse(new TextDecoder().decode(resp.data)) as OUT
 }
 
@@ -231,7 +269,8 @@ export const mintHeroes = async (client: SigningCosmWasmClient, names: string[])
     }
   }, {
     denom: 'uscrt', amount: "1000000"
-  })
+  },
+    getFees('mint'))
 }
 
 export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
@@ -259,7 +298,7 @@ export const returnFighter = async (client: SigningCosmWasmClient): Promise<With
     chicken_out: {
 
     }
-  })
+  }, undefined, getFees('pull'))
 }
 
 export const getLeaderboards = async (client: CosmWasmClient): Promise<GetLeaderboardsRsp> => {
@@ -273,7 +312,7 @@ export const setViewingKey =
         key: viewingKey,
         padding: createPadding(viewingKey.length, 256)
       }
-    })
+    }, undefined, getFees('viewingKeys'))
   }
 
 export const sendHero = async (client: SigningCosmWasmClient, token_id: string): Promise<SendHeroRsp> => {
@@ -283,7 +322,7 @@ export const sendHero = async (client: SigningCosmWasmClient, token_id: string):
       token_id,
       msg: btoa(randomString(15))
     }
-  })
+  }, undefined, getFees('send'))
 }
 
 export const getAllTokens = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<GetAllTokensRsp> => {
