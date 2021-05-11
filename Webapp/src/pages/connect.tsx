@@ -44,6 +44,7 @@ const PleaseConnectPage = () => {
             display: flex;
             flex-direction: column;
             margin-right: 32px;
+            margin-top: 100px;
             align-items: flex-start;
           `}
         >
@@ -52,6 +53,7 @@ const PleaseConnectPage = () => {
               transform: rotate(-90deg) scale(0.6);
               width: 80px;
               height: 60px;
+              margin-left: 30px;
             `}
           >
             <div
