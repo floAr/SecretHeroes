@@ -40,6 +40,8 @@ export const widths = {
 
 export const dimensions = {
   fontSize: {
+    extraSmall: 12,
+    small: 14,
     regular: 16,
     large: 18
   },
