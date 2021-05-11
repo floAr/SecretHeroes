@@ -221,34 +221,7 @@ const IndexPage = () => {
             )}
           </div>
           {!isLaunched ? (
-            <StyledButton
-              css={css`
-                background: ${colors.red};
-                font-family: Inter;
-                font-style: normal;
-                font-weight: 500;
-                font-size: 16px;
-                line-height: 24px;
-                border: 0;
-                cursor: pointer;
-                min-width: 190px;
-                color: #ffffff;
-                padding: 0;
-                display: inline-block;
-                margin: 0 auto;
-                margin-top: 24px;
-                transition: 0.2s ease;
-                height: 56px;
-                &:hover {
-                  background: #a1021a;
-                }
-              `}
-              onClick={_ => {
-                window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
-              }}
-            >
-              Claim Your Hero Now
-            </StyledButton>
+            <div />
           ) : (
             <StyledButton
               css={css`
@@ -273,7 +246,7 @@ const IndexPage = () => {
                 }
               `}
               onClick={_ => {
-                window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+                navigate('/game')
               }}
             >
               Launch Game
