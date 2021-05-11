@@ -4,12 +4,14 @@ import 'modern-normalize'
 import '../styles/normalize'
 
 import { ToastContainer } from 'react-toastify'
+import { css } from '@emotion/core'
 import styled from '@emotion/styled'
 import LayoutRoot from '../components/LayoutRoot'
 import LayoutMain from '../components/LayoutMain'
 import 'react-toastify/dist/ReactToastify.min.css'
 import { colors, fontMain } from '../styles/variables'
 import Header from '../components/Header'
+import { Link } from 'gatsby'
 
 // interface StaticQueryProps {
 //   site: {
@@ -70,6 +72,32 @@ const IndexLayout: React.FC = ({ children }) => (
     <Header />
     <LayoutMain>{children}</LayoutMain>
     <StyledContainer autoClose={6000} pauseOnFocusLoss={false} position="bottom-right" />
+    <section className="footer" css={css`
+      background: #000;
+      padding-top: 32px;
+      padding-bottom: 32px;
+      display: grid;
+      text-align: center;
+      gap: 16px;
+      `}>
+        <div className="social" css={css`
+          `}>
+          <Link to="https://twitter.com/secretheroesnft" target="new" css={css`
+          width: 24px;
+          height: 24px;
+          display: inline-block;
+          background: url('../images/twitter.png');
+          `}></Link>
+          <Link to="https://discord.gg/JpTnNRVzpw" target="new" css={css`
+          width: 24px;
+          height: 24px;
+          display: inline-block;
+          margin-left: 16px;
+          background: url('../images/discord.png');
+          `}></Link>
+        </div>
+        <p>© Secret Heroes</p>
+      </section>
   </LayoutRoot>
 )
 

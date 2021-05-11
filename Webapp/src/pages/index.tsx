@@ -397,32 +397,6 @@ const IndexPage = () => {
           </div>
         </div>
       </div>
-      <section clasName="footer" css={css`
-      background: #000;
-      padding-top: 32px;
-      padding-bottom: 32px;
-      display: grid;
-      text-align: center;
-      gap: 16px;
-      `}>
-        <div className="social" css={css`
-          `}>
-          <Link to="https://twitter.com/secretheroesnft" target="new" css={css`
-          width: 24px;
-          height: 24px;
-          display: inline-block;
-          background: url('images/twitter.png');
-          `}></Link>
-          <Link to="https://discord.gg/JpTnNRVzpw" target="new" css={css`
-          width: 24px;
-          height: 24px;
-          display: inline-block;
-          margin-left: 16px;
-          background: url('images/discord.png');
-          `}></Link>
-        </div>
-        <p>© Secret Heroes</p>
-      </section>
     </IndexLayout>
   )
 }
