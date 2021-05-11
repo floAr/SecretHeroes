@@ -54,7 +54,7 @@ const LeaderboardPage = () => {
   const updateLeaderboardData = async () => {
     let queryClient = getQueryClient()
     if (queryClient == null) {
-      await connectQuery('holodeck-2')
+      await connectQuery('secret-2')
       queryClient = getQueryClient()
     }
     if (queryClient != null) {
