@@ -108,13 +108,18 @@ public class WebGlBridge : MonoBehaviour
     [ContextMenu("Test ReportBattleState")]
     public void TestReportBattleState()
     {
-        ReportBattleStatus("{\"heroes_waiting\": 1, \"your_hero\": {\"token_id\": \"test\",\"name\": \"test\",\"skills\": [17,2,14,7]}}");
+        ReportBattleStatus("{\"heroes_waiting\": 0, \"your_hero\": {\"token_id\": \"test\",\"name\": \"test\",\"skills\": [17,2,14,7]}}");
     }
 
     [ContextMenu("Test ReportBattleState222")]
     public void TestReportBattleStateZEor()
     {
         ReportBattleStatus("{\"heroes_waiting\": 1, \"your_hero\": null}");
+    }
+    [ContextMenu("Test ReportBattleState2222222")]
+    public void TestReportBattleStateZEor2()
+    {
+        ReportBattleStatus("{\"heroes_waiting\": 2, \"your_hero\": null}");
     }
 }
 

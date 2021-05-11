@@ -52,7 +52,7 @@ public class CardRenderer : MonoBehaviour
         SetSkills();
     }
 
- 
+
 
     public void ReadToken(Token token)
     {
@@ -65,6 +65,25 @@ public class CardRenderer : MonoBehaviour
         SkillPsychics = token.psychics;
         BaseSkills = new int[4] { token.base_weapons, token.base_engineering, token.base_biotech, token.base_psychics };
         DoUpdate();
+    }
+
+    public Token ToToken()
+    {
+        return new Token()
+        {
+            id = Id,
+            name = Name,
+            engineering = SkillEngineering,
+            weapons = SkillWeapons,
+            biotech = SkillBiotech,
+            psychics = SkillPsychics,
+            base_weapons = BaseSkills[0],
+            base_engineering = BaseSkills[1],
+            base_biotech = BaseSkills[2],
+            base_psychics = BaseSkills[3]
+
+
+        };
     }
 
     private void SetModel(int newModel)
@@ -90,10 +109,10 @@ public class CardRenderer : MonoBehaviour
         SkillCanvas.gameObject.SetActive(IsSelected);
     }
 
-
+    [ContextMenu("update")]
     private void SetVisuals()
     {
-        NameText.text = Name;
+
         int modelId = (BaseSkills[0] * 3 + BaseSkills[1] * 2 + BaseSkills[2] + BaseSkills[3]) % Models.Length;
         int materialId = (BaseSkills[0] + BaseSkills[1] + BaseSkills[2] * 3 + BaseSkills[3] * 2) % Variants.Length;
 
