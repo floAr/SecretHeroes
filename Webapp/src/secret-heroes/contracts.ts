@@ -159,6 +159,28 @@ export interface GetTokenInfoRsp {
   }
 }
 
+export interface GetLeaderboardsQry {
+  leaderboards: {}
+}
+
+export type LeaderboardPlayerStats = {
+  address: string // player address
+  battles: number // number of battles
+  losses: number // number of losses
+  score: number // players score
+  third_in_two_way_ties: number // numbers of taking 3rd place in a tie
+  ties: number // number ties
+  wins: number // number of wins
+}
+
+export interface GetLeaderboardsRsp {
+  leaderboards: {
+    all_time: LeaderboardPlayerStats[]
+    tournament: LeaderboardPlayerStats[]
+    tournament_started: number
+  }
+}
+
 const randomString = (length: number) => {
   let result = ''
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -232,13 +254,18 @@ export const fightHistory =
       }
     })
   }
-export const returnFigher = async (client: SigningCosmWasmClient): Promise<WithdrawRsp> => {
+export const returnFighter = async (client: SigningCosmWasmClient): Promise<WithdrawRsp> => {
   return transact<WithdrawMsg, WithdrawRsp>(client, arena_address, {
     chicken_out: {
 
     }
   })
 }
+
+export const getLeaderboards = async (client: SigningCosmWasmClient): Promise<GetLeaderboardsRsp> => {
+  return query<GetLeaderboardsQry, GetLeaderboardsRsp>(client, arena_address, { leaderboards: {} })
+}
+
 export const setViewingKey =
   async (client: SigningCosmWasmClient, viewingKey: string, contract: 'area' | 'token'): Promise<ViewingKeyRsp> => {
     return transact<SetViewingkeyMsg, ViewingKeyRsp>(client, contract === 'area' ? arena_address : card_address, {
@@ -297,7 +324,8 @@ export const Contracts = {
     address: arena_address,
     fightStatusQuery: fightStatus,
     fightHistoryQuery: fightHistory,
-    returnFigher,
+    leaderboardsQuery: getLeaderboards,
+    returnFigher: returnFighter,
     setViewingKey: (client: SigningCosmWasmClient, viewingKey: string): Promise<ViewingKeyRsp> =>
       setViewingKey(client, viewingKey, 'area')
   },
