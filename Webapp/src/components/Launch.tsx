@@ -9,7 +9,7 @@ interface TimeFrame {
 const Launch: React.FC = () => {
   const zeroPad = (num: number, places: number) => String(num).padStart(places, '0')
   const calculateTimeLeft = () => {
-    const difference = +new Date(`05/11/2021 10:00`) - +new Date()
+    const difference = +new Date(`2021-05-11T17:00Z`) - +new Date()
     let timeLeft: TimeFrame = { hours: '', minutes: '', seconds: '' }
 
     if (difference > 0) {
