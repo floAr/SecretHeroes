@@ -222,7 +222,7 @@ async function transact<IN extends object, OUT>(client: SigningCosmWasmClient, a
 
 const minter_address = "secret1mm59ndlh4jxtp9rz030pnap8ygd5f6mumqlhft" as HumanAddr
 const arena_address = "secret1fxfz7d5r79vad2v2zzel5f43a99knhmh92cxy6" as HumanAddr
-const card_address = "secret1d74pa40tfgfu92s4n238t6j0frrzuxs3c8v5lu" as HumanAddr
+const card_address = "secret1a8cnajnuy6mmcksekx56q95p8mkwg2fknreyep" as HumanAddr
 
 export const mintHeroes = async (client: SigningCosmWasmClient, names: string[]): Promise<MintRsp> => {
   return transact<MintMsg, MintRsp>(client, minter_address, {
