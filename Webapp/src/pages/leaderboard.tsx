@@ -43,7 +43,7 @@ export interface LeaderboardsData {
 }
 
 const LeaderboardPage = () => {
-  const { client } = useContext(KeplrContext)
+  const { getQueryClient, connectQuery } = useContext(KeplrContext)
 
   const [leaderboardsData, setLeaderboardsData] = useState<LeaderboardsData>({
     all_time: [],
@@ -52,8 +52,13 @@ const LeaderboardPage = () => {
   })
 
   const updateLeaderboardData = async () => {
-    if (client != null) {
-      const newData = await Contracts.arena.leaderboardsQuery(client)
+    let queryClient = getQueryClient()
+    if (queryClient == null) {
+      await connectQuery('holodeck-2')
+      queryClient = getQueryClient()
+    }
+    if (queryClient != null) {
+      const newData = await Contracts.arena.leaderboardsQuery(queryClient)
       if (JSON.stringify(newData.leaderboards) !== JSON.stringify(leaderboardsData)) {
         setLeaderboardsData(newData.leaderboards as LeaderboardsData)
       }
@@ -61,10 +66,12 @@ const LeaderboardPage = () => {
   }
 
   useEffect(() => {
+    updateLeaderboardData() // get data once
+
     const getLeaderboard = setInterval(async () => {
       await updateLeaderboardData()
     }, 30000)
-    updateLeaderboardData() // get data once
+
     // clearing interval
     return () => clearInterval(getLeaderboard)
   })
