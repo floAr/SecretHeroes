@@ -8,7 +8,6 @@ import Container from '../components/Container'
 import IndexLayout from '../layouts'
 
 const BlockContent = styled.div`
-margin-top: 100px;
 width: 90vw;
 max-width: 1080px;
 padding: 48px 0;
@@ -94,6 +93,7 @@ margin-bottom: 16px;
 const HowToPage = () => (
 <IndexLayout>
   <Container css={css` max-width: 75vw;
+    margin-top: 100px;
   @media only screen and (max-width: 768px) {
     width: 90vw;
     max-width: 90vw;

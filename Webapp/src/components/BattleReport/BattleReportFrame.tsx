@@ -14,25 +14,29 @@ interface BattleReportFrameProps {
 const BattleReportColumen = styled.div`
   display: flex;
   flex-direction: column;
-  /* padding: 5px; */
   width: 100%;
   align-items: stretch;
 `
 const BattleReportEntry = styled.div`
-  background: ${colors.gray.c800};
-  margin-bottom: 5px;
+  background-color: ${colors.gray.c900};
   height: 100%;
-  /* min-width: 30px; */
   display: grid;
-  place-content: center;
+  justify-content: start;
+  align-content: center;
+  border-bottom: 1px solid white;
+  font-size: 14px;
+  padding: 12px;
 `
 
 const BattleReportHeader = styled(BattleReportEntry)`
   font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 20px;
+  text-transform: uppercase;
   font-weight: 700;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  background: ${colors.gray.c700};
+  padding: 12px;
+  background: ${colors.gray.c900};
+  border-bottom: 1px solid white;
 `
 
 const ResultPill: React.FC<{ won: boolean }> = ({ won }) => {
@@ -106,7 +110,7 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
                 flex: 1 1 10px;
                 padding: 10px;
                 background: ${color};
-                border-radius: 5px;
+                border-radius: 6px;
                 margin: 3px;
               `}
             >
@@ -150,9 +154,7 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
           color: ${colors.gray.c300};
         `}
       >
-        <div>{d.toLocaleDateString()}</div>
-
-        <div>{d.toLocaleTimeString()}</div>
+        {d.toLocaleDateString()} {d.toLocaleTimeString()}
       </div>
     )
   }
@@ -161,30 +163,28 @@ const BattleReportFrame: React.FC<BattleReportFrameProps> = ({ battles }) => {
       css={css`
         display: flex;
         justify-content: flex-start;
-        /* max-width: 600px; */
       `}
     >
       <div
         css={css`
           display: grid;
-          /* border: 1px solid black; */
-          /* max-width: 800px; */
-          grid-template-columns: 3fr 4fr 1fr 2fr 2fr 4fr 6fr;
-
-          grid-row-gap: 5px;
-          border-radius: 15px;
+          grid-template-columns: 3fr 4fr 1fr 2fr 2.5fr 4fr 6fr;
+          border-radius: 6px;
           width: 100%;
-          padding-right: 24px;
-          padding-bottom: 24px;
+          border-collapse: separate;
         `}
       >
-        <BattleReportHeader>Battle Number</BattleReportHeader>
+        <BattleReportHeader css={css`
+          border-top-left-radius: 6px;
+        `}>Date</BattleReportHeader>
         <BattleReportHeader>Hero</BattleReportHeader>
         <BattleReportHeader>Type</BattleReportHeader>
         <BattleReportHeader>Your Skill</BattleReportHeader>
         <BattleReportHeader>Winning Skill</BattleReportHeader>
         <BattleReportHeader>Outcome</BattleReportHeader>
-        <BattleReportHeader>Skill Changes</BattleReportHeader>
+        <BattleReportHeader css={css`
+          border-top-right-radius: 6px;
+        `}>Skill Changes</BattleReportHeader>
         {battles.map(battle => {
           return (
             <>
