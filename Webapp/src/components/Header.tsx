@@ -12,10 +12,14 @@ import WalletConnect from '../secret/WalletConnect'
 const StyledHeader = styled.header`
 height: ${heights.header}px;
 padding: 0 ${dimensions.containerPadding}rem;
-background-color: #0F1419;
+background-color: ${colors.gray.c1000};
 color: ${transparentize(0.5, colors.white)};
 display: grid;
-
+position: fixed;
+width: 100%;
+top: 0;
+left: 0;
+z-index: 100;
 `
 
 const HeaderInner = styled(Container)`
@@ -274,8 +278,8 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
               `}>
           <HomepageLink to="/howto">How to play</HomepageLink>
           <HomepageLink to="/leaderboard">Leaderboard</HomepageLink>
-          <HomepageLink css={css` 
-          color: ${colors.red}; 
+          <HomepageLink css={css`
+          color: ${colors.red};
           @media only screen and (max-width: 768px) {
             display:none;
           }
@@ -295,11 +299,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           >
           Reset
         </button> */}
-        <div css={css` 
-              margin-left: auto; 
-              height: 55px; 
-              display: flex; 
-              align-items: center; 
+        <div css={css`
+              margin-left: auto;
+              height: 55px;
+              display: flex;
+              align-items: center;
               @media only screen and (max-width: 768px) {
                 display: none;
               }`}>

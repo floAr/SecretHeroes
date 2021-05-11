@@ -102,6 +102,10 @@ const IndexPage = () => {
       }
     }
   `)
+  const now = new Date();
+  const launchTime = new Date(`05/11/2021 10:00`);
+  const isLaunched = now > launchTime;
+
   const isBrowser = typeof window !== 'undefined'
 
   return (
@@ -152,37 +156,43 @@ const IndexPage = () => {
             display: grid;
             gap: 0;
           `}>
-            <p css={css`
-            margin: 30px 0 0 0;
-            font-family: Inter;
-            font-style: normal;
-            font-weight: normal;
-            font-size: 16px;
-            //line-height: 28px;
-            /* identical to box height, or 175% */
 
-            text-align: center;
+            { !isLaunched ? (
+            <div>
+              <p css={css`
+              margin: 30px 0 0 0;
+              font-family: Inter;
+              font-style: normal;
+              font-weight: normal;
+              font-size: 16px;
+              //line-height: 28px;
+              /* identical to box height, or 175% */
+              text-align: center;
+              /* Neutral/#200 */
+              color: #9AA5B1;`}>Launching In</p>
 
-            /* Neutral/#200 */
-
-            color: #9AA5B1;`}>Launching In</p>
-            <div css={css`
-                font-family: Inter;
-                font-style: normal;
-                font-weight: 800;
-                font-size: 60px;
-                line-height: 60px;
-                /* identical to box height, or 100% */
-                text-align: center;
-                letter-spacing: -0.025em;
-                /* gray/100 */
-                color: #F3F4F6;
-                text-align: left;
-                padding-left: 3.3rem;
-              `}>
-              <Launch />
+              <div css={css`
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 800;
+                  font-size: 60px;
+                  line-height: 60px;
+                  /* identical to box height, or 100% */
+                  text-align: center;
+                  letter-spacing: -0.025em;
+                  /* gray/100 */
+                  color: #F3F4F6;
+                  text-align: left;
+                  padding-left: 4.2rem;
+                `}>
+                <Launch />
+              </div>
             </div>
+
+            ) : <div></div>  }
+
           </div>
+          { !isLaunched ?
           <StyledButton
             css={css`
                   background: ${colors.red};
@@ -210,7 +220,37 @@ const IndexPage = () => {
             }}
           >
             Claim Your Hero Now
+          </StyledButton> :
+
+          <StyledButton
+            css={css`
+                  background: ${colors.red};
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 500;
+                  font-size: 16px;
+                  line-height: 24px;
+                  border: 0;
+                  cursor: pointer;
+                  min-width: 190px;
+                  color: #FFFFFF;
+                  padding: 0;
+                  display: inline-block;
+                  margin: 0 auto;
+                  margin-top: 24px;
+                  transition: .2s ease;
+                  height: 56px;
+                  &:hover {
+                    background: #a1021a;
+                  }
+                `}
+            onClick={_ => {
+              window.open('https://docs.google.com/forms/d/e/1FAIpQLSfrykAtU6PAu1MPfsIYTuphVubVei6nzU1KUOiU6FaEHiJpaw/viewform')
+            }}
+          >
+              Launch Game
           </StyledButton>
+          }
         </section>
 
         <ContentSection

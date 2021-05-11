@@ -25,7 +25,7 @@ export default `
     overflow-y: scroll;
     font-family: 'Roboto' 400;
     color: ${colors.white};
-    background-color: ${colors.gray.c1100};
+    background-color: ${colors.gray.c1000};
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
   }

@@ -8,6 +8,7 @@ import Container from '../components/Container'
 import IndexLayout from '../layouts'
 
 const BlockContent = styled.div`
+margin-top: 100px;
 width: 90vw;
 max-width: 1080px;
 padding: 48px 0;
@@ -62,7 +63,7 @@ small {
   color: #9AA5B1;
 }
 .button {
-background: ${colors.gray.c1000};
+background: ${colors.gray.c900};
 padding: 13px 25px;
 text-decoration: none;
 display: inline-block;
@@ -92,10 +93,10 @@ margin-bottom: 16px;
 
 const HowToPage = () => (
 <IndexLayout>
-  <Container css={css` max-width: 75vw; 
+  <Container css={css` max-width: 75vw;
   @media only screen and (max-width: 768px) {
-    width: 90vw; 
-    max-width: 90vw;  
+    width: 90vw;
+    max-width: 90vw;
   }
   `}>
     <BlockContent>
@@ -103,10 +104,10 @@ const HowToPage = () => (
       {/*
       <Link to="/">Go back.</Link> */}
     </BlockContent>
-    <BlockContent css={css` width: 45vw; 
+    <BlockContent css={css` width: 45vw;
       @media only screen and (max-width: 768px) {
-        width: 90vw; 
-        max-width: 90vw;  
+        width: 90vw;
+        max-width: 90vw;
       }
     `}>
       <h6>STEP 1</h6>
@@ -122,12 +123,12 @@ const HowToPage = () => (
         <span>Install Keplr Extension</span></a>
       <small>Note: Keplr is only available on Google Chrome.</small>
     </BlockContent>
-    <BlockContent css={css` 
-      width: 45vw; 
-      max-width: 45vw; 
+    <BlockContent css={css`
+      width: 45vw;
+      max-width: 45vw;
       @media only screen and (max-width: 768px) {
-        width: 90vw; 
-        max-width: 90vw;  
+        width: 90vw;
+        max-width: 90vw;
       }
       `}>
       <h6>STEP 2</h6>
@@ -175,10 +176,10 @@ const HowToPage = () => (
         </BlockContent>
       </div>
     </BlockContent>
-    <BlockContent css={css` width: 45vw; 
+    <BlockContent css={css` width: 45vw;
       @media only screen and (max-width: 768px) {
-        width: 90vw; 
-        max-width: 90vw;  
+        width: 90vw;
+        max-width: 90vw;
       }
       `}>
       <h6>STEP 3</h6>

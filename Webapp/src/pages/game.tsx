@@ -264,11 +264,12 @@ const Game = () => {
   return (
     <div
       css={css`
-        margin: 1vw;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: start;
+        margin-top: 100px;
+        padding-left: 24px;
       `}
     >
       <div
@@ -298,10 +299,11 @@ const Game = () => {
       >
         <h3
           css={css`
-            padding-left: 40px;
+            color: white;
+            margin-bottom: 24px;
           `}
         >
-          Battle Results
+          Battle History
         </h3>
 
         <BattleReportFrame battles={battleHistory} />
