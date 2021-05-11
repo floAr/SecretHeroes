@@ -83,6 +83,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboardData }) => {
         <tbody>
           {leaderboardData.map((it, index) => (
             <tr
+              key={index}
               css={
                 account?.address != null && account.address === it.address
                   ? css`
