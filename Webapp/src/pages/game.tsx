@@ -105,6 +105,22 @@ const Game = () => {
           base_psychics: fightState.bullpen.your_hero?.stats.base[3]
         }
       }
+
+      switch (newBattleState.heroes_waiting) {
+        case 0:
+          toast.info('The arena is empty')
+          break
+        case 1:
+          toast.info(newBattleState.your_hero != null ? 'You are waiting in the arena alone' : 'One hero is waiting in the arena')
+          break
+        case 2:
+          toast.info(
+            newBattleState.your_hero != null ? 'You are waiting in the arena with one hero' : 'Two heroes are waiting in the arena for YOU'
+          )
+          break
+        default:
+          toast.info('The battle commences')
+      }
       if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
         PollBattleHistory()
         if (unityInstance !== undefined) {
