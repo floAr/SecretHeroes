@@ -97,7 +97,7 @@ const intial = { chainId: '', connected: false, status: 'undefined', keplrFound:
 const keplrContext = React.createContext<KeplrContextProps>(
   {
     ...intial,
-    connectQuery: (_: ChainId) => { },
+    connectQuery: (_: ChainId) => { return new Promise<void>((resolve, reject) =>{}) },
     getQueryClient: () => { return undefined }
   }
 )
