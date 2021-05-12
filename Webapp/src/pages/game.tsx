@@ -292,7 +292,7 @@ const Game = () => {
         flex-wrap: wrap;
         justify-content: start;
         margin-top: 100px;
-        padding-left: 24px;
+        padding: 0 24px 24px 24px;
       `}
     >
       <div
@@ -318,6 +318,9 @@ const Game = () => {
           width: 100%;
           min-width: 700px;
           flex: 1 1 500px;
+          @media screen and (min-width: 1800px) {
+            padding: 0 0 0 24px;
+          }
         `}
       >
         <h3
