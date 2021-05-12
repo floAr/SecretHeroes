@@ -212,7 +212,7 @@ const getFees = (txName: 'mint' | 'viewingKeys' | 'send' | 'pull'): StdFee => {
       gas = "120000";
       break;
     case "send":
-      gas = "800000";
+      gas = "860000";
       break;
     case "pull":
       gas = "260000";
