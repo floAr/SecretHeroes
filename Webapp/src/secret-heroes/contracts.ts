@@ -236,33 +236,38 @@ const getFees = (txName: 'mint' | 'viewingKeys' | 'send' | 'pull'): StdFee => {
   // }
 }
 
-async function query<IN extends object, OUT>(client: CosmWasmClient, address: HumanAddr, query_msg: IN): Promise<OUT> {
+async function query<IN extends object, OUT>(client: CosmWasmClient, address: HumanAddr, query_msg: IN): Promise<OUT | undefined> {
   try {
     const resp = await client.queryContractSmart(address, query_msg)
     return resp
   }
   catch (err) {
-    toast.error(`Error running query: ${err}`)
+    //  toast.error(`Error running query: ${err}`)
+    return undefined
   }
-  const resp = await client.queryContractSmart(address, query_msg)
-  return resp
 }
 
 async function transact<IN extends object, OUT>
-  (client: SigningCosmWasmClient, address: HumanAddr, msg: IN, transfer?: Coin, fee?: StdFee): Promise<OUT> {
-  let resp
-  if (transfer !== undefined)
-    resp = (await client.execute(address, msg, '', [transfer], fee))
-  else
-    resp = (await client.execute(address, msg, '', [], fee))
-  return JSON.parse(new TextDecoder().decode(resp.data)) as OUT
+  (client: SigningCosmWasmClient, address: HumanAddr, msg: IN, transfer?: Coin, fee?: StdFee): Promise<OUT | undefined> {
+  try {
+    let resp
+    if (transfer !== undefined)
+      resp = (await client.execute(address, msg, '', [transfer], fee))
+    else
+      resp = (await client.execute(address, msg, '', [], fee))
+    return JSON.parse(new TextDecoder().decode(resp.data)) as OUT
+  }
+  catch (err) {
+    //  toast.error(`Error running query: ${err}`)
+    return undefined
+  }
 }
 
 const minter_address = "secret19lk0jeh7msdqmnaql5aatruhz4hajacut0l4pg" as HumanAddr
 const arena_address = "secret123cvl7awpvs45lztcn6v343arssse35vmywnnj" as HumanAddr
 const card_address = "secret1ytu2a642jwysle87eu89vqxqlfveajsu00r8v4" as HumanAddr
 
-export const mintHeroes = async (client: SigningCosmWasmClient, names: string[]): Promise<MintRsp> => {
+export const mintHeroes = async (client: SigningCosmWasmClient, names: string[]): Promise<MintRsp | undefined> => {
   return transact<MintMsg, MintRsp>(client, minter_address, {
     mint: {
       names
@@ -273,7 +278,7 @@ export const mintHeroes = async (client: SigningCosmWasmClient, names: string[])
     getFees('mint'))
 }
 
-export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
+export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp | undefined> => {
   return query<FightStatusQry, FightStatusRsp>(client, arena_address, {
     bullpen: {
       address,
@@ -283,7 +288,7 @@ export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, vi
 }
 export const fightHistory =
   async (client: CosmWasmClient, address: HumanAddr, viewingKey: string, paging?: { page: number, page_size: number }):
-    Promise<BattleHistoryRsp> => {
+    Promise<BattleHistoryRsp | undefined> => {
     return query<BattleHistoryQry, BattleHistoryRsp>(client, arena_address, {
       battle_history: {
         address,
@@ -293,7 +298,7 @@ export const fightHistory =
       }
     })
   }
-export const returnFighter = async (client: SigningCosmWasmClient): Promise<WithdrawRsp> => {
+export const returnFighter = async (client: SigningCosmWasmClient): Promise<WithdrawRsp | undefined> => {
   return transact<WithdrawMsg, WithdrawRsp>(client, arena_address, {
     chicken_out: {
 
@@ -301,12 +306,12 @@ export const returnFighter = async (client: SigningCosmWasmClient): Promise<With
   }, undefined, getFees('pull'))
 }
 
-export const getLeaderboards = async (client: CosmWasmClient): Promise<GetLeaderboardsRsp> => {
+export const getLeaderboards = async (client: CosmWasmClient): Promise<GetLeaderboardsRsp | undefined> => {
   return query<GetLeaderboardsQry, GetLeaderboardsRsp>(client, arena_address, { leaderboards: {} })
 }
 
 export const setViewingKey =
-  async (client: SigningCosmWasmClient, viewingKey: string, contract: 'area' | 'token'): Promise<ViewingKeyRsp> => {
+  async (client: SigningCosmWasmClient, viewingKey: string, contract: 'area' | 'token'): Promise<ViewingKeyRsp | undefined> => {
     return transact<SetViewingkeyMsg, ViewingKeyRsp>(client, contract === 'area' ? arena_address : card_address, {
       set_viewing_key: {
         key: viewingKey,
@@ -315,7 +320,7 @@ export const setViewingKey =
     }, undefined, getFees('viewingKeys'))
   }
 
-export const sendHero = async (client: SigningCosmWasmClient, token_id: string): Promise<SendHeroRsp> => {
+export const sendHero = async (client: SigningCosmWasmClient, token_id: string): Promise<SendHeroRsp | undefined> => {
   return transact<SendHeroMsg, SendHeroRsp>(client, card_address, {
     send_nft: {
       contract: arena_address,
@@ -325,7 +330,8 @@ export const sendHero = async (client: SigningCosmWasmClient, token_id: string):
   }, undefined, getFees('send'))
 }
 
-export const getAllTokens = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<GetAllTokensRsp> => {
+export const getAllTokens = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string):
+  Promise<GetAllTokensRsp | undefined> => {
   return query<GetAllTokensQry, GetAllTokensRsp>(client, card_address, {
     tokens: {
       owner: address,
@@ -335,7 +341,7 @@ export const getAllTokens = async (client: CosmWasmClient, address: HumanAddr, v
 }
 
 export const getTokenInfo =
-  async (client: CosmWasmClient, tokenId: string, address: HumanAddr, viewingKey: string): Promise<GetTokenInfoRsp> => {
+  async (client: CosmWasmClient, tokenId: string, address: HumanAddr, viewingKey: string): Promise<GetTokenInfoRsp | undefined> => {
     return query<GetTokenInfoQry, GetTokenInfoRsp>(client, card_address, {
       private_metadata: {
         token_id: tokenId,
@@ -365,12 +371,12 @@ export const Contracts = {
     fightHistoryQuery: fightHistory,
     leaderboardsQuery: getLeaderboards,
     returnFigher: returnFighter,
-    setViewingKey: (client: SigningCosmWasmClient, viewingKey: string): Promise<ViewingKeyRsp> =>
+    setViewingKey: (client: SigningCosmWasmClient, viewingKey: string): Promise<ViewingKeyRsp | undefined> =>
       setViewingKey(client, viewingKey, 'area')
   },
   cards: {
     address: card_address,
-    setViewingKey: (client: SigningCosmWasmClient, viewingKey: string): Promise<ViewingKeyRsp> =>
+    setViewingKey: (client: SigningCosmWasmClient, viewingKey: string): Promise<ViewingKeyRsp | undefined> =>
       setViewingKey(client, viewingKey, 'token'),
     sendHero,
     getAllTokens,

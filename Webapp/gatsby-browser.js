@@ -5,8 +5,13 @@
  */
 const React = require('react')
 const { KeplrContextProvider } = require('./src/secret/KeplrContext')
+const { ViewingKeyContextProvider } = require('./src/secret/ViewingKeysContext')
 
 // You can delete this file if you're not using it
 export const wrapRootElement = ({ element }) => {
-  return <KeplrContextProvider>{element}</KeplrContextProvider>
+  return (
+    <ViewingKeyContextProvider>
+      <KeplrContextProvider>{element} </KeplrContextProvider>
+    </ViewingKeyContextProvider>
+  )
 }

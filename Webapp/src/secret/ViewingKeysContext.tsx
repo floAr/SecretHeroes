@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 export type viewingKeyPair = {
   key: string
@@ -35,15 +35,19 @@ const ViewingKeyContextProvider: React.FC = ({ children }) => {
     [viewingKey]
   )
 
-  const addViewingKey = useCallback(
+  const addNewViewingKey = useCallback(
     (vkp: viewingKeyPair) => {
+      console.log('adding', vkp)
       const other = viewingKey.filter(vk => vk.address !== vkp.address)
       setViewingKey([...other, vkp])
     },
     [viewingKey]
   )
 
-  return <viewingKeyContext.Provider value={{ getViewingKey, addViewingKey }}>{children}</viewingKeyContext.Provider>
-}
+  const value = useMemo(() => {
+    return { getViewingKey, addViewingKey: addNewViewingKey }
+  }, [getViewingKey, addNewViewingKey])
 
-export default ViewingKeyContextProvider
+  return <viewingKeyContext.Provider value={value}>{children}</viewingKeyContext.Provider>
+}
+export { ViewingKeyContextProvider, viewingKeyContext as ViewingKeyContext }

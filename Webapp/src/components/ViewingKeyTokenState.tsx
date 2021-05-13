@@ -8,10 +8,12 @@ export interface ViewingKeyTokenStateProps {
   name: string
   address: string
   query: () => Promise<boolean>
-  set: () => Promise<ViewingKeyRsp>
+  set: () => Promise<ViewingKeyRsp | undefined>
+  setValid: React.Dispatch<React.SetStateAction<boolean>>
 }
-const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, address, query, set, viewingKey }) => {
+const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, address, query, set, viewingKey, setValid }) => {
   const [state, setState] = useState<contractState>('unknown')
+  const [timeoutStamp, setTimeoutStamp] = useState<number>(Date.now())
 
   const getState = (s: contractState) => {
     switch (s) {
@@ -30,16 +32,18 @@ const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, addre
 
   const check = async () => {
     const success = await query()
+    setValid(success)
     setState(success ? 'ok' : 'error')
   }
 
   const add = async () => {
     const rsp = await set()
-    if (rsp.viewing_key.key) {
+    if (rsp?.viewing_key?.key) {
       setState('ok')
       return
     }
     setState('timeout')
+    setTimeoutStamp(Date.now())
     setTimeout(() => {
       setState('error')
     }, 5000)
@@ -49,6 +53,42 @@ const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, addre
     check()
   }, [query, viewingKey])
 
+  const renderButton = () => {
+    switch (state) {
+      case 'ok':
+        return <></>
+      case 'error':
+        return (
+          <button
+            type="button"
+            onClick={_ => {
+              add()
+            }}
+          >
+            Set
+          </button>
+        )
+      case 'timeout':
+        return (
+          <button type="button" disabled>
+            {Date.now() - timeoutStamp}
+          </button>
+        )
+      case 'unknown':
+        return (
+          <button
+            type="button"
+            onClick={_ => {
+              check()
+            }}
+          >
+            Check
+          </button>
+        )
+      default:
+        return <></>
+    }
+  }
   return (
     <div
       css={css`
@@ -60,25 +100,7 @@ const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, addre
     >
       <span>{name}</span>
       {getState(state)}
-      {state === 'error' ? (
-        <button
-          type="button"
-          onClick={_ => {
-            add()
-          }}
-        >
-          Set
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={_ => {
-            check()
-          }}
-        >
-          Check
-        </button>
-      )}
+      {renderButton()}
     </div>
   )
 }

@@ -5,9 +5,11 @@ import { KeplrContext } from '../secret/KeplrContext'
 import { viewingKeyContext } from '../secret/ViewingKeysContext'
 import ViewingKeyTokenState from './ViewingKeyTokenState'
 
-export interface ViewingKeyControllerProps {}
+export interface ViewingKeyControllerProps {
+  setValid: React.Dispatch<React.SetStateAction<boolean>>
+}
 
-const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
+const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid }) => {
   const isBrowser = typeof window !== 'undefined'
   const { getViewingKey, addViewingKey } = useContext(viewingKeyContext)
 
@@ -24,6 +26,13 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
       addViewingKey({ address: account?.address, key: newKey })
     }
   }
+
+  const [tokenValid, setTokenValid] = useState<boolean>(false)
+  const [arenaValid, setArenaValid] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (setValid) setValid(tokenValid && arenaValid)
+  }, [tokenValid, arenaValid])
 
   return (
     <div
@@ -59,6 +68,7 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
+
             align-items: baseline;
           `}
         >
@@ -96,6 +106,7 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
         Contracts
       </h3>
       <ViewingKeyTokenState
+        viewingKey={viewingKey}
         name="Token"
         address={Contracts.cards.address}
         query={async () => {
@@ -111,9 +122,12 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
           if (client != null && account?.address != null && viewingKey != null) {
             return Contracts.cards.setViewingKey(client, viewingKey)
           }
+          return undefined
         }}
+        setValid={setTokenValid}
       />
       <ViewingKeyTokenState
+        viewingKey={viewingKey}
         name="Arena"
         address={Contracts.arena.address}
         query={async () => {
@@ -123,6 +137,13 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = () => {
           }
           return false
         }}
+        set={async () => {
+          if (client != null && account?.address != null && viewingKey != null) {
+            return Contracts.arena.setViewingKey(client, viewingKey)
+          }
+          return undefined
+        }}
+        setValid={setArenaValid}
       />
     </div>
   )
