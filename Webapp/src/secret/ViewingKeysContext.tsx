@@ -22,6 +22,7 @@ export const viewingKeyContext = createContext<ViewingKeyContext>({
 const ViewingKeyContextProvider: React.FC = ({ children }) => {
   const isBrowser = typeof window !== 'undefined'
   const [viewingKey, setViewingKey] = useState<viewingKeyPair[]>(isBrowser ? JSON.parse(localStorage.getItem(storageKey) ?? '[]') : [])
+
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(viewingKey))
   }, [viewingKey])

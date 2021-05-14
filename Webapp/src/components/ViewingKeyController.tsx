@@ -16,6 +16,17 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
   const { connected, account, client } = useContext(KeplrContext)
 
   const [viewingKey, setViewingKey] = useState<string | undefined>(undefined)
+
+  // migrate existing viewingkeys
+  useEffect(() => {
+    const existing = localStorage.getItem('viewingKey')
+    if (existing != null && existing.length > 0 && account?.address) {
+      localStorage.removeItem('viewingKey')
+      addViewingKey({ address: account?.address, key: existing })
+      console.log('migrated viewingkey', existing)
+    }
+  }, [account])
+
   useEffect(() => {
     if (isBrowser && account?.address) setViewingKey(getViewingKey(account?.address))
   }, [account, getViewingKey])
@@ -53,16 +64,18 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
           color: white;
         `}
       >
-        {account?.address}
+        {account?.address ? account?.address : 'Please connect to Keplr'}
       </p>
-      <h3
-        css={css`
-          color: white;
-        `}
-      >
-        Current ViewingKey
-      </h3>
-      {viewingKey != null ? (
+      {connected && (
+        <h3
+          css={css`
+            color: white;
+          `}
+        >
+          Current ViewingKey
+        </h3>
+      )}
+      {viewingKey != null && connected && (
         <div
           css={css`
             display: flex;
@@ -88,7 +101,8 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
             Renew
           </button>
         </div>
-      ) : (
+      )}
+      {viewingKey == null && connected && (
         <button
           type="button"
           onClick={() => {
@@ -98,53 +112,58 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
           Create ViewingKey
         </button>
       )}
-      <h3
-        css={css`
-          color: white;
-        `}
-      >
-        Contracts
-      </h3>
-      <ViewingKeyTokenState
-        viewingKey={viewingKey}
-        name="Token"
-        address={Contracts.cards.address}
-        query={async () => {
-          console.log(client, account?.address, viewingKey)
-          if (client != null && account?.address != null && viewingKey != null) {
-            const list = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
-            console.log('list', list)
-            return list != null
-          }
-          return false
-        }}
-        set={async () => {
-          if (client != null && account?.address != null && viewingKey != null) {
-            return Contracts.cards.setViewingKey(client, viewingKey)
-          }
-          return undefined
-        }}
-        setValid={setTokenValid}
-      />
-      <ViewingKeyTokenState
-        viewingKey={viewingKey}
-        name="Arena"
-        address={Contracts.arena.address}
-        query={async () => {
-          if (client != null && account?.address != null && viewingKey != null) {
-            const arena = await await Contracts.arena.fightStatusQuery(client, account?.address, viewingKey)
-            return arena != null
-          }
-          return false
-        }}
-        set={async () => {
-          if (client != null && account?.address != null && viewingKey != null) {
-            return Contracts.arena.setViewingKey(client, viewingKey)
-          }
-          return undefined
-        }}
-        setValid={setArenaValid}
-      />
+
+      {viewingKey && (
+        <>
+          <h3
+            css={css`
+              color: white;
+            `}
+          >
+            Contracts
+          </h3>
+          <ViewingKeyTokenState
+            viewingKey={viewingKey}
+            name="Token"
+            address={Contracts.cards.address}
+            query={async () => {
+              console.log(client, account?.address, viewingKey)
+              if (client != null && account?.address != null && viewingKey != null) {
+                const list = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
+                console.log('list', list)
+                return list != null
+              }
+              return false
+            }}
+            set={async () => {
+              if (client != null && account?.address != null && viewingKey != null) {
+                return Contracts.cards.setViewingKey(client, viewingKey)
+              }
+              return undefined
+            }}
+            setValid={setTokenValid}
+          />
+          <ViewingKeyTokenState
+            viewingKey={viewingKey}
+            name="Arena"
+            address={Contracts.arena.address}
+            query={async () => {
+              if (client != null && account?.address != null && viewingKey != null) {
+                const arena = await await Contracts.arena.fightStatusQuery(client, account?.address, viewingKey)
+                return arena != null
+              }
+              return false
+            }}
+            set={async () => {
+              if (client != null && account?.address != null && viewingKey != null) {
+                return Contracts.arena.setViewingKey(client, viewingKey)
+              }
+              return undefined
+            }}
+            setValid={setArenaValid}
+          />
+        </>
+      )}
     </div>
   )
 }
