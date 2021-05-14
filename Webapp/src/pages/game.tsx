@@ -252,7 +252,6 @@ const Game = () => {
 
       if (mint && mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
-        console.log(newTokens)
         newTokens = newTokens?.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
@@ -267,7 +266,6 @@ const Game = () => {
       setWorking(true)
       permToastId.current = toast.info('Assembling your heroes', { closeButton: false, autoClose: false, closeOnClick: true })
       const pollResult = await PollNewTokens(true)
-      console.log('poll', pollResult)
       if (pollResult == null) {
         toast.dismiss(permToastId.current)
         return false
@@ -275,15 +273,13 @@ const Game = () => {
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Investigating previous battles', { closeButton: false, autoClose: false, closeOnClick: true })
       const historyResult = await PollBattleHistory()
-      console.log('history', historyResult)
       if (historyResult == null) {
         toast.dismiss(permToastId.current)
         return false
       }
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Checking for current battles', { closeButton: false, autoClose: false, closeOnClick: true })
-      const stateResult = await PollFightState(true)
-      console.log('state', stateResult)
+      const stateResult = await PollFightState()
       if (stateResult == null) {
         toast.dismiss(permToastId.current)
         return false

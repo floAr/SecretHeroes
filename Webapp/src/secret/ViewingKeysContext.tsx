@@ -38,7 +38,6 @@ const ViewingKeyContextProvider: React.FC = ({ children }) => {
 
   const addNewViewingKey = useCallback(
     (vkp: viewingKeyPair) => {
-      console.log('adding', vkp)
       const other = viewingKey.filter(vk => vk.address !== vkp.address)
       setViewingKey([...other, vkp])
     },

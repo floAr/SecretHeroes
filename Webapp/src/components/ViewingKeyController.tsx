@@ -43,7 +43,6 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
   const [arenaValid, setArenaValid] = useState<boolean>(false)
 
   useEffect(() => {
-    console.log('validity', arenaValid, tokenValid)
     if (setValid) setValid(tokenValid && arenaValid)
   }, [tokenValid, arenaValid, viewingKey])
 
@@ -129,10 +128,8 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
             name="Token"
             address={Contracts.cards.address}
             query={async () => {
-              console.log(client, account?.address, viewingKey)
               if (client != null && account?.address != null && viewingKey != null) {
                 const list = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
-                console.log('list', list)
                 return list != null
               }
               return false
