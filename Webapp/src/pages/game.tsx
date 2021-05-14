@@ -85,16 +85,18 @@ const Game = () => {
 
   // update the historic battles
   const PollBattleHistory = async () => {
-    if (!viewingKeyValid) return
+    if (!viewingKeyValid) return null
     if (client != null && account?.address != null && viewingKey != null) {
       const newBattleHistory = await Contracts.arena.fightHistoryQuery(client, account.address, viewingKey)
       if (newBattleHistory && JSON.stringify(newBattleHistory) !== JSON.stringify(battleHistory))
         setBattleHistory(newBattleHistory?.battle_history.history)
+      return true
     }
+    return null
   }
 
   async function PollFightState() {
-    if (!viewingKeyValid) return
+    if (!viewingKeyValid) return null
     if (client != null && account?.address != null && viewingKey != null) {
       const fightState = await Contracts.arena.fightStatusQuery(client, account?.address, viewingKey)
       if (fightState) {
@@ -140,9 +142,9 @@ const Game = () => {
             setBattleState(newBattleState)
           }
         }
-      } else {
-        console.log('areana viewing key out of sync')
+        return newBattleState
       }
+      return null
     }
   }
 
@@ -169,7 +171,7 @@ const Game = () => {
   }
 
   const PollNewTokens = async (paginate?: boolean) => {
-    if (!viewingKeyValid) return []
+    if (!viewingKeyValid) return undefined
     const newTokens: Token[] = []
     let hasChanges = false
     if (client != null && account?.address != null && viewingKey != null) {
@@ -205,7 +207,7 @@ const Game = () => {
         }
       }
     } else {
-      console.log('token viewing key out of sync')
+      setViewingKeyValid(false)
     }
     if (paginate && hasChanges) {
       PollNewTokens()
@@ -251,7 +253,7 @@ const Game = () => {
       if (mint && mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
         console.log(newTokens)
-        newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
+        newTokens = newTokens?.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
         }
@@ -264,19 +266,35 @@ const Game = () => {
     if (setWorking != null) {
       setWorking(true)
       permToastId.current = toast.info('Assembling your heroes', { closeButton: false, autoClose: false, closeOnClick: true })
-      if ((await PollNewTokens(true)) == null) {
-        console.log('viewing keys out of sync')
+      const pollResult = await PollNewTokens(true)
+      console.log('poll', pollResult)
+      if (pollResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
       }
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Investigating previous battles', { closeButton: false, autoClose: false, closeOnClick: true })
-      await PollBattleHistory()
+      const historyResult = await PollBattleHistory()
+      console.log('history', historyResult)
+      if (historyResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
+      }
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Checking for current battles', { closeButton: false, autoClose: false, closeOnClick: true })
-      await PollFightState()
+      const stateResult = await PollFightState(true)
+      console.log('state', stateResult)
+      if (stateResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
+      }
       toast.dismiss(permToastId.current)
       setWorking(false)
+      return true
     }
+    return false
   }
+
   if (isBrowser) {
     window.mint = MintHeroes
     window.poll = PollFightState
@@ -284,18 +302,17 @@ const Game = () => {
   }
 
   useEffect(() => {
-    if (unityInstance !== undefined && connected && client && account && viewingKey) {
+    if (unityInstance !== undefined && connected && client && account && viewingKey && viewingKeyValid) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
         .then(async () => {
-          await PollAll()
-          unityInstance.SendMessage('WebGlBridge', 'Connect')
+          if (await PollAll()) unityInstance.SendMessage('WebGlBridge', 'Connect')
         })
         .catch(async _ => {
           console.log('viewingKeys are out of sync')
         })
     }
-  }, [connected, unityInstance, viewingKey])
+  }, [connected, unityInstance, viewingKey, viewingKeyValid])
 
   useEffect(() => {
     const getFightState = setInterval(async () => {

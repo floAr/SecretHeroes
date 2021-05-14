@@ -34,6 +34,7 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
   const newViewingKey = () => {
     if (isBrowser && account?.address) {
       const newKey = Contracts.helper.getEntropy()
+      setViewingKey(newKey)
       addViewingKey({ address: account?.address, key: newKey })
     }
   }
@@ -42,8 +43,9 @@ const ViewingKeyController: React.FC<ViewingKeyControllerProps> = ({ setValid })
   const [arenaValid, setArenaValid] = useState<boolean>(false)
 
   useEffect(() => {
+    console.log('validity', arenaValid, tokenValid)
     if (setValid) setValid(tokenValid && arenaValid)
-  }, [tokenValid, arenaValid])
+  }, [tokenValid, arenaValid, viewingKey])
 
   return (
     <div

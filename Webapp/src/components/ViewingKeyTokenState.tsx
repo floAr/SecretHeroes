@@ -40,6 +40,7 @@ const ViewingKeyTokenState: React.FC<ViewingKeyTokenStateProps> = ({ name, addre
     const rsp = await set()
     if (rsp?.viewing_key?.key) {
       setState('ok')
+      setValid(true)
       return
     }
     setState('timeout')
