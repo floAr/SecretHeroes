@@ -1,8 +1,9 @@
-import React, { useCallback, useReducer, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useReducer, useState } from 'react';
 import { toast } from 'react-toastify';
 // eslint-disable-next-line prettier/prettier
 import type { SigningCosmWasmClient, Account, CosmWasmClient } from 'secretjs';
 import { Contracts } from '../secret-heroes/contracts';
+import ViewingKeysContext, { viewingKeyContext } from './ViewingKeysContext';
 
 
 declare global {
@@ -30,7 +31,7 @@ export interface KeplrState {
 }
 
 export interface KeplrContextProps extends KeplrState {
-  connectQuery:  (chainId: ChainId) => Promise<void>,
+  connectQuery: (chainId: ChainId) => Promise<void>,
   connect?: (chainId: ChainId) => void,
   resetViewingKey?: () => void
   viewingKey?: string,
@@ -97,7 +98,11 @@ const intial = { chainId: '', connected: false, status: 'undefined', keplrFound:
 const keplrContext = React.createContext<KeplrContextProps>(
   {
     ...intial,
-    connectQuery: (_: ChainId) => { return new Promise<void>((resolve, reject) =>{}) },
+    connectQuery: (_: ChainId) => {
+      return new Promise<void>((resolve, reject) => {
+        // do nothing
+      })
+    },
     getQueryClient: () => { return undefined }
   }
 )
@@ -115,8 +120,18 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
 
   }
   const [keplrState, dispatch] = useReducer(reducer, intial);
+  const { getViewingKey } = useContext(viewingKeyContext)
 
-  const [viewingKey, setViewingKey] = useState<string | undefined>(isBrowser ? localStorage.getItem('viewingKey') ?? undefined : undefined)
+  let viewingKey: string | undefined
+  useEffect(() => {
+    if (isBrowser && keplrState.account?.address) {
+      console.log("loading viewing key for", keplrState.account?.address)
+      viewingKey = getViewingKey(keplrState.account.address)
+
+      console.log("loaded", viewingKey)
+    }
+
+  }, [keplrState])
 
   const resetViewingKey = async () => {
     if (keplrState.client != null) {
@@ -131,7 +146,7 @@ const KeplrContextProvider: React.FC<KeplrContextProviderProps> = ({ children, }
         toast.error("Error setting viewing key for card contract")
       }
       localStorage.setItem('viewingKey', newKey)
-      setViewingKey(newKey)
+      // setViewingKey(newKey)
       dispatch({ type: 'success' })
       toast.info(`Success: Viewing Key set to ${viewingKey}`)
     }

@@ -5,15 +5,14 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import BattleReportFrame from '../components/BattleReport/BattleReportFrame'
-import BattleStateFrame from '../components/BattleReport/BattleStateFrame'
-import Launch from '../components/Launch'
 
 // import Modal from 'react-modal'
 import UnityFunc from '../components/UnityFunc'
+import ViewingKeyController from '../components/ViewingKeyController'
 import IndexLayout from '../layouts'
 import { Battle, Contracts, getEntropy } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
-import { colors } from '../styles/variables'
+import { viewingKeyContext } from '../secret/ViewingKeysContext'
 
 declare global {
   interface Window {
@@ -60,7 +59,9 @@ interface UnityInstance {
 const Game = () => {
   const isBrowser = typeof window !== 'undefined'
 
-  const { connected, account, client, viewingKey, resetViewingKey, setWorking } = React.useContext(KeplrContext)
+  const { getViewingKey } = React.useContext(viewingKeyContext)
+  const [viewingKeyValid, setViewingKeyValid] = React.useState<boolean>(false)
+  const { connected, account, client, setWorking } = React.useContext(KeplrContext)
   const [unityInstance, setUnityInstance] = React.useState<UnityInstance | undefined>(undefined)
 
   const [battleState, setBattleState] = useState<BattleState | undefined>(undefined)
@@ -68,6 +69,11 @@ const Game = () => {
   const [registeredTokens, setRegisteredTokens] = useState<string[]>([])
 
   const permToastId = React.useRef<string | null | number>(null)
+
+  const [viewingKey, setViewingKey] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    if (isBrowser && account?.address) setViewingKey(getViewingKey(account?.address))
+  }, [account, getViewingKey])
 
   useEffect(() => {
     if (!connected) {
@@ -79,111 +85,129 @@ const Game = () => {
 
   // update the historic battles
   const PollBattleHistory = async () => {
+    if (!viewingKeyValid) return null
     if (client != null && account?.address != null && viewingKey != null) {
       const newBattleHistory = await Contracts.arena.fightHistoryQuery(client, account.address, viewingKey)
-      if (JSON.stringify(newBattleHistory) !== JSON.stringify(battleHistory)) setBattleHistory(newBattleHistory.battle_history.history)
+      if (newBattleHistory && JSON.stringify(newBattleHistory) !== JSON.stringify(battleHistory))
+        setBattleHistory(newBattleHistory?.battle_history.history)
+      return true
     }
+    return null
   }
 
   async function PollFightState() {
+    if (!viewingKeyValid) return null
     if (client != null && account?.address != null && viewingKey != null) {
       const fightState = await Contracts.arena.fightStatusQuery(client, account?.address, viewingKey)
-      // eslint-disable-next-line @typescript-eslint/camelcase
-      const newBattleState: BattleState = { heroes_waiting: fightState.bullpen.heroes_waiting, your_hero: undefined }
-      if (fightState.bullpen.your_hero != null && fightState.bullpen.your_hero?.stats != null) {
+      if (fightState) {
         // eslint-disable-next-line @typescript-eslint/camelcase
-        newBattleState.your_hero = {
-          id: fightState.bullpen.your_hero?.name,
-          name: fightState.bullpen.your_hero?.name,
-          weapons: fightState.bullpen.your_hero?.stats.current[0],
-          engineering: fightState.bullpen.your_hero?.stats.current[1],
-          biotech: fightState.bullpen.your_hero?.stats.current[2],
-          psychics: fightState.bullpen.your_hero?.stats.current[3],
-          base_weapons: fightState.bullpen.your_hero?.stats.base[0],
-          base_engineering: fightState.bullpen.your_hero?.stats.base[1],
-          base_biotech: fightState.bullpen.your_hero?.stats.base[2],
-          base_psychics: fightState.bullpen.your_hero?.stats.base[3]
+        const newBattleState: BattleState = { heroes_waiting: fightState.bullpen.heroes_waiting, your_hero: undefined }
+        if (fightState.bullpen.your_hero != null && fightState.bullpen.your_hero?.stats != null) {
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          newBattleState.your_hero = {
+            id: fightState.bullpen.your_hero?.name,
+            name: fightState.bullpen.your_hero?.name,
+            weapons: fightState.bullpen.your_hero?.stats.current[0],
+            engineering: fightState.bullpen.your_hero?.stats.current[1],
+            biotech: fightState.bullpen.your_hero?.stats.current[2],
+            psychics: fightState.bullpen.your_hero?.stats.current[3],
+            base_weapons: fightState.bullpen.your_hero?.stats.base[0],
+            base_engineering: fightState.bullpen.your_hero?.stats.base[1],
+            base_biotech: fightState.bullpen.your_hero?.stats.base[2],
+            base_psychics: fightState.bullpen.your_hero?.stats.base[3]
+          }
         }
-      }
 
-      switch (newBattleState.heroes_waiting) {
-        case 0:
-          toast.info('The arena is empty')
-          break
-        case 1:
-          toast.info(newBattleState.your_hero != null ? 'You are waiting in the arena alone' : 'One hero is waiting in the arena')
-          break
-        case 2:
-          toast.info(
-            newBattleState.your_hero != null ? 'You are waiting in the arena with one hero' : 'Two heroes are waiting in the arena for YOU'
-          )
-          break
-        default:
-          toast.info('The battle commences')
-      }
-      if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
-        PollBattleHistory()
-        if (unityInstance !== undefined) {
-          unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
-          setBattleState(newBattleState)
+        switch (newBattleState.heroes_waiting) {
+          case 0:
+            toast.info('The arena is empty')
+            break
+          case 1:
+            toast.info(newBattleState.your_hero != null ? 'You are waiting in the arena alone' : 'One hero is waiting in the arena')
+            break
+          case 2:
+            toast.info(
+              newBattleState.your_hero != null
+                ? 'You are waiting in the arena with one hero'
+                : 'Two heroes are waiting in the arena for YOU'
+            )
+            break
+          default:
+            toast.info('The battle commences')
         }
+        if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
+          PollBattleHistory()
+          if (unityInstance !== undefined) {
+            unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
+            setBattleState(newBattleState)
+          }
+        }
+        return newBattleState
       }
+      return null
     }
   }
 
   const getToken = async (tokenId: string) => {
     if (client != null && account?.address != null && viewingKey != null) {
       const token = await Contracts.cards.getTokenInfo(client, tokenId, account?.address, viewingKey)
-      const image = JSON.parse(token.private_metadata.image) as { base: number[]; current: number[] }
-      return {
-        id: tokenId,
-        name: token.private_metadata.name,
-        weapons: image.current[0],
-        engineering: image.current[1],
-        biotech: image.current[2],
-        psychics: image.current[3],
-        base_weapons: image.base[0],
-        base_engineering: image.base[1],
-        base_biotech: image.base[2],
-        base_psychics: image.base[3]
-      } as Token
+      if (token) {
+        const image = JSON.parse(token.private_metadata.image) as { base: number[]; current: number[] }
+        return {
+          id: tokenId,
+          name: token.private_metadata.name,
+          weapons: image.current[0],
+          engineering: image.current[1],
+          biotech: image.current[2],
+          psychics: image.current[3],
+          base_weapons: image.base[0],
+          base_engineering: image.base[1],
+          base_biotech: image.base[2],
+          base_psychics: image.base[3]
+        } as Token
+      }
     }
     return {} as Token
   }
 
   const PollNewTokens = async (paginate?: boolean) => {
+    if (!viewingKeyValid) return undefined
     const newTokens: Token[] = []
     let hasChanges = false
     if (client != null && account?.address != null && viewingKey != null) {
       const allTokens = await Contracts.cards.getAllTokens(client, account?.address, viewingKey)
-      const tokenIds: string[] = allTokens.token_list.tokens
-      hasChanges = JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)
-      console.log(tokenIds)
-      if (hasChanges) {
-        // eslint-disable-next-line no-restricted-syntax
+      if (allTokens) {
+        const tokenIds: string[] = allTokens.token_list.tokens
+        hasChanges = JSON.stringify(tokenIds) !== JSON.stringify(registeredTokens)
+        console.log(tokenIds)
+        if (hasChanges) {
+          // eslint-disable-next-line no-restricted-syntax
 
-        for (let i = 0; i < tokenIds.length; i += 1) {
-          const tokenId = tokenIds[i]
-          if (!registeredTokens.includes(tokenId)) {
-            // eslint-disable-next-line no-await-in-loop
-            const t = await getToken(tokenId)
-            newTokens.push(t)
-            if (paginate && i >= 4) {
-              break
+          for (let i = 0; i < tokenIds.length; i += 1) {
+            const tokenId = tokenIds[i]
+            if (!registeredTokens.includes(tokenId)) {
+              // eslint-disable-next-line no-await-in-loop
+              const t = await getToken(tokenId)
+              newTokens.push(t)
+              if (paginate && i >= 4) {
+                break
+              }
             }
           }
-        }
 
-        if (unityInstance !== undefined && newTokens.length > 0) {
-          JSON.stringify(newTokens)
-          unityInstance.SendMessage('WebGlBridge', 'ReportTokens', JSON.stringify(newTokens))
-          setRegisteredTokens(
-            newTokens.map(token => {
-              return token.id
-            })
-          )
+          if (unityInstance !== undefined && newTokens.length > 0) {
+            JSON.stringify(newTokens)
+            unityInstance.SendMessage('WebGlBridge', 'ReportTokens', JSON.stringify(newTokens))
+            setRegisteredTokens(
+              newTokens.map(token => {
+                return token.id
+              })
+            )
+          }
         }
       }
+    } else {
+      setViewingKeyValid(false)
     }
     if (paginate && hasChanges) {
       PollNewTokens()
@@ -226,10 +250,9 @@ const Game = () => {
       setWorking(true)
       const mint = await Contracts.minter.mint(client, [name1, name2, name3])
 
-      if (mint.mint.status === 'Success') {
+      if (mint && mint.mint.status === 'Success') {
         let newTokens = await PollNewTokens()
-        console.log(newTokens)
-        newTokens = newTokens.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
+        newTokens = newTokens?.sort((t1, t2) => (Number(t1.id) < Number(t2.id) ? 1 : -1)).slice(0, 3)
         if (unityInstance !== undefined) {
           unityInstance.SendMessage('WebGlBridge', 'RegisterMint', JSON.stringify(newTokens))
         }
@@ -242,17 +265,32 @@ const Game = () => {
     if (setWorking != null) {
       setWorking(true)
       permToastId.current = toast.info('Assembling your heroes', { closeButton: false, autoClose: false, closeOnClick: true })
-      await PollNewTokens(true)
+      const pollResult = await PollNewTokens(true)
+      if (pollResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
+      }
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Investigating previous battles', { closeButton: false, autoClose: false, closeOnClick: true })
-      await PollBattleHistory()
+      const historyResult = await PollBattleHistory()
+      if (historyResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
+      }
       toast.dismiss(permToastId.current)
       permToastId.current = toast.info('Checking for current battles', { closeButton: false, autoClose: false, closeOnClick: true })
-      await PollFightState()
+      const stateResult = await PollFightState()
+      if (stateResult == null) {
+        toast.dismiss(permToastId.current)
+        return false
+      }
       toast.dismiss(permToastId.current)
       setWorking(false)
+      return true
     }
+    return false
   }
+
   if (isBrowser) {
     window.mint = MintHeroes
     window.poll = PollFightState
@@ -260,20 +298,17 @@ const Game = () => {
   }
 
   useEffect(() => {
-    if (unityInstance !== undefined && connected && client && account && viewingKey) {
+    if (unityInstance !== undefined && connected && client && account && viewingKey && viewingKeyValid) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
         .then(async () => {
-          await PollAll()
-          unityInstance.SendMessage('WebGlBridge', 'Connect')
+          if (await PollAll()) unityInstance.SendMessage('WebGlBridge', 'Connect')
         })
         .catch(async _ => {
-          if (resetViewingKey) {
-            resetViewingKey()
-          }
+          console.log('viewingKeys are out of sync')
         })
     }
-  }, [connected, unityInstance, viewingKey])
+  }, [connected, unityInstance, viewingKey, viewingKeyValid])
 
   useEffect(() => {
     const getFightState = setInterval(async () => {
@@ -323,16 +358,28 @@ const Game = () => {
           }
         `}
       >
-        <h3
-          css={css`
-            color: white;
-            margin-bottom: 24px;
-          `}
-        >
-          Battle History
-        </h3>
+        {viewingKeyValid ? (
+          <>
+            <h3
+              css={css`
+                color: white;
+                margin-bottom: 24px;
+              `}
+            >
+              Battle History
+            </h3>
 
-        <BattleReportFrame battles={battleHistory} />
+            <BattleReportFrame battles={battleHistory} />
+          </>
+        ) : (
+          <div
+            css={css`
+              max-width: 400px;
+            `}
+          >
+            <ViewingKeyController setValid={setViewingKeyValid} />
+          </div>
+        )}
       </div>
       {/* <div
         css={css`
