@@ -1,3 +1,6 @@
+# Secret Heroes Grant Proposal
+https://github.com/SecretFoundation/Grants/issues/13
+
 # NFTHack-SecretHeroes
 Entry for ATOM_HACK_ru 2021.
 Prototyped at the #NFTHack 2021 https://hack.ethglobal.co/showcase/secret-heros-reckb8Gx0K55ezLIA
