@@ -5,6 +5,7 @@ export const colors = {
   cyan: '#53f2bd',
   yellow: '#ffff00',
   gray: {
+    c1100: '#0F1419',
     c1000: '#1F2933',
     c900: '#323F4B',
     c800: '#3E4C59',
@@ -39,6 +40,8 @@ export const widths = {
 
 export const dimensions = {
   fontSize: {
+    extraSmall: 12,
+    small: 14,
     regular: 16,
     large: 18
   },
@@ -56,5 +59,5 @@ export const dimensions = {
 }
 
 export const heights = {
-  header: 60
+  header: 100
 }

@@ -104,12 +104,28 @@ const Game = () => {
           base_biotech: fightState.bullpen.your_hero?.stats.base[2],
           base_psychics: fightState.bullpen.your_hero?.stats.base[3]
         }
-        if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
-          PollBattleHistory()
-          if (unityInstance !== undefined) {
-            unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
-            setBattleState(newBattleState)
-          }
+      }
+
+      switch (newBattleState.heroes_waiting) {
+        case 0:
+          toast.info('The arena is empty')
+          break
+        case 1:
+          toast.info(newBattleState.your_hero != null ? 'You are waiting in the arena alone' : 'One hero is waiting in the arena')
+          break
+        case 2:
+          toast.info(
+            newBattleState.your_hero != null ? 'You are waiting in the arena with one hero' : 'Two heroes are waiting in the arena for YOU'
+          )
+          break
+        default:
+          toast.info('The battle commences')
+      }
+      if (JSON.stringify(newBattleState) !== JSON.stringify(battleState)) {
+        PollBattleHistory()
+        if (unityInstance !== undefined) {
+          unityInstance.SendMessage('WebGlBridge', 'ReportBattleStatus', JSON.stringify(newBattleState))
+          setBattleState(newBattleState)
         }
       }
     }
@@ -244,8 +260,6 @@ const Game = () => {
   }
 
   useEffect(() => {
-    console.log('Connection status: ', connected, ' - Unity Instance: ', unityInstance)
-
     if (unityInstance !== undefined && connected && client && account && viewingKey) {
       Contracts.cards
         .getAllTokens(client, account?.address, viewingKey)
@@ -261,14 +275,24 @@ const Game = () => {
     }
   }, [connected, unityInstance, viewingKey])
 
+  useEffect(() => {
+    const getFightState = setInterval(async () => {
+      await PollFightState()
+    }, 30000)
+
+    // clearing interval
+    return () => clearInterval(getFightState)
+  })
+
   return (
     <div
       css={css`
-        margin: 1vw;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: start;
+        margin-top: 100px;
+        padding: 0 24px 24px 24px;
       `}
     >
       <div
@@ -294,14 +318,18 @@ const Game = () => {
           width: 100%;
           min-width: 700px;
           flex: 1 1 500px;
+          @media screen and (min-width: 1800px) {
+            padding: 0 0 0 24px;
+          }
         `}
       >
         <h3
           css={css`
-            padding-left: 40px;
+            color: white;
+            margin-bottom: 24px;
           `}
         >
-          Battle Results
+          Battle History
         </h3>
 
         <BattleReportFrame battles={battleHistory} />
