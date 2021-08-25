@@ -20,17 +20,18 @@ use secret_toolkit::{
     utils::{pad_handle_result, pad_query_result, HandleCallback},
 };
 
+use crate::contract_info::{ContractInfo, StoreContractInfo};
 use crate::msg::{
-    BattleDump, ContractInfo, HandleAnswer, HandleMsg, InitMsg, PlayerDump, PlayerStats,
-    QueryAnswer, QueryMsg, TokenInfo, WaitingHero,
+    BattleDump, HandleAnswer, HandleMsg, InitMsg, PlayerDump, PlayerStats, QueryAnswer, QueryMsg,
+    TokenInfo, WaitingHero,
 };
-use crate::rand::{sha_256, Prng};
+use crate::rand::{extend_entropy, sha_256, Prng};
 use crate::state::{
     append_battle_for_addr, get_history, load, may_load, remove, save, Config, ExportConfig,
-    Leaderboards, Rank, StoreBattle, StoreContractInfo, StoreHero, StorePlayerStats,
-    StoreTokenInfo, StoreWaitingHero, Tourney, TourneyStats, ADMIN_KEY, BOTS_KEY, CONFIG_KEY,
-    EXPORT_CONFIG_KEY, IMPORT_FROM_KEY, LEADERBOARDS_KEY, PREFIX_ALL_STATS, PREFIX_HISTORY,
-    PREFIX_PLAYERS, PREFIX_SEEN, PREFIX_TOURN_STATS, PREFIX_VIEW_KEY,
+    Leaderboards, Rank, StoreBattle, StoreHero, StorePlayerStats, StoreTokenInfo, StoreWaitingHero,
+    Tourney, TourneyStats, ADMIN_KEY, BOTS_KEY, CONFIG_KEY, EXPORT_CONFIG_KEY, IMPORT_FROM_KEY,
+    LEADERBOARDS_KEY, PREFIX_ALL_STATS, PREFIX_HISTORY, PREFIX_PLAYERS, PREFIX_SEEN,
+    PREFIX_TOURN_STATS, PREFIX_VIEW_KEY,
 };
 use crate::stats::Stats;
 use crate::viewing_key::{ViewingKey, VIEWING_KEY_SIZE};
@@ -144,8 +145,8 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         HandleMsg::ChickenOut {} => try_chicken(deps, env),
         HandleMsg::ChangeAdmin { address } => try_change_admin(deps, env, address),
         HandleMsg::SetBattleStatus { stop } => try_set_battle_status(deps, env, stop),
-        HandleMsg::AddCardContract { card_contract } => {
-            try_add_card_contract(deps, env, card_contract)
+        HandleMsg::AddCardContracts { card_contracts } => {
+            try_add_card_contract(deps, &env, card_contracts)
         }
         HandleMsg::AddBots { bots } => try_add_bots(deps, env, bots),
         HandleMsg::RemoveBots { bots } => try_remove_bots(deps, env, bots),
@@ -500,17 +501,17 @@ pub fn try_remove_bots<S: Storage, A: Api, Q: Querier>(
 
 /// Returns HandleResult
 ///
-/// add a new card contract
+/// add new card contracts
 ///
 /// # Arguments
 ///
 /// * `deps` - mutable reference to Extern containing all the contract's external dependencies
-/// * `env` - Env of contract's environment
-/// * `card_contract` - new card ContractInfo
+/// * `env` - a reference to the Env of contract's environment
+/// * `card_contracts` - new card ContractInfos
 pub fn try_add_card_contract<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
-    env: Env,
-    card_contract: ContractInfo,
+    env: &Env,
+    card_contracts: Vec<ContractInfo>,
 ) -> HandleResult {
     let admin: CanonicalAddr = load(&deps.storage, ADMIN_KEY)?;
     let sender_raw = deps.api.canonical_address(&env.message.sender)?;
@@ -521,42 +522,52 @@ pub fn try_add_card_contract<S: Storage, A: Api, Q: Querier>(
     }
 
     let mut config: Config = load(&deps.storage, CONFIG_KEY)?;
-    let address = deps.api.canonical_address(&card_contract.address)?;
     let mut messages: Vec<CosmosMsg> = Vec::new();
-    // only add the contract if we haven't seen it before
-    if config
-        .card_versions
-        .iter()
-        .find(|v| v.address == address)
-        .is_none()
-    {
-        config.card_versions.push(StoreContractInfo {
-            address,
-            code_hash: card_contract.code_hash.clone(),
-        });
+    let mut save_it = false;
+    for contract in card_contracts.into_iter() {
+        let raw = contract.get_store(&deps.api)?;
+        // if this contract is not already in the list
+        if config
+            .card_versions
+            .iter()
+            .find(|c| c.address == raw.address)
+            .is_none()
+        {
+            // add to version list
+            config.card_versions.push(raw);
+            // register receive with the new card contract
+            messages.push(register_receive_nft_msg(
+                env.contract_code_hash.clone(),
+                Some(true),
+                None,
+                BLOCK_SIZE,
+                contract.code_hash.clone(),
+                contract.address.clone(),
+            )?);
+            // set the viewing key with the new card contract
+            messages.push(set_viewing_key_msg(
+                config.viewing_key.clone(),
+                None,
+                BLOCK_SIZE,
+                contract.code_hash,
+                contract.address,
+            )?);
+            save_it = true;
+        }
+    }
+    if save_it {
         save(&mut deps.storage, CONFIG_KEY, &config)?;
-        messages.push(register_receive_nft_msg(
-            env.contract_code_hash,
-            Some(true),
-            None,
-            BLOCK_SIZE,
-            card_contract.code_hash.clone(),
-            card_contract.address.clone(),
-        )?);
-        messages.push(set_viewing_key_msg(
-            config.viewing_key,
-            None,
-            BLOCK_SIZE,
-            card_contract.code_hash,
-            card_contract.address.clone(),
-        )?);
     }
 
     Ok(HandleResponse {
         messages,
         log: vec![],
-        data: Some(to_binary(&HandleAnswer::AddCardContract {
-            card_contract: card_contract.address,
+        data: Some(to_binary(&HandleAnswer::AddCardContracts {
+            card_contracts: config
+                .card_versions
+                .into_iter()
+                .map(|c| c.into_humanized(&deps.api))
+                .collect::<StdResult<Vec<ContractInfo>>>()?,
         })?),
     })
 }
@@ -602,7 +613,7 @@ pub fn try_set_battle_status<S: Storage, A: Api, Q: Querier>(
                 let versions = config
                     .card_versions
                     .iter()
-                    .map(|v| v.to_humanized(&deps.api))
+                    .map(|v| v.get_humanized(&deps.api))
                     .collect::<StdResult<Vec<ContractInfo>>>()?;
                 for hero in config.heroes.drain(..) {
                     let transfer = Transfer {
@@ -703,8 +714,10 @@ pub fn try_chicken<S: Storage, A: Api, Q: Querier>(
     if let Some(pos) = config.heroes.iter().position(|h| h.owner == owner_raw) {
         let hero = config.heroes.swap_remove(pos);
         save(&mut deps.storage, CONFIG_KEY, &config)?;
-        let card_contract =
-            config.card_versions[hero.token_info.version as usize].to_humanized(&deps.api)?;
+        let card_contract = config
+            .card_versions
+            .swap_remove(hero.token_info.version as usize)
+            .into_humanized(&deps.api)?;
         return Ok(HandleResponse {
             messages: vec![transfer_nft_msg(
                 env.message.sender,
@@ -809,7 +822,7 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
     let mut versions = config
         .card_versions
         .iter()
-        .map(|v| v.to_humanized(&deps.api))
+        .map(|v| v.get_humanized(&deps.api))
         .collect::<StdResult<Vec<ContractInfo>>>()?;
     if let Some(pos) = versions
         .iter()
@@ -867,10 +880,13 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                 let bots: Vec<CanonicalAddr> =
                     may_load(&deps.storage, BOTS_KEY)?.unwrap_or_else(Vec::new);
                 if config.heroes.len() == 3 {
-                    let mut rand_slice =
-                        get_rand_slice(&env, &config.prng_seed, config.entropy.as_ref());
-                    let mut rand_iter = rand_slice.iter();
-                    let fight_idx = (*(rand_iter.next().unwrap()) % 4u8) as usize;
+                    let mut prng = get_prng(&env, &config.prng_seed, config.entropy.as_ref());
+                    let mut rdm_bytes = prng.rand_bytes().to_vec();
+                    let mut rand_iter = rdm_bytes.iter();
+                    let fight_idx = (*(rand_iter
+                        .next()
+                        .ok_or_else(|| StdError::generic_err("Rand_bytes returned nothing!"))?)
+                        % 4u8) as usize;
                     let mut upgrade_rand: Vec<u8> = Vec::new();
                     while upgrade_rand.len() < 4 {
                         if let Some(rdm) = rand_iter.next() {
@@ -878,12 +894,13 @@ pub fn try_receive<S: Storage, A: Api, Q: Querier>(
                                 upgrade_rand.push(*rdm);
                             }
                         } else {
-                            rand_slice = get_rand_slice(&env, &rand_slice, config.entropy.as_ref());
-                            rand_iter = rand_slice.iter();
+                            // get more random bytes
+                            rdm_bytes = prng.rand_bytes().to_vec();
+                            rand_iter = rdm_bytes.iter();
                         }
                     }
                     config.entropy.clear();
-                    config.prng_seed = rand_slice.to_vec();
+                    config.prng_seed = rdm_bytes;
                     let mut win_score = 0u8;
                     let mut winners = Vec::new();
                     let mut ties = Vec::new();
@@ -1089,8 +1106,8 @@ pub fn query_dump_history<S: Storage, A: Api, Q: Querier>(
     let config: Config = load(&deps.storage, CONFIG_KEY)?;
     let versions = config
         .card_versions
-        .iter()
-        .map(|v| v.to_humanized(&deps.api))
+        .into_iter()
+        .map(|v| v.into_humanized(&deps.api))
         .collect::<StdResult<Vec<ContractInfo>>>()?;
     let start = start_from.unwrap_or(0);
     let count = limit.unwrap_or(256);
@@ -1292,8 +1309,8 @@ pub fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> Q
     to_binary(&QueryAnswer::Config {
         card_versions: config
             .card_versions
-            .iter()
-            .map(|v| v.to_humanized(&deps.api))
+            .into_iter()
+            .map(|v| v.into_humanized(&deps.api))
             .collect::<StdResult<Vec<ContractInfo>>>()?,
         battles_have_halted: config.fight_halt,
     })
@@ -1443,23 +1460,24 @@ fn check_key<S: ReadonlyStorage>(
     ))
 }
 
-pub fn get_rand_slice(env: &Env, seed: &[u8], entropy: &[u8]) -> [u8; 32] {
-    // 16 here represents the lengths in bytes of the block height and time.
-    let entropy_len = 16 + env.message.sender.len() + entropy.len();
-    let mut rng_entropy = Vec::with_capacity(entropy_len);
-    rng_entropy.extend_from_slice(&env.block.height.to_be_bytes());
-    rng_entropy.extend_from_slice(&env.block.time.to_be_bytes());
-    rng_entropy.extend_from_slice(&env.message.sender.0.as_bytes());
-    rng_entropy.extend_from_slice(entropy);
-
-    let mut rng = Prng::new(seed, &rng_entropy);
-    rng.rand_bytes()
+/// Returns Prng
+///
+/// creates a new Prng
+///
+/// # Arguments
+///
+/// * `env` - a reference to the Env of contract's environment
+/// * `seed` - entropy source coming from the contract creator
+/// * `entropy` - additional entropy that may come from a user if needed
+fn get_prng(env: &Env, seed: &[u8], entropy: &[u8]) -> Prng {
+    let rng_entropy = extend_entropy(env, entropy);
+    Prng::new(seed, &rng_entropy)
 }
 
 // list of transfers for each card version in the fight
 pub struct VersionTransfer {
-    version: u8,
-    transfers: Vec<Transfer>,
+    pub version: u8,
+    pub transfers: Vec<Transfer>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1477,6 +1495,7 @@ fn update_skills<S: Storage>(
     let adjust: [i8; 23] = [
         -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2,
     ];
+    let mod_val = adjust.len();
     let mut heroes: Vec<StoreHero> = Vec::new();
     let is_tie = winners.len() != 1;
     let mut leaderboards: Leaderboards = load(storage, LEADERBOARDS_KEY)?;
@@ -1525,23 +1544,22 @@ fn update_skills<S: Storage>(
             post_battle_skills = pre_battle_skills
                 .iter()
                 .map(|u| {
-                    if let Some(r) = rand_iter.next() {
-                        let modified = base_upgrade + adjust[(*r as usize) % adjust.len()];
-                        if modified > 0 {
-                            let new_skill = modified as u8 + u;
-                            if new_skill > 100 {
-                                100
-                            } else {
-                                new_skill
-                            }
+                    let r = rand_iter.next().ok_or_else(|| {
+                        StdError::generic_err("Can not have less than 4 random upgrade bytes")
+                    })?;
+                    let modified = base_upgrade + adjust[(*r as usize) % mod_val];
+                    if modified > 0 {
+                        let new_skill = modified as u8 + u;
+                        if new_skill > 100 {
+                            Ok(100)
                         } else {
-                            *u
+                            Ok(new_skill)
                         }
                     } else {
-                        *u
+                        Ok(*u)
                     }
                 })
-                .collect();
+                .collect::<StdResult<Vec<u8>>>()?;
         // otherwise fracture a losing hero
         } else {
             // losers lose a point
@@ -1551,13 +1569,14 @@ fn update_skills<S: Storage>(
             post_battle_skills = pre_battle_skills
                 .iter()
                 .map(|u| {
-                    if let Some(b) = base_iter.next() {
-                        u - (u - b) / 2
-                    } else {
-                        *u
-                    }
+                    let b = base_iter.next().ok_or_else(|| {
+                        StdError::generic_err(
+                            "There can not be less base skills than current skills",
+                        )
+                    })?;
+                    Ok(u - (u - b) / 2)
                 })
-                .collect();
+                .collect::<StdResult<Vec<u8>>>()?;
         }
         if !ignore[i] {
             let owner_slice = hero.owner.as_slice();

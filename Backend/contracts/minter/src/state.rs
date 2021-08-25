@@ -2,14 +2,14 @@ use std::any::type_name;
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use cosmwasm_std::{Api, CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
+use cosmwasm_std::{CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
 
+use crate::contract_info::StoreContractInfo;
 use secret_toolkit::serialization::{Bincode2, Serde};
-
-use crate::msg::ContractInfo;
 
 pub const CONFIG_KEY: &[u8] = b"config";
 pub const ADMIN_KEY: &[u8] = b"admin";
+pub const VKEY_KEY: &[u8] = b"vkey";
 
 /// minter state
 #[derive(Serialize, Deserialize)]
@@ -18,7 +18,9 @@ pub struct Config {
     pub card_versions: Vec<StoreContractInfo>,
     /// true if minting should be halted
     pub minting_halt: bool,
-    /// true if tournaments have been halted
+    /// true if upgrades should be halted
+    pub upgrade_halt: bool,
+    // true if tournaments have been halted
     //    pub tourney_halt: bool,
     /// multi sig contract address
     pub multi_sig: CanonicalAddr,
@@ -28,31 +30,6 @@ pub struct Config {
     pub prng_seed: Vec<u8>,
     /// number of packs minted
     pub mint_cnt: u32,
-}
-
-/// code hash and address of a contract
-#[derive(Serialize, Deserialize, Clone)]
-pub struct StoreContractInfo {
-    /// contract's code hash string
-    pub code_hash: String,
-    /// contract's address
-    pub address: CanonicalAddr,
-}
-
-impl StoreContractInfo {
-    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
-    /// ContractInfo
-    ///
-    /// # Arguments
-    ///
-    /// * `api` - a reference to the Api used to convert human and canonical addresses
-    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
-        let info = ContractInfo {
-            address: api.human_address(&self.address)?,
-            code_hash: self.code_hash.clone(),
-        };
-        Ok(info)
-    }
 }
 
 pub fn save<T: Serialize, S: Storage>(storage: &mut S, key: &[u8], value: &T) -> StdResult<()> {

@@ -78,6 +78,30 @@
       }
     },
     {
+      "description": "add compatible card contracts without changing the current one used for minting",
+      "type": "object",
+      "required": [
+        "add_legacy_card_contracts"
+      ],
+      "properties": {
+        "add_legacy_card_contracts": {
+          "type": "object",
+          "required": [
+            "card_contracts"
+          ],
+          "properties": {
+            "card_contracts": {
+              "description": "legacy card contracts",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "description": "change the address of the multi sig contract",
       "type": "object",
       "required": [
@@ -103,21 +127,28 @@
       }
     },
     {
-      "description": "halt/start minting",
+      "description": "halt/start minting and/or upgrading",
       "type": "object",
       "required": [
-        "set_mint_status"
+        "set_mint_and_upgrade_status"
       ],
       "properties": {
-        "set_mint_status": {
+        "set_mint_and_upgrade_status": {
           "type": "object",
-          "required": [
-            "stop"
-          ],
           "properties": {
-            "stop": {
+            "stop_mint": {
               "description": "true if minting should be halted",
-              "type": "boolean"
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "stop_upgrade": {
+              "description": "true if upgrades should be halted",
+              "type": [
+                "boolean",
+                "null"
+              ]
             }
           }
         }
@@ -145,11 +176,49 @@
           }
         }
       }
+    },
+    {
+      "description": "burn two heroes to upgrade a third",
+      "type": "object",
+      "required": [
+        "upgrade"
+      ],
+      "properties": {
+        "upgrade": {
+          "type": "object",
+          "required": [
+            "burn",
+            "entropy",
+            "upgrade"
+          ],
+          "properties": {
+            "burn": {
+              "description": "heroes to burn",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HeroInfo"
+              }
+            },
+            "entropy": {
+              "description": "entropy for the rng",
+              "type": "string"
+            },
+            "upgrade": {
+              "description": "hero to upgrade",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/HeroInfo"
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
     "ContractInfo": {
-      "description": "code hash and address of a contract",
+      "description": "code hash and address of a secret contract",
       "type": "object",
       "required": [
         "address",
@@ -166,6 +235,28 @@
         },
         "code_hash": {
           "description": "contract's code hash string",
+          "type": "string"
+        }
+      }
+    },
+    "HeroInfo": {
+      "description": "the token ID and contract address of a Hero",
+      "type": "object",
+      "required": [
+        "contract_address",
+        "token_id"
+      ],
+      "properties": {
+        "contract_address": {
+          "description": "the SNIP-721 contract that controls this Hero",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "token_id": {
+          "description": "the hero's token ID",
           "type": "string"
         }
       }
