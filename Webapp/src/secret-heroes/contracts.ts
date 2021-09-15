@@ -22,6 +22,20 @@ export interface MintRsp {
   }
 }
 
+export interface UpgradeMsg {
+  upgrade: {
+    burn: HeroInfo[],
+    entropy: string,
+    upgrade: HeroInfo
+  }
+}
+
+export interface UpgradeRsp {
+  upgrade: {
+    post_upgrade_skills: number[]
+    pre_upgrade_skills: number[]
+  }
+}
 
 export interface FightStatusQry {
   bullpen: {
@@ -138,6 +152,11 @@ export interface GetAllTokensRsp {
   token_list: {
     tokens: string[]
   }
+}
+
+export type HeroInfo = {
+  contract_address: HumanAddr,
+  token_id: string
 }
 
 export type ViewerInfo = {
@@ -273,6 +292,19 @@ export const mintHeroes = async (client: SigningCosmWasmClient, names: string[])
     getFees('mint'))
 }
 
+export const upgradeHeroes = async (client: SigningCosmWasmClient, burnHeroes: HeroInfo[], upgrade: HeroInfo): Promise<UpgradeRsp> => {
+  return transact<UpgradeMsg, UpgradeRsp>(client, minter_address, {
+    upgrade: {
+      burn: burnHeroes,
+      entropy: randomString(10),
+      upgrade: upgrade
+    }
+  }, {
+    denom: 'uscrt', amount: "1000000"
+  },
+    getFees('mint'))
+}
+
 export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
   return query<FightStatusQry, FightStatusRsp>(client, arena_address, {
     bullpen: {
@@ -356,7 +388,8 @@ export const Contracts = {
   },
   minter: {
     address: minter_address,
-    mint: mintHeroes
+    mint: mintHeroes,
+    upgrade: upgradeHeros,
   },
 
   arena: {
