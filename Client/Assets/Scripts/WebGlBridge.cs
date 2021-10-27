@@ -92,6 +92,7 @@ public class WebGlBridge : MonoBehaviour
     public void TestRegisterMint()
     {
         RegisterMint("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
+
     }
 
     [ContextMenu("Test ReportToken")]
