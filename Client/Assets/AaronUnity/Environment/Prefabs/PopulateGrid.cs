@@ -21,10 +21,10 @@ public class PopulateGrid : MonoBehaviour
     {
         Populate();
 
-        //for (int i = 0; i < 3; i++)
-       // {
-       //     AddToken();
-       // }
+   //     for (int i = 0; i < 3; i++)
+  //      {
+    //        AddToken();
+    //    }
     }
 
     // Update is called once per frame
@@ -32,7 +32,8 @@ public class PopulateGrid : MonoBehaviour
     {
         
     }
-    void Populate()
+
+    public void Populate()
     {
         GameObject newObj;
         List<GameObject> listOfHeroGameObjects = new List<GameObject>();
