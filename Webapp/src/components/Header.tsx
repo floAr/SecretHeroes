@@ -390,7 +390,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
               }
             `}
           >
-            <WalletConnect chaindId="secret-2" />
+            <WalletConnect chaindId="secret-3" />
           </div>
         </div>
       </HeaderInner>
