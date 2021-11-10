@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-export type ChainId = 'secret-2' | 'holodeck-2'
+export type ChainId = 'secret-3' | 'holodeck-2'
 export interface KeplrState {
   keplrFound: boolean
   chainId: string,
