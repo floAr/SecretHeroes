@@ -2263,7 +2263,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1793435370}
   m_Direction: 2
   m_Value: 1.0000001
-  m_Size: 0.14050797
+  m_Size: 0.14050798
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3522,6 +3522,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3017239500989170862, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3017239501134736578, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -3953,6 +3957,18 @@ PrefabInstance:
     - target: {fileID: 8090625619269657541, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8385630585886201245, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8385630585886201245, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8385630585886201245, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_Color.r
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8385630585886201245, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_Enabled
