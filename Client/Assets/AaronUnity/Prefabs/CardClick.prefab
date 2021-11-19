@@ -40,6 +40,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3632665135565850933}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c94392787dcd442daa4894247c87e40e, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d11c1afeda929b4996123b2c7536066, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ObjectCamera: {fileID: 0}
+  OnClick:
+    m_PersistentCalls:
+      m_Calls: []

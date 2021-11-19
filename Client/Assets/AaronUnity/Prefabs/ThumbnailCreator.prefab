@@ -166,7 +166,7 @@ MonoBehaviour:
     serializedVersion: 2
     rgba: 0
   assets:
-  - {fileID: 0}
+  - {fileID: 1631278165886259643, guid: 5e3ca70d5472f489fa3b345718f7478d, type: 3}
   spawnPoint: {fileID: 0}
   selectCustomFolder: 1
   folderPath: Assets/AaronUnity/ThumbnailMaker/StoreThumb
