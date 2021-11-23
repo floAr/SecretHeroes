@@ -118,6 +118,8 @@ public class ThumbnailSetup : MonoBehaviour
     private GameObject objprefab;
     string prefabName;
 
+    
+
     private void Awake()
     {
         myCamera = gameObject.GetComponent<Camera>();
@@ -141,7 +143,7 @@ public class ThumbnailSetup : MonoBehaviour
 
     public IEnumerator TakeSnapshot()
     {
-        if (Orthographic)
+        if(Orthographic)
         {
             myCamera.orthographic = true;
         }
