@@ -12,7 +12,7 @@ public class CardRenderer : MonoBehaviour
     public Material[] Variants;
     private int _activeModel;
 
-    // public Animator Animator;
+    public Animator Animator;
 
     public string Name;
     public string Id;
@@ -51,6 +51,8 @@ public class CardRenderer : MonoBehaviour
         SetVisuals();
         SetSkills();
     }
+
+
 
     public void ReadToken(Token token)
     {
@@ -103,7 +105,7 @@ public class CardRenderer : MonoBehaviour
 
     private void Update()
     {
-        // Animator.SetBool("IsSelected", IsSelected);
+        Animator.SetBool("IsSelected", IsSelected);
         SkillCanvas.gameObject.SetActive(IsSelected);
     }
 
@@ -128,6 +130,6 @@ public class CardRenderer : MonoBehaviour
 
     public void Reset()
     {
-        // Animator.gameObject.transform.localPosition = Vector3.zero;
+        Animator.gameObject.transform.localPosition = Vector3.zero;
     }
 }
