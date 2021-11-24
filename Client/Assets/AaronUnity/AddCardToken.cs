@@ -62,6 +62,7 @@ public class AddCardToken : MonoBehaviour
         else if (selectedBoth.Count == 2)
         {
             TopTitle.text = "Ready To Upgrade";
+
         }
 
         if (selectionState.Equals("selection_to_burn"))
@@ -118,8 +119,12 @@ public class AddCardToken : MonoBehaviour
             btnCancel.SetActive(true);
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
+            //Added to jump into selection process
+            selectionState.Equals("selection_to_burn");
+            
+
         }
-        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count < 2)
+        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
         {
             selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
 
@@ -130,6 +135,21 @@ public class AddCardToken : MonoBehaviour
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
 
         }
+        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 1)
+        {
+            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
+
+            //Add to open burn panel
+            onOpenOddBurnPanel();
+
+        }
+
         #endregion
 
         if (!selectionState.Equals("selection_hero")) return;
@@ -158,17 +178,34 @@ public class AddCardToken : MonoBehaviour
         TopTitle.text = "Choose Two Heroes To Burn";
 
         OptionButtonsHolder.SetActive(false);
-        UpgradeHeroesHolder.SetActive(true);
+        //UpgradeHeroesHolder.SetActive(true);
+
 
         InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+
     }
 
     public void onCloseOddBurnPanel()
     {
         OddsBurnHolder.SetActive(false);
-    }
+        selectionState = "selection_hero";
+        //Added to close
+        i = 0;
+        //Added to close
+        selectionState = "selection_hero";
+        //Added
+       
 
-    public void onOpenOddBurnPanel()
+        InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
+
+        }
+
+        public void onOpenOddBurnPanel()
     {
         if (selectedBoth.Count == 0) return;
 
@@ -319,7 +356,7 @@ public class AddCardToken : MonoBehaviour
 
         selectedBoth.Clear();
         selectionState = "selection_hero";
-        TopTitle.text = "Choose Heroe";
+        TopTitle.text = "Choose Heroes";
 
 
         for (int i = 0; i < InstantiatedTokens.instantiatedObjects.Count; i++)
