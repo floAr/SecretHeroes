@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class ImageRenderer : MonoBehaviour 
+public class ImageRenderer : MonoBehaviour
 {
 
     ThumbnailSetup objprefabs;
@@ -9,16 +9,17 @@ public class ImageRenderer : MonoBehaviour
     private Camera myCamera;
     private bool takeScreenshotOnNextFrame;
 
-    private void Awake() 
+    private void Awake()
     {
         instance = this;
         myCamera = gameObject.GetComponent<Camera>();
         objprefabs = GetComponent<ThumbnailSetup>();
     }
 
-    private void OnPostRender() 
+    private void OnPostRender()
     {
-        if (takeScreenshotOnNextFrame) {
+        if (takeScreenshotOnNextFrame)
+        {
             takeScreenshotOnNextFrame = false;
             RenderTexture renderTexture = myCamera.targetTexture;
 
@@ -27,7 +28,7 @@ public class ImageRenderer : MonoBehaviour
             renderResult.ReadPixels(rect, 0, 0);
 
             byte[] byteArray = renderResult.EncodeToPNG();
-            
+
             if (objprefabs.selectCustomFolder)
             {
                 System.IO.File.WriteAllBytes(objprefabs.folderPath + "/" + objprefabs.PrefabName() + ".png", byteArray);
@@ -42,13 +43,13 @@ public class ImageRenderer : MonoBehaviour
         }
     }
 
-    private void TakeScreenshot(int width, int height) 
+    private void TakeScreenshot(int width, int height)
     {
         myCamera.targetTexture = RenderTexture.GetTemporary(width, height, 16);
         takeScreenshotOnNextFrame = true;
     }
 
-    public static void TakeScreenshot_Static(int width, int height) 
+    public static void TakeScreenshot_Static(int width, int height)
     {
         instance.TakeScreenshot(width, height);
     }
