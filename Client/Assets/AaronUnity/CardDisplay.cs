@@ -12,6 +12,7 @@ public class CardDisplay : MonoBehaviour
     public TextMeshProUGUI txtStat3;
     public TextMeshProUGUI txtStat4;
     public GameObject InactifCardBurn;
+    public bool isSelected;
 
     public CardToken cardToken;
     // Start is called before the first frame update

@@ -778,6 +778,7 @@ MonoBehaviour:
   txtStat3: {fileID: 8547708829269353371}
   txtStat4: {fileID: 985939562461946973}
   InactifCardBurn: {fileID: 5078580533113810690}
+  isSelected: 0
   cardToken: {fileID: 11400000, guid: 0a4329aaf979a4dd6b4b4a12dd5bfcd3, type: 2}
 --- !u!1 &4215783158615821860
 GameObject:
