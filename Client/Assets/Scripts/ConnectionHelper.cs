@@ -27,9 +27,7 @@ public class ConnectionHelper : MonoBehaviour
     //    if (GameObject.FindObjectOfType<WebGlBridge>().IsConnected)
     //    {
     //        OnConnectedr();
-    //    }
-
-      
+    //    }      
     //}
 
     public void OnConnectedr()

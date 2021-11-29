@@ -139,6 +139,10 @@ public class ThumbnailSetup : MonoBehaviour
 
     }
 
+    public void executeThumbnailCapture()
+    {
+        StartCoroutine(TakeSnapshot());
+    }
     public IEnumerator TakeSnapshot()
     {
         if (Orthographic)
@@ -191,10 +195,14 @@ public class ThumbnailSetup : MonoBehaviour
 
     public string PrefabName()
     {
-        string pName = prefabName;
+        string pName = prefabName; //+ "_" + Mathf.FloorToInt(UnityEngine.Random.Range(0, 10000)).ToString();
         return pName;
     }
 
+    public string FolderFullPathName()
+    {
+        return folderPath;
+    }
     private void AlignCamera()
     {
 
