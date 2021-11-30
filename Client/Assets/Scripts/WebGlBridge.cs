@@ -16,8 +16,8 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerMint()
     {
-        // MintTokens();
-        TestRegisterMint();
+        //Debug.Log(payload);
+        MintTokens();
     }
 
     [DllImport("__Internal")]
@@ -33,9 +33,11 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerPoll()
     {
-        // PollData();
-        PolltestData();
+        //Debug.Log(payload);
+
+        PollData();
     }
+
 
 
     [System.Serializable]
@@ -48,27 +50,12 @@ public class WebGlBridge : MonoBehaviour
         }
     }
 
-    private void PolltestData()
-    {
-        TestReportTokens();
-    }
     public void RegisterMint(string encodedTokens)
     {
         Debug.Log("Encoded for draw" + encodedTokens);
         var json = "{ \"tokens\":" + encodedTokens + "}";
         var tokens = TokenList.CreateFromJSON(json);
         GameObject.FindObjectOfType<DrawManager>().PrepareSlots(tokens.tokens);
-        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoMarket();
-
-        ReportTokens(encodedTokens);
-    }
-
-    public void RegisterMintByOne(string encodedTokens)
-    {
-        Debug.Log("Encoded for draw" + encodedTokens);
-        var json = encodedTokens;
-        var token = Token.CreateFromJSON(json);
-        GameObject.FindObjectOfType<DrawManager>().PrepareSlot(token);
         GameObject.FindObjectOfType<TransitionManager>().TransitionIntoMarket();
     }
 
@@ -81,15 +68,6 @@ public class WebGlBridge : MonoBehaviour
         GameObject.FindObjectOfType<SelectionRooster>().Refresh();
     }
 
-    public void ReportToken(string encodedTokens)
-    {
-        Debug.Log("Encoded for rooster" + encodedTokens);
-        var json = encodedTokens;
-        var token = Token.CreateFromJSON(json);
-        GameObject.FindObjectOfType<Rooster>().UpdateToken(token);
-        GameObject.FindObjectOfType<SelectionRooster>().Refresh();
-    }
-
     public void ReportBattleStatus(string encodedBattle)
     {
         Debug.Log("Encoded for battleState " + encodedBattle);
@@ -99,7 +77,7 @@ public class WebGlBridge : MonoBehaviour
 
     public void Connect()
     {
-        StartCoroutine(EnableAfterX(2));
+        StartCoroutine(EnableAfterX(3));
     }
 
     private IEnumerator EnableAfterX(int seconds)
@@ -113,25 +91,13 @@ public class WebGlBridge : MonoBehaviour
     [ContextMenu("Test RegisterMint")]
     public void TestRegisterMint()
     {
-        RegisterMint(createRandomTokens());
+        RegisterMint("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
     }
 
-    [ContextMenu("Test RegisterOneMint")]
-    public void TestRegisterOneMint()
-    {
-        RegisterMintByOne(createRandomToken());
-    }
-
-    [ContextMenu("Test ReportTokens")]
-    public void TestReportTokens()
-    {
-        ReportTokens(createRandomTokens());
-    }
-
-    [ContextMenu("Test ReportOneToken")]
+    [ContextMenu("Test ReportToken")]
     public void TestReportToken()
     {
-        ReportToken(createRandomToken());
+        ReportTokens("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
     }
 
     [ContextMenu("Test Connect")]
@@ -155,26 +121,5 @@ public class WebGlBridge : MonoBehaviour
     {
         ReportBattleStatus("{\"heroes_waiting\": 2, \"your_hero\": null}");
     }
-
-    private string createRandomTokens()
-    {
-        string json = "";
-        json = "[" +
-            createRandomToken() + "," +
-            createRandomToken() + "," +
-            createRandomToken() + "]";
-        return json;
-    }
-
-    private string createRandomToken()
-    {
-        string json = "";
-        Token tempToken = new Token();
-        tempToken = Token.Random();
-        tempToken.name += tempToken.id;
-        json = JsonUtility.ToJson(tempToken);
-        return json;
-    }
-
 }
 
