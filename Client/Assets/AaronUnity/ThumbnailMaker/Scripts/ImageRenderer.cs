@@ -2,7 +2,6 @@
 
 public class ImageRenderer : MonoBehaviour
 {
-
     ThumbnailSetup objprefabs;
     private static ImageRenderer instance;
 

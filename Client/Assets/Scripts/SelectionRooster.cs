@@ -17,6 +17,10 @@ public class SelectionRooster : MonoBehaviour
 
     private Rooster Rooster;
 
+    public Canvas canvas;
+
+    public GameObject thumbnailCreator;
+
     //private Token[] Characters = new Token[10];
     LTDescr[] movers;
 
@@ -54,7 +58,7 @@ public class SelectionRooster : MonoBehaviour
                 RotateLeft();
             }
         }
-        
+
     }
 
     [ContextMenu("Right")]
@@ -73,7 +77,7 @@ public class SelectionRooster : MonoBehaviour
         CurrentCenter = (CurrentCenter - 1 + Rooster.MyHeroes.Count) % Rooster.MyHeroes.Count;
 
         WheelOffset = (WheelOffset - 1) % FixPoints.Length;
-        UpdatePositions( Duration , false);
+        UpdatePositions(Duration, false);
     }
 
     public void SentToBattle()
