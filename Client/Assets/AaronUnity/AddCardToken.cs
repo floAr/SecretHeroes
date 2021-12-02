@@ -211,6 +211,24 @@ public class AddCardToken : MonoBehaviour
             btnCancel.SetActive(true);
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
+<<<<<<< HEAD
+=======
+            //Added to jump into selection process
+            selectionState.Equals("selection_to_burn");
+            
+
+        }
+        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
+        {
+            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
+
+>>>>>>> parent of 235d4c37 (Cancel Button)
         }
         else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count < 2)
         {
@@ -230,12 +248,15 @@ public class AddCardToken : MonoBehaviour
         }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
      
         
 =======
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
         }
 >>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
+=======
+>>>>>>> parent of 235d4c37 (Cancel Button)
 =======
 >>>>>>> parent of 235d4c37 (Cancel Button)
 
@@ -283,9 +304,27 @@ public class AddCardToken : MonoBehaviour
     public void onCloseOddBurnPanel()
     {
         OddsBurnHolder.SetActive(false);
+<<<<<<< HEAD
     }
+=======
+        selectionState = "selection_hero";
+        //Added to close
+        i = 0;
+        //Added to close
+        selectionState = "selection_hero";
+        //Added
+       
 
-    public void onOpenOddBurnPanel()
+        InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
+
+        }
+>>>>>>> parent of 235d4c37 (Cancel Button)
+
+        public void onOpenOddBurnPanel()
     {
         if (selectedBoth.Count == 0) return;
 
