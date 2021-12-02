@@ -9,6 +9,7 @@ public class Slot : MonoBehaviour
     public CardRenderer CharacterRenderer;
     public Collider ClickCollider;
     public DissolveSphere Pill;
+
     public ParticleSystem Burst;
 
 
