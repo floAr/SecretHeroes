@@ -120,9 +120,6 @@ public class AddCardToken : MonoBehaviour
         thumbnailCreator.SetActive(true);
     }
 
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/AddCardToken.cs
-    public void addCardToken()
-=======
     void OnDisable()
     {
         if (cameraController != null) cameraController.enabled = true;
@@ -160,7 +157,6 @@ public class AddCardToken : MonoBehaviour
         yield return true;
     }
     private IEnumerator readNewCardToken(Token currentToken)
->>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
     {
         g = Instantiate(templateCard, CardsListUI);
 
@@ -211,57 +207,18 @@ public class AddCardToken : MonoBehaviour
             btnCancel.SetActive(true);
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
-<<<<<<< HEAD
-=======
-            //Added to jump into selection process
-            selectionState.Equals("selection_to_burn");
-            
-
-        }
-        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
-        {
-            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
-
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
-
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
-
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
-
->>>>>>> parent of 235d4c37 (Cancel Button)
         }
         else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count < 2)
         {
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/AddCardToken.cs
-            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
-=======
             selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().txtId.text);
->>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
 
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/AddCardToken.cs
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
-
-        }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-     
-        
-=======
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
         }
->>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
-=======
->>>>>>> parent of 235d4c37 (Cancel Button)
-=======
->>>>>>> parent of 235d4c37 (Cancel Button)
 
-=======
->>>>>>> parent of ec36a1f2 (CardClick)
         #endregion
 
         if (!selectionState.Equals("selection_hero")) return;
@@ -278,12 +235,9 @@ public class AddCardToken : MonoBehaviour
         statsHolder.transform.GetChild(1).GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().txtStat4.text;
 
         statsHolder.transform.GetChild(1).GetChild(4).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().txtName.text;
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/AddCardToken.cs
-=======
 
         statsHolder.transform.GetChild(0).GetComponentInChildren<Image>().sprite = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().image.sprite;
 
->>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
         #endregion
 
     }
@@ -304,25 +258,7 @@ public class AddCardToken : MonoBehaviour
     public void onCloseOddBurnPanel()
     {
         OddsBurnHolder.SetActive(false);
-<<<<<<< HEAD
     }
-=======
-        selectionState = "selection_hero";
-        //Added to close
-        i = 0;
-        //Added to close
-        selectionState = "selection_hero";
-        //Added
-       
-
-        InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
-
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
-
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
-
-        }
->>>>>>> parent of 235d4c37 (Cancel Button)
 
         public void onOpenOddBurnPanel()
     {
@@ -470,75 +406,7 @@ public class AddCardToken : MonoBehaviour
         var randomUpgradeToken = UnityEngine.Random.Range(0, 3);
         Debug.Log("randomUpgradeToken: " + randomUpgradeToken);
 
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/AddCardToken.cs
-    public void upgradeNow()
-    {
-        OddsBurnHolder.SetActive(false);
-
-        imageHolder.SetActive(false);
-        statsHolder.SetActive(true);
-        btnCancel.SetActive(false);
-        UpgradeHeroesHolder.SetActive(false);
-        OptionButtonsHolder.SetActive(false);
-
-        selectedBoth.Clear();
-        selectionState = "selection_hero";
-        TopTitle.text = "Choose Heroe";
-
-
-        for (int i = 0; i < InstantiatedTokens.instantiatedObjects.Count; i++)
-        {
-            InstantiatedTokens.instantiatedObjects[i].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
-
-            InstantiatedTokens.instantiatedObjects[i].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
-        }
-
-        randomUpgradeToken = UnityEngine.Random.Range(0, 3);
-
-        Debug.Log(randomUpgradeToken);
-
         #region Get new Values
-
-        if (randomUpgradeToken == 0)
-        {
-            InstantiatedTokens.cardWeapons = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardEngineering = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(5).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardBiotech = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(6).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardPsychics = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(7).GetComponent<TextMeshProUGUI>().text);
-        }
-        else if (randomUpgradeToken == 1)
-        {
-            InstantiatedTokens.cardWeapons = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(8).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardEngineering = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(9).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardBiotech = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(10).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardPsychics = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(11).GetComponent<TextMeshProUGUI>().text);
-        }
-        else if (randomUpgradeToken == 2)
-        {
-            InstantiatedTokens.cardWeapons = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(12).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardEngineering = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(13).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardBiotech = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(14).GetComponent<TextMeshProUGUI>().text);
-            InstantiatedTokens.cardPsychics = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(15).GetComponent<TextMeshProUGUI>().text);
-        }
-
-        #endregion
-
-        #region update selected card
-
-        statsHolder.transform.GetChild(1).GetChild(0).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardWeapons.ToString();
-
-        statsHolder.transform.GetChild(1).GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardEngineering.ToString();
-
-        statsHolder.transform.GetChild(1).GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardBiotech.ToString();
-
-        statsHolder.transform.GetChild(1).GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardPsychics.ToString();
-
-        #endregion
-    }
-
-=======
-        #region Get new Values
->>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
 
         if (randomUpgradeToken == 0)
         {
