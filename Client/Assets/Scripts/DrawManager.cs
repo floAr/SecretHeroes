@@ -70,10 +70,6 @@ public class DrawManager : MonoBehaviour
                     Slots[slot].Fill(_tokensToDrop.Pop());
                     TimeOut = Random.Range(1, 2) + Random.value;
                 }
-<<<<<<< Updated upstream
-               
-=======
->>>>>>> Stashed changes
             }
         }
 
