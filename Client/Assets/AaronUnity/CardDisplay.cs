@@ -12,6 +12,8 @@ public class CardDisplay : MonoBehaviour
     public TextMeshProUGUI txtStat2;
     public TextMeshProUGUI txtStat3;
     public TextMeshProUGUI txtStat4;
+    public GameObject InactifCardBurn;
+    public bool isSelected;
     public TextMeshProUGUI txtId;
 
     public Image image;

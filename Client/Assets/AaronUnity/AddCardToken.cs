@@ -215,7 +215,8 @@ public class AddCardToken : MonoBehaviour
         }
         else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
         {
-            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
+            //Remove Merge Conflict using GO to string
+            //selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
 
