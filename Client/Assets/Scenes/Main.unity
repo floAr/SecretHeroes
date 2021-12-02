@@ -21960,14 +21960,6 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1669954636934545319, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3017239502380950875, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4685168797698974241, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_Name
       value: Grid
