@@ -79,10 +79,7 @@ public class DrawManager : MonoBehaviour
                     Slots[slot].Fill(_tokensToDrop.Pop());
                     TimeOut = Random.Range(1, 2) + Random.value;
                 }
-<<<<<<< HEAD
-=======
                
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
             }
         }
 

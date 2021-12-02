@@ -17,6 +17,7 @@ public static class ButtonExtension
 }
 public class AddCardToken : MonoBehaviour
 {
+    public CameraController cameraController;
     public GameObject templateCard;
     GameObject g;
     [SerializeField] Transform CardsListUI;
@@ -35,21 +36,38 @@ public class AddCardToken : MonoBehaviour
     [SerializeField] Sprite overrideImage;
     [SerializeField] TextMeshProUGUI TopTitle;
 
+    private List<Token> myHeores;
+
+    public CardRenderer CharacterRenderer;
+
     private int i;
     private int selectedindex = 0;
     private string selectionState;
 
     private int randomUpgradeToken = 0;
 
-    private List<GameObject> selectedBoth;
+    private List<string> selectedBoth;
 
     private CardDisplay tempGameObject;
 
+    private string pathFolder = "";
+    private string prefabName = "CardRenderer";
+
+    public ParticleSystem fx;
+
+    public GameObject thumbnailCreator;
+
+    void Awake()
+    {
+        StartCoroutine(InitializeGrid());
+    }
+
     void Start()
     {
-        i = 0;
-        selectionState = "selection_hero";
-        selectedBoth = new List<GameObject>();
+        if (GameObject.FindObjectOfType<ThumbnailSetup>().selectCustomFolder)
+            pathFolder = FindObjectOfType<ThumbnailSetup>().FolderFullPathName();
+        else
+            pathFolder = Application.dataPath;
     }
 
     void Update()
@@ -62,6 +80,7 @@ public class AddCardToken : MonoBehaviour
         else if (selectedBoth.Count == 2)
         {
             TopTitle.text = "Ready To Upgrade";
+
         }
 
         if (selectionState.Equals("selection_to_burn"))
@@ -94,10 +113,14 @@ public class AddCardToken : MonoBehaviour
 
             #endregion
         }
-
     }
 
-<<<<<<< HEAD
+    void OnEnable()
+    {
+        cameraController.enabled = false;
+        thumbnailCreator.SetActive(true);
+    }
+
     void OnDisable()
     {
         if (cameraController != null) cameraController.enabled = true;
@@ -135,14 +158,41 @@ public class AddCardToken : MonoBehaviour
         yield return true;
     }
     private IEnumerator readNewCardToken(Token currentToken)
-=======
-    public void addCardToken()
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
     {
         g = Instantiate(templateCard, CardsListUI);
+
+        CharacterRenderer.ReadToken(currentToken);
+
+        GameObject.FindObjectOfType<ThumbnailSetup>().executeThumbnailCapture();
+
+        g.transform.gameObject.GetComponent<CardDisplay>().updateTokenValues(currentToken.name, currentToken.weapons, currentToken.engineering, currentToken.biotech, currentToken.psychics, currentToken.id, pathFolder + "/" + prefabName + ".png");
+
         g.transform.GetChild(0).GetComponent<Button>().addEventListener(i, onClickEvent);
+
         InstantiatedTokens.instantiatedObjects.Add(g);
+
         i++;
+
+        yield return new WaitForSeconds(2f);
+    }
+
+    private void updateNewStats(int a, int b, int c, int d)
+    {
+        #region update selected card
+
+        statsHolder.transform.GetChild(1).GetChild(0).GetComponentInChildren<TextMeshProUGUI>().text = a.ToString();
+
+        statsHolder.transform.GetChild(1).GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = b.ToString();
+
+        statsHolder.transform.GetChild(1).GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = c.ToString();
+
+        statsHolder.transform.GetChild(1).GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = d.ToString();
+
+        #endregion
+    }
+
+    public void addCardToken()
+    {
     }
 
     void onClickEvent(int index)
@@ -158,33 +208,32 @@ public class AddCardToken : MonoBehaviour
             btnCancel.SetActive(true);
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
+            //Added to jump into selection process
+            selectionState.Equals("selection_to_burn");
+
+
         }
-        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count < 2)
+        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
         {
-<<<<<<< HEAD
-            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().txtId.text);
-=======
             selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex]);
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
 
-<<<<<<< HEAD
-            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
-        }
-=======
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(true);
 
-            //Add to open burn panel
-            onOpenOddBurnPanel();
-
         }
-     
-        
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
+        else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 1)
+        {
+            selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().txtId.text);
 
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
+        }
         #endregion
 
         if (!selectionState.Equals("selection_hero")) return;
@@ -201,12 +250,9 @@ public class AddCardToken : MonoBehaviour
         statsHolder.transform.GetChild(1).GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().txtStat4.text;
 
         statsHolder.transform.GetChild(1).GetChild(4).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().txtName.text;
-<<<<<<< HEAD
 
         statsHolder.transform.GetChild(0).GetComponentInChildren<Image>().sprite = InstantiatedTokens.instantiatedObjects[index].gameObject.GetComponent<CardDisplay>().image.sprite;
 
-=======
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
         #endregion
 
     }
@@ -219,17 +265,45 @@ public class AddCardToken : MonoBehaviour
         TopTitle.text = "Choose Two Heroes To Burn";
 
         OptionButtonsHolder.SetActive(false);
-        UpgradeHeroesHolder.SetActive(true);
+        //UpgradeHeroesHolder.SetActive(true);
+
 
         InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+
     }
 
     public void onCloseOddBurnPanel()
     {
         OddsBurnHolder.SetActive(false);
+        selectionState = "selection_hero";
+        //Added to close
+        i = 0;
+        //Added to close
+
+        OddsBurnHolder.SetActive(false);
+
+        imageHolder.SetActive(false);
+        statsHolder.SetActive(true);
+        btnCancel.SetActive(false);
+        UpgradeHeroesHolder.SetActive(false);
+        OptionButtonsHolder.SetActive(false);
+
+        selectedBoth.Clear();
+        selectionState = "selection_hero";
+        TopTitle.text = "Choose Heroes";
+        //
+
+        for (int i = 0; i < InstantiatedTokens.instantiatedObjects.Count; i++)
+        {
+            InstantiatedTokens.instantiatedObjects[i].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
+
+            InstantiatedTokens.instantiatedObjects[i].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
+        }
     }
 
-        public void onOpenOddBurnPanel()
+
+    public void onOpenOddBurnPanel()
     {
         if (selectedBoth.Count == 0) return;
 
@@ -330,7 +404,7 @@ public class AddCardToken : MonoBehaviour
 
     private void printIndex(int index)
     {
-        Debug.Log("selected index: " + index);
+        //Debug.Log("selected index: " + index);
     }
 
     private void setColorOfFiled(TextMeshProUGUI entity, int value)
@@ -367,35 +441,13 @@ public class AddCardToken : MonoBehaviour
         entity.text = (Convert.ToInt16(entity.text) + value).ToString();
     }
 
-
-<<<<<<< HEAD
-        #region Get new Values
-=======
     public void upgradeNow()
     {
         OddsBurnHolder.SetActive(false);
 
-        imageHolder.SetActive(false);
-        statsHolder.SetActive(true);
-        btnCancel.SetActive(false);
-        UpgradeHeroesHolder.SetActive(false);
-        OptionButtonsHolder.SetActive(false);
-
-        selectedBoth.Clear();
-        selectionState = "selection_hero";
-        TopTitle.text = "Choose Heroes";
-
-
-        for (int i = 0; i < InstantiatedTokens.instantiatedObjects.Count; i++)
-        {
-            InstantiatedTokens.instantiatedObjects[i].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
-
-            InstantiatedTokens.instantiatedObjects[i].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
-        }
-
-        randomUpgradeToken = UnityEngine.Random.Range(0, 3);
-
-        Debug.Log(randomUpgradeToken);
+        // Get Random Stats
+        var randomUpgradeToken = UnityEngine.Random.Range(0, 3);
+        Debug.Log("randomUpgradeToken: " + randomUpgradeToken);
 
         #region Get new Values
 
@@ -421,21 +473,84 @@ public class AddCardToken : MonoBehaviour
             InstantiatedTokens.cardPsychics = Convert.ToInt16(OddsBurnHolder_fieds.transform.GetChild(15).GetComponent<TextMeshProUGUI>().text);
         }
 
-        #endregion
+#endregion
 
-        #region update selected card
+        // Burn & Remove them from List
+        Debug.Log("selectedBoth: " + selectedBoth.Count);
+        for (int i = 0; i < selectedBoth.Count; i++)
+        {
+            Token token1 = new Token()
+            {
+                id = selectedBoth[i]
+            };
 
-        statsHolder.transform.GetChild(1).GetChild(0).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardWeapons.ToString();
+            Debug.Log("BurnedId: " + selectedBoth[i]);
 
-        statsHolder.transform.GetChild(1).GetChild(1).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardEngineering.ToString();
+            GameObject.FindObjectOfType<Rooster>().RemoveToken(token1);
+            GameObject.FindObjectOfType<SelectionRooster>().Refresh();
+        }
 
-        statsHolder.transform.GetChild(1).GetChild(2).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardBiotech.ToString();
+        selectedBoth.Clear();
 
-        statsHolder.transform.GetChild(1).GetChild(3).GetComponentInChildren<TextMeshProUGUI>().text = InstantiatedTokens.cardPsychics.ToString();
+        updateNewStats(InstantiatedTokens.cardWeapons,
+                InstantiatedTokens.cardEngineering,
+                InstantiatedTokens.cardBiotech,
+                InstantiatedTokens.cardPsychics);
 
-        #endregion
+        Debug.Log("UpdatedCardBurnId: " + InstantiatedTokens.cardId);
+        Debug.Log("cardWeapons: " + InstantiatedTokens.cardWeapons);
+        Debug.Log("cardEngineering: " + InstantiatedTokens.cardEngineering);
+        Debug.Log("cardBiotech: " + InstantiatedTokens.cardBiotech);
+        Debug.Log("cardPsychics: " + InstantiatedTokens.cardPsychics);
+
+        fx.Play();
+
+        Token token = new Token()
+        {
+            id = tempGameObject.txtId.text,
+            weapons = InstantiatedTokens.cardWeapons,
+            engineering = InstantiatedTokens.cardEngineering,
+            biotech = InstantiatedTokens.cardBiotech,
+            psychics = InstantiatedTokens.cardPsychics
+
+        };
+        GameObject.FindObjectOfType<Rooster>().UpdateToken(token);
+        GameObject.FindObjectOfType<SelectionRooster>().Refresh();
+
+        // Initialize GridView  
+        i = 0;
+        selectionState = "selection_hero";
+        selectedBoth = new List<string>();
+        imageHolder.SetActive(false);
+        statsHolder.SetActive(true);
+        btnCancel.SetActive(false);
+        UpgradeHeroesHolder.SetActive(false);
+        OptionButtonsHolder.SetActive(false);
+        TopTitle.text = "Choose Hero";
+        for (int k = 0; k < CardsListUI.transform.childCount; k++)
+            Destroy(CardsListUI.transform.GetChild(k).gameObject);
+
+        thumbnailCreator.SetActive(true);
+        int count = GameObject.FindObjectOfType<Rooster>().MyHeroes.Count;
+        if (count > 0)
+        {
+            foreach (Token currentToken in GameObject.FindObjectOfType<Rooster>().MyHeroes)
+            {
+                StartCoroutine(readNewCardToken(currentToken));
+            }
+        }
+        thumbnailCreator.SetActive(false);
+
     }
 
->>>>>>> parent of 7691664b (New changes and updates in Grid - WebbridgeGl - Battle Arean - Mint Heroes)
+    public void sentToBattle()
+    {
+        GameObject.FindObjectOfType<BattleMaster>().testTwo();
+
+        // GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle();
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
+        // GameObject.FindObjectOfType<BattleMaster>().OptimisticResponse(CardHolders[i].ToToken());
+    }
+
 
 }
