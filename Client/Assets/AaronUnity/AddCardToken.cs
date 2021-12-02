@@ -214,7 +214,7 @@ public class AddCardToken : MonoBehaviour
             OptionButtonsHolder.SetActive(true);
             //Added to jump into selection process
             selectionState.Equals("selection_to_burn");
-
+            
 
         }
         else if (selectionState.Equals("selection_to_burn") && selectedBoth.Count == 0)
@@ -247,12 +247,15 @@ public class AddCardToken : MonoBehaviour
             onOpenOddBurnPanel();
 
         }
+<<<<<<< HEAD
      
         
 =======
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
         }
 >>>>>>> Stashed changes:Client/Assets/AaronUnity/Scripts/AddCardToken.cs
+=======
+>>>>>>> parent of 235d4c37 (Cancel Button)
 
         #endregion
 
@@ -303,30 +306,19 @@ public class AddCardToken : MonoBehaviour
         //Added to close
         i = 0;
         //Added to close
-
-        OddsBurnHolder.SetActive(false);
-
-        imageHolder.SetActive(false);
-        statsHolder.SetActive(true);
-        btnCancel.SetActive(false);
-        UpgradeHeroesHolder.SetActive(false);
-        OptionButtonsHolder.SetActive(false);
-
-        selectedBoth.Clear();
         selectionState = "selection_hero";
-        TopTitle.text = "Choose Heroes";
-        //
+        //Added
+       
 
-        for (int i = 0; i < InstantiatedTokens.instantiatedObjects.Count; i++)
-        {
-            InstantiatedTokens.instantiatedObjects[i].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
+        InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
 
-            InstantiatedTokens.instantiatedObjects[i].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().InactifCardBurn.SetActive(false);
+
         }
-    }
-  
 
-    public void onOpenOddBurnPanel()
+        public void onOpenOddBurnPanel()
     {
         if (selectedBoth.Count == 0) return;
 

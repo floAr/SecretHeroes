@@ -14,12 +14,15 @@ public class CardDisplay : MonoBehaviour
     public TextMeshProUGUI txtStat4;
 <<<<<<< Updated upstream:Client/Assets/AaronUnity/CardDisplay.cs
     public GameObject InactifCardBurn;
+<<<<<<< HEAD
     public bool isSelected;
 =======
     public TextMeshProUGUI txtId;
 
     public Image image;
 >>>>>>> Stashed changes:Client/Assets/CardDisplay.cs
+=======
+>>>>>>> parent of 235d4c37 (Cancel Button)
 
     public CardToken cardToken;
     // Start is called before the first frame update
