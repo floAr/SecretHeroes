@@ -7,7 +7,7 @@ public class Rooster : MonoBehaviour
 {
     public List<Token> MyHeroes;
 
-    [ContextMenu("TST ADD")]
+    [ContextMenu("Test Add Token")]
     public void AddToken()
     {
         int i = MyHeroes.Count;
@@ -66,5 +66,11 @@ public class Rooster : MonoBehaviour
         }
     }
 
+    internal Token FindToken(string id)
+    {
+        Token t = new Token();
+        t = MyHeroes.Find(t => t.id == id);
+        return t;
+    }
 
 }

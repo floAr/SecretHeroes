@@ -23,9 +23,14 @@ public class WebGlBridge : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void SendToBattle(string tokenId);
 
+    public void TriggerBattle(Token token)
+    {
+        SendTestToBattle(token);
+    }
+
     public void TriggerBattle(string id)
     {
-        SendToBattle(id);
+        SendTestToBattle(id);
     }
 
     [DllImport("__Internal")]
@@ -33,7 +38,6 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerPoll()
     {
-        // PollData();
         PolltestData();
     }
 
@@ -46,6 +50,22 @@ public class WebGlBridge : MonoBehaviour
         {
             return JsonUtility.FromJson<TokenList>(jsonString);
         }
+    }
+
+    private void SendTestToBattle(Token token)
+    {
+        Debug.Log("Token Id: " + token.id);
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
+        GameObject.FindObjectOfType<BattleMaster>().OptimisticResponse(token);
+        GameObject.FindObjectOfType<BattleMaster>().addOpponents(Random.Range(1, 3));
+    }
+
+    private void SendTestToBattle(string id)
+    {
+        Debug.Log("Alter. Token Id: " + id);
+        //GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(id);
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
+        //GameObject.FindObjectOfType<BattleMaster>().OptimisticResponse(token);
     }
 
     private void PolltestData()
@@ -177,4 +197,3 @@ public class WebGlBridge : MonoBehaviour
     }
 
 }
-

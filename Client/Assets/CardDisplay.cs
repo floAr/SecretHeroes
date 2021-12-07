@@ -12,14 +12,9 @@ public class CardDisplay : MonoBehaviour
     public TextMeshProUGUI txtStat2;
     public TextMeshProUGUI txtStat3;
     public TextMeshProUGUI txtStat4;
-<<<<<<< Updated upstream:Client/Assets/AaronUnity/CardDisplay.cs
-    public GameObject InactifCardBurn;
-    public bool isSelected;
-=======
     public TextMeshProUGUI txtId;
 
     public Image image;
->>>>>>> Stashed changes:Client/Assets/CardDisplay.cs
 
     public CardToken cardToken;
     // Start is called before the first frame update

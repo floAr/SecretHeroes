@@ -42,11 +42,8 @@ public class TransitionManager : MonoBehaviour
     [ContextMenu("Market Transition")]
     public void TransitionIntoMarket()
     {
-        Debug.Log("TransitionIntoMarket");
-
         if (CurrentLocation == Location.MARKET)
             return;
-
         StartCoroutine(MarketTransition());
     }
 
@@ -62,12 +59,12 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = DrawHall.DrawCamera.transform.position;
         MainCam.transform.rotation = DrawHall.DrawCamera.transform.rotation;
         MainCamFade.FadeIn();
+
         CTA.text = "Reveal Heroes";
         CTA.gameObject.SetActive(true);
         MenuButton.gameObject.SetActive(true);
         MintButton.gameObject.SetActive(false);
         SendButton.gameObject.SetActive(false);
-
         yield return true;
     }
 
@@ -93,13 +90,15 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.rotation = Selection.SectionCamera.transform.rotation;
         MainCamFade.FadeIn();
 
-        Selection.canvas.gameObject.SetActive(true);
-
         CTA.text = "Reveal Heroes";
         CTA.gameObject.SetActive(false);
         MenuButton.gameObject.SetActive(true);
         MintButton.gameObject.SetActive(false);
         SendButton.gameObject.SetActive(false);
+
+        MainCam.GetComponent<CameraController>().enabled = false;
+        Selection.canvas.gameObject.SetActive(true);
+        Selection.thumbnailCreator.SetActive(true);
 
         yield return true;
     }
@@ -130,9 +129,10 @@ public class TransitionManager : MonoBehaviour
         MenuButton.gameObject.SetActive(true);
         MintButton.gameObject.SetActive(false);
         SendButton.gameObject.SetActive(false);
-
         yield return true;
     }
+
+
 
 
 
@@ -141,7 +141,7 @@ public class TransitionManager : MonoBehaviour
     {
         if (CurrentLocation == Location.MAIN)
             return;
-
+        CurrentLocation = Location.MAIN;
         StartCoroutine(ResetTransition());
     }
 
@@ -154,13 +154,15 @@ public class TransitionManager : MonoBehaviour
         MainCamFade.FadeIn();
         CurrentLocation = Location.MAIN;
 
-        Selection.canvas.gameObject.SetActive(false);
-
         CTA.text = "Reveal Heroes";
         CTA.gameObject.SetActive(false);
         MenuButton.gameObject.SetActive(false);
         MintButton.gameObject.SetActive(false);
         SendButton.gameObject.SetActive(false);
+
+        Selection.canvas.gameObject.SetActive(false);
+        Selection.thumbnailCreator.SetActive(false);
+        MainCam.GetComponent<CameraController>().enabled = true;
 
         yield return true;
     }

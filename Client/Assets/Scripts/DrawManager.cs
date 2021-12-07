@@ -58,8 +58,8 @@ public class DrawManager : MonoBehaviour
                 break;
             }
         }
-       
-        if (!allFilled&&_tokensToDrop.Count > 0)
+
+        if (!allFilled && _tokensToDrop.Count > 0)
         {
             TimeOut = Mathf.Max(0, TimeOut - Time.deltaTime);
             if (TimeOut <= 0)
@@ -70,10 +70,6 @@ public class DrawManager : MonoBehaviour
                     Slots[slot].Fill(_tokensToDrop.Pop());
                     TimeOut = Random.Range(1, 2) + Random.value;
                 }
-<<<<<<< Updated upstream
-               
-=======
->>>>>>> Stashed changes
             }
         }
 

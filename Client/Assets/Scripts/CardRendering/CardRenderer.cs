@@ -52,8 +52,6 @@ public class CardRenderer : MonoBehaviour
         SetSkills();
     }
 
-
-
     public void ReadToken(Token token)
     {
         Id = token.id;
@@ -101,7 +99,6 @@ public class CardRenderer : MonoBehaviour
     {
         Models[_activeModel].GetComponent<SkinnedMeshRenderer>().material = Variants[newVariant];
     }
-
 
     private void Update()
     {

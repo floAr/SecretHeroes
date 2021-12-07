@@ -6,14 +6,10 @@ using UnityEngine.UI;
 
 public class BattleMaster : MonoBehaviour
 {
-
     public Camera BattleCamera;
-
     public BattleSlot MyHero;
     public BattleSlot Enemy1;
     public BattleSlot Enemy2;
-
-
     public Button SendButton;
 
 
@@ -31,7 +27,6 @@ public class BattleMaster : MonoBehaviour
         int counter = 0;
         if (state.your_hero != null)
         {
-
             try
             {
                 var name = state.your_hero.name;
@@ -40,7 +35,6 @@ public class BattleMaster : MonoBehaviour
                     counter += 1;
                     MyHero.Activate(state.your_hero);
                     SendButton.interactable = false;
-
                 }
             }
             catch (Exception e) { }
@@ -56,25 +50,50 @@ public class BattleMaster : MonoBehaviour
             {
                 Enemy2.Activate(null);
             }
-
         }
         if (other == 2)
         {
             Enemy1.Activate(null);
             Enemy2.Activate(null);
         }
-
     }
 
-    [ContextMenu("Test single")]
+    [ContextMenu("Test Show Single Stats")]
     public void testSingle()
     {
         AddBattleState(new BattleState() { heroes_waiting = 1, your_hero = Token.Random() });
     }
 
-    [ContextMenu("Test 2")]
+    [ContextMenu("Test Show 2 Stats")]
     public void testTwo()
     {
         AddBattleState(new BattleState() { heroes_waiting = 2, your_hero = Token.Random() });
     }
+
+
+    [ContextMenu("Add Test With Random One/Two Opponents")]
+    public void addOpponents(int n)
+    {
+        Enemy1.Deactivate();
+        Enemy2.Deactivate();
+        SendButton.interactable = true;
+        var other = n;
+        if (other == 1)
+        {
+            if (UnityEngine.Random.value < 0.5f)
+            {
+                Enemy1.Activate(null);
+            }
+            else
+            {
+                Enemy2.Activate(null);
+            }
+        }
+        if (other == 2)
+        {
+            Enemy1.Activate(null);
+            Enemy2.Activate(null);
+        }
+    }
+
 }

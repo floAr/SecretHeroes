@@ -21,7 +21,6 @@ public class SelectionRooster : MonoBehaviour
 
     public GameObject thumbnailCreator;
 
-    //private Token[] Characters = new Token[10];
     LTDescr[] movers;
 
     public void Refresh()
@@ -92,7 +91,6 @@ public class SelectionRooster : MonoBehaviour
             }
         }
     }
-
 
     public void UpdatePositions(float duration, bool increase)
     {

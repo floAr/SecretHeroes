@@ -143,6 +143,7 @@ public class ThumbnailSetup : MonoBehaviour
     {
         StartCoroutine(TakeSnapshot());
     }
+
     public IEnumerator TakeSnapshot()
     {
         if (Orthographic)
@@ -154,10 +155,11 @@ public class ThumbnailSetup : MonoBehaviour
             myCamera.orthographic = false;
         }
 
-
         Vector3 pos = spawnPoint.transform.position;
         for (int i = 0; i < assets.Count; i++)
         {
+            if (objprefab != null) Destroy(objprefab);
+
             // Instantiate mesh
             objprefab = Instantiate(assets[i], pos, assets[i].transform.rotation * Quaternion.Euler(rotationX, rotationY, rotationZ));
 
@@ -189,20 +191,22 @@ public class ThumbnailSetup : MonoBehaviour
 
             yield return new WaitForSeconds(thumbnailDelay);
 
-            Destroy(objprefab);
-        }
-    }
+            Debug.Log("TakeSnapshot");
 
-    public string PrefabName()
-    {
-        string pName = prefabName; //+ "_" + Mathf.FloorToInt(UnityEngine.Random.Range(0, 10000)).ToString();
-        return pName;
+        }
     }
 
     public string FolderFullPathName()
     {
         return folderPath;
     }
+
+    public string PrefabName()
+    {
+        string pName = prefabName;
+        return pName;
+    }
+
     private void AlignCamera()
     {
 
