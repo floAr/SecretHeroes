@@ -25,6 +25,14 @@ public class Token
 
     public static Token Random()
     {
-        return new Token() {id=Mathf.FloorToInt(UnityEngine.Random.Range(0,1000)).ToString(), name = "test", biotech = 3, engineering = 1, psychics = 1, weapons = 2 };
+        return new Token()
+        {
+            id = Mathf.FloorToInt(UnityEngine.Random.Range(0, 1000)).ToString(),
+            name = "Demo",
+            biotech = Mathf.FloorToInt(UnityEngine.Random.Range(0, 101)),
+            engineering = Mathf.FloorToInt(UnityEngine.Random.Range(0, 101)),
+            psychics = Mathf.FloorToInt(UnityEngine.Random.Range(0, 101)),
+            weapons = Mathf.FloorToInt(UnityEngine.Random.Range(0, 101))
+        };
     }
 }
