@@ -59,11 +59,10 @@ public class TransitionManager : MonoBehaviour
         MainCam.transform.position = DrawHall.DrawCamera.transform.position;
         MainCam.transform.rotation = DrawHall.DrawCamera.transform.rotation;
         MainCamFade.FadeIn();
-
         CTA.text = "Reveal Heroes";
         CTA.gameObject.SetActive(true);
         MenuButton.gameObject.SetActive(true);
-        MintButton.gameObject.SetActive(false);
+        MintButton.gameObject.SetActive(true);
         SendButton.gameObject.SetActive(false);
         yield return true;
     }
@@ -94,12 +93,7 @@ public class TransitionManager : MonoBehaviour
         CTA.gameObject.SetActive(false);
         MenuButton.gameObject.SetActive(true);
         MintButton.gameObject.SetActive(false);
-        SendButton.gameObject.SetActive(false);
-
-        MainCam.GetComponent<CameraController>().enabled = false;
-        Selection.canvas.gameObject.SetActive(true);
-        Selection.thumbnailCreator.SetActive(true);
-
+        SendButton.gameObject.SetActive(true);
         yield return true;
     }
 
@@ -159,11 +153,6 @@ public class TransitionManager : MonoBehaviour
         MenuButton.gameObject.SetActive(false);
         MintButton.gameObject.SetActive(false);
         SendButton.gameObject.SetActive(false);
-
-        Selection.canvas.gameObject.SetActive(false);
-        Selection.thumbnailCreator.SetActive(false);
-        MainCam.GetComponent<CameraController>().enabled = true;
-
         yield return true;
     }
 }

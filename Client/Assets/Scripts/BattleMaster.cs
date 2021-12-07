@@ -40,7 +40,7 @@ public class BattleMaster : MonoBehaviour
             catch (Exception e) { }
         }
         var other = state.heroes_waiting - counter;
-        if (other == 1)
+        if (other==1)
         {
             if (UnityEngine.Random.value < 0.5f)
             {
