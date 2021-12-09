@@ -130,9 +130,14 @@ public class AddCardToken : MonoBehaviour
             btnCancel.SetActive(true);
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
+            //AR Dec8
+            selectionState.Equals("selection_to_burn");
+            //
         }
-        else if (selectionState.Equals("selection_to_burn"))
+        //AR Dec8 Added && countSelectedToBurn == 0
+        else if (selectionState.Equals("selection_to_burn") && countSelectedToBurn == 0)
         {
+
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
 
             InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
@@ -141,6 +146,22 @@ public class AddCardToken : MonoBehaviour
 
             ++countSelectedToBurn;
         }
+        else if (selectionState.Equals("selection_to_burn") && countSelectedToBurn == 1)
+        {
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
+
+            InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = true;
+            OddsBurnHolder.SetActive(true);
+
+            ++countSelectedToBurn;
+        }
+        else if (selectionState.Equals("selection_to_burn") && countSelectedToBurn == 2)
+        {
+            return;
+        }
+
 
         selectedBoth.Add(InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.GetComponent<CardDisplay>().txtId.text);
 
@@ -197,13 +218,18 @@ public class AddCardToken : MonoBehaviour
         TopTitle.text = "Choose Two Heroes To Burn";
 
         OptionButtonsHolder.SetActive(false);
-        UpgradeHeroesHolder.SetActive(true);
+        //UpgradeHeroesHolder.SetActive(true);
 
         InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().image.overrideSprite = overrideImage;
 
         InstantiatedTokens.instantiatedObjects[selectedindex].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = false;
     }
 
+    public void OnCancelButtonPressed()
+    {
+        RefreshGrid();
+        }
+    
     public void onCloseOddBurnPanel()
     {
         OddsBurnHolder.SetActive(false);

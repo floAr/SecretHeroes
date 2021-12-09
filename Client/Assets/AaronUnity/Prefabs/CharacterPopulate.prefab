@@ -321,10 +321,10 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 21300000, guid: 7ea6b2c3116b441a7b4bb2e5b7fa0c5d, type: 3}
+    m_HighlightedSprite: {fileID: 21300000, guid: 4333e6db9baea471da340720b8db98ab, type: 3}
     m_PressedSprite: {fileID: 21300000, guid: 25c92e713014849acb2b43f41e224b93, type: 3}
     m_SelectedSprite: {fileID: 21300000, guid: 4333e6db9baea471da340720b8db98ab, type: 3}
-    m_DisabledSprite: {fileID: 21300000, guid: 4333e6db9baea471da340720b8db98ab, type: 3}
+    m_DisabledSprite: {fileID: 21300000, guid: 7ea6b2c3116b441a7b4bb2e5b7fa0c5d, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -766,7 +766,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 0}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
