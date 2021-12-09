@@ -20,17 +20,12 @@ public class PopulateGrid : MonoBehaviour
     void Start()
     {
         Populate();
-
-   //     for (int i = 0; i < 3; i++)
-  //      {
-    //        AddToken();
-    //    }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void Populate()
@@ -40,13 +35,11 @@ public class PopulateGrid : MonoBehaviour
         GameObject[] arrayOfGameObjects = listOfHeroGameObjects.ToArray();
         //AR no longer use number to create 
         for (int i = 0; i < MyHeroes.Count; i++)
-
-
         {
             //AddToken();
             // AR REMOVED this 43 to add new tokens
             newObj = (GameObject)Instantiate(prefab, transform);
-          
+
 
         }
     }
@@ -71,4 +64,4 @@ public class PopulateGrid : MonoBehaviour
         MyHeroes.Clear();
         MyHeroes.AddRange(tokens);
     }
-    }
+}

@@ -16,16 +16,21 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerMint()
     {
-        //Debug.Log(payload);
-        MintTokens();
+        // MintTokens();
+        TestRegisterMint();
     }
 
     [DllImport("__Internal")]
     private static extern void SendToBattle(string tokenId);
 
+    public void TriggerBattle(Token token)
+    {
+        SendTestToBattle(token);
+    }
+
     public void TriggerBattle(string id)
     {
-        SendToBattle(id);
+        SendTestToBattle(id);
     }
 
     [DllImport("__Internal")]
@@ -33,11 +38,8 @@ public class WebGlBridge : MonoBehaviour
 
     public void TriggerPoll()
     {
-        //Debug.Log(payload);
-
-        PollData();
+        PolltestData();
     }
-
 
 
     [System.Serializable]
@@ -50,12 +52,43 @@ public class WebGlBridge : MonoBehaviour
         }
     }
 
+    private void SendTestToBattle(Token token)
+    {
+        Debug.Log("Token Id: " + token.id);
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
+        GameObject.FindObjectOfType<BattleMaster>().OptimisticResponse(token);
+        GameObject.FindObjectOfType<BattleMaster>().addOpponents(Random.Range(1, 3));
+    }
+
+    private void SendTestToBattle(string id)
+    {
+        Debug.Log("Alter. Token Id: " + id);
+        //GameObject.FindObjectOfType<WebGlBridge>().TriggerBattle(id);
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoArena();
+        //GameObject.FindObjectOfType<BattleMaster>().OptimisticResponse(token);
+    }
+
+    private void PolltestData()
+    {
+        TestReportTokens();
+    }
     public void RegisterMint(string encodedTokens)
     {
         Debug.Log("Encoded for draw" + encodedTokens);
         var json = "{ \"tokens\":" + encodedTokens + "}";
         var tokens = TokenList.CreateFromJSON(json);
         GameObject.FindObjectOfType<DrawManager>().PrepareSlots(tokens.tokens);
+        GameObject.FindObjectOfType<TransitionManager>().TransitionIntoMarket();
+
+        ReportTokens(encodedTokens);
+    }
+
+    public void RegisterMintByOne(string encodedTokens)
+    {
+        Debug.Log("Encoded for draw" + encodedTokens);
+        var json = encodedTokens;
+        var token = Token.CreateFromJSON(json);
+        GameObject.FindObjectOfType<DrawManager>().PrepareSlot(token);
         GameObject.FindObjectOfType<TransitionManager>().TransitionIntoMarket();
     }
 
@@ -68,6 +101,15 @@ public class WebGlBridge : MonoBehaviour
         GameObject.FindObjectOfType<SelectionRooster>().Refresh();
     }
 
+    public void ReportToken(string encodedTokens)
+    {
+        Debug.Log("Encoded for rooster" + encodedTokens);
+        var json = encodedTokens;
+        var token = Token.CreateFromJSON(json);
+        GameObject.FindObjectOfType<Rooster>().UpdateToken(token);
+        GameObject.FindObjectOfType<SelectionRooster>().Refresh();
+    }
+
     public void ReportBattleStatus(string encodedBattle)
     {
         Debug.Log("Encoded for battleState " + encodedBattle);
@@ -77,7 +119,7 @@ public class WebGlBridge : MonoBehaviour
 
     public void Connect()
     {
-        StartCoroutine(EnableAfterX(3));
+        StartCoroutine(EnableAfterX(2));
     }
 
     private IEnumerator EnableAfterX(int seconds)
@@ -91,13 +133,25 @@ public class WebGlBridge : MonoBehaviour
     [ContextMenu("Test RegisterMint")]
     public void TestRegisterMint()
     {
-        RegisterMint("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
+        RegisterMint(createRandomTokens());
     }
 
-    [ContextMenu("Test ReportToken")]
+    [ContextMenu("Test RegisterOneMint")]
+    public void TestRegisterOneMint()
+    {
+        RegisterMintByOne(createRandomToken());
+    }
+
+    [ContextMenu("Test ReportTokens")]
+    public void TestReportTokens()
+    {
+        ReportTokens(createRandomTokens());
+    }
+
+    [ContextMenu("Test ReportOneToken")]
     public void TestReportToken()
     {
-        ReportTokens("[{\"name\":\"unity3d\",\"weapons\":1,\"engineering\":2,\"biotech\":3,\"psychics\":4},{\"name\":\"webgl\",\"weapons\":5,\"engineering\":6,\"biotech\":7,\"psychics\":8},{\"name\":\"suck it\",\"weapons\":9,\"engineering\":10,\"biotech\":11,\"psychics\":12}]");
+        ReportToken(createRandomToken());
     }
 
     [ContextMenu("Test Connect")]
@@ -121,5 +175,25 @@ public class WebGlBridge : MonoBehaviour
     {
         ReportBattleStatus("{\"heroes_waiting\": 2, \"your_hero\": null}");
     }
-}
 
+    private string createRandomTokens()
+    {
+        string json = "";
+        json = "[" +
+            createRandomToken() + "," +
+            createRandomToken() + "," +
+            createRandomToken() + "]";
+        return json;
+    }
+
+    private string createRandomToken()
+    {
+        string json = "";
+        Token tempToken = new Token();
+        tempToken = Token.Random();
+        tempToken.name += tempToken.id;
+        json = JsonUtility.ToJson(tempToken);
+        return json;
+    }
+
+}
