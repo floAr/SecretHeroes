@@ -36383,6 +36383,10 @@ PrefabInstance:
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 1669954636934545319, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1819898827701459415, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_SizeDelta.y
       value: 131
@@ -36420,20 +36424,72 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1017420160}
     - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
+      value: 
+      objectReference: {fileID: 429921184}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: OnCancelButtonPressed
       objectReference: {fileID: 0}
     - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
+      value: ResetTransitions
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: AddCardToken, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: AddCardToken, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
+      value: TransitionManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017239501232668341, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 3017239502234844682, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
       propertyPath: m_fontAsset
@@ -36587,6 +36643,14 @@ PrefabInstance:
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 9022344502148938313, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 93.4946
+      objectReference: {fileID: 0}
+    - target: {fileID: 9022344502567063746, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: adbf9a8af58a143448b6c38565ec29bb, type: 3}
 --- !u!223 &1017420159 stripped

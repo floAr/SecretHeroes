@@ -114,6 +114,7 @@ public class AddCardToken : MonoBehaviour
     #endregion
 
     #region Custom Game Methods
+    
     void onClickEvent(int index)
     {
         selectedindex = index;
@@ -131,9 +132,9 @@ public class AddCardToken : MonoBehaviour
             UpgradeHeroesHolder.SetActive(false);
             OptionButtonsHolder.SetActive(true);
             //AR Dec8
-            selectionState.Equals("selection_to_burn");
-            //
+            selectionState.Equals("selection_to_burn");            
         }
+
         //AR Dec8 Added && countSelectedToBurn == 0
         else if (selectionState.Equals("selection_to_burn") && countSelectedToBurn == 0)
         {
@@ -227,12 +228,17 @@ public class AddCardToken : MonoBehaviour
 
     public void OnCancelButtonPressed()
     {
-        RefreshGrid();
-        }
-    
+        // Unselect Cards & Refresh Grid Again
+        StartCoroutine(RefreshGrid());
+    }
+
     public void onCloseOddBurnPanel()
     {
-        OddsBurnHolder.SetActive(false);
+        // Unselect Cards (Standard View)
+        UnselectCardsForStandardView();
+
+        // Close Upgrade Prob Popup
+        OddsBurnHolder.SetActive(false);        
     }
 
     public void upgradeNow()
@@ -537,6 +543,7 @@ public class AddCardToken : MonoBehaviour
     private IEnumerator RefreshGrid()
     {
         Debug.Log("RefreshGrid");
+        runningTokens.Clear();
         int count = GameObject.FindObjectOfType<Rooster>().MyHeroes.Count;
         if (count > 0)
         {
@@ -556,6 +563,28 @@ public class AddCardToken : MonoBehaviour
         thumbnailCreator.SetActive(false);
 
         yield return true;
+    }
+
+    private void UnselectCardsForStandardView() {
+        
+        for (int k = 0; k < CardsListUI.transform.childCount; k++) {
+            InstantiatedTokens.instantiatedObjects[k].gameObject.transform.GetChild(0).GetComponent<Button>().interactable = true;
+
+            InstantiatedTokens.instantiatedObjects[k].gameObject.transform.GetChild(0).GetChild(2).GetComponent<Image>().enabled = false;
+        }
+
+        Debug.Log("InitializeAgainGrid");
+        selectionState = "selection_hero";
+        selectedBoth = new List<string>();
+        imageHolder.SetActive(true);
+        statsHolder.SetActive(false);
+        btnCancel.SetActive(false);
+        UpgradeHeroesHolder.SetActive(false);
+        OptionButtonsHolder.SetActive(false);
+        TopTitle.text = "Choose Hero";
+        countSelectedToBurn= 0;
+
+        StartCoroutine(RefreshGrid());
     }
 
     #endregion
