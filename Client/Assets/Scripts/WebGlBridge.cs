@@ -37,6 +37,14 @@ public class WebGlBridge : MonoBehaviour
 
         PollData();
     }
+    
+    [DllImport("__Internal")]
+    private static extern void UpgradeHeroes(string upgradeId, string burnOne, string burnTwo);
+
+    public void TriggerUpgrade(string upgradeId, string burnOneId, string burnTwoId)
+    {
+        UpgradeHeroes(upgradeId,burnOneId,burnTwoId);
+    }
 
 
 

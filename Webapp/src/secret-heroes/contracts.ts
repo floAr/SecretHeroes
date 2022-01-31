@@ -297,7 +297,7 @@ export const mintHeroes = async (client: SigningCosmWasmClient, names: string[])
     getFees('mint'))
 }
 
-export const upgradeHeroes = async (client: SigningCosmWasmClient, burnHeroes: HeroInfo[], upgrade: HeroInfo): Promise<UpgradeRsp> => {
+export const upgradeHeroes = async (client: SigningCosmWasmClient, burnHeroes: HeroInfo[], upgrade: HeroInfo): Promise<UpgradeRsp | undefined> => {
   return transact<UpgradeMsg, UpgradeRsp>(client, minter_address, {
     upgrade: {
       burn: burnHeroes,
@@ -310,7 +310,7 @@ export const upgradeHeroes = async (client: SigningCosmWasmClient, burnHeroes: H
     getFees('mint'))
 }
 
-export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp> => {
+export const fightStatus = async (client: CosmWasmClient, address: HumanAddr, viewingKey: string): Promise<FightStatusRsp | undefined> => {
   return query<FightStatusQry, FightStatusRsp>(client, arena_address, {
     bullpen: {
       address,
@@ -330,6 +330,7 @@ export const fightHistory =
       }
     })
   }
+
 export const returnFighter = async (client: SigningCosmWasmClient): Promise<WithdrawRsp | undefined> => {
   return transact<WithdrawMsg, WithdrawRsp>(client, arena_address, {
     chicken_out: {
@@ -395,7 +396,7 @@ export const Contracts = {
   minter: {
     address: minter_address,
     mint: mintHeroes,
-    upgrade: upgradeHeros,
+    upgrade: upgradeHeroes,
   },
 
   arena: {
