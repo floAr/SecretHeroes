@@ -15,7 +15,8 @@
           "required": [
             "card_versions",
             "minting_has_halted",
-            "multi_sig_contract"
+            "multi_sig_contract",
+            "upgrades_have_halted"
           ],
           "properties": {
             "card_versions": {
@@ -29,6 +30,9 @@
             },
             "multi_sig_contract": {
               "$ref": "#/definitions/HumanAddr"
+            },
+            "upgrades_have_halted": {
+              "type": "boolean"
             }
           }
         }
@@ -59,7 +63,7 @@
   ],
   "definitions": {
     "ContractInfo": {
-      "description": "code hash and address of a contract",
+      "description": "code hash and address of a secret contract",
       "type": "object",
       "required": [
         "address",

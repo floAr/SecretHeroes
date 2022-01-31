@@ -1,6 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::contract_info::ContractInfo;
 use cosmwasm_std::HumanAddr;
 
 /// Instantiation message
@@ -33,21 +34,46 @@ pub enum HandleMsg {
         /// new card ContractInfo
         card_contract: ContractInfo,
     },
+    /// add compatible card contracts without changing the current one used for minting
+    AddLegacyCardContracts {
+        /// legacy card contracts
+        card_contracts: Vec<ContractInfo>,
+    },
     /// change the address of the multi sig contract
     NewMultiSig {
         /// new multi sig contract address
         address: HumanAddr,
     },
-    /// halt/start minting
-    SetMintStatus {
+    /// halt/start minting and/or upgrading
+    SetMintAndUpgradeStatus {
         /// true if minting should be halted
-        stop: bool,
+        stop_mint: Option<bool>,
+        /// true if upgrades should be halted
+        stop_upgrade: Option<bool>,
     },
     /// add number of packs minted (admin only)
     AddMintCount {
         /// number of packs minted in previous contracts
         packs_minted: u32,
     },
+    /// burn two heroes to upgrade a third
+    Upgrade {
+        /// heroes to burn
+        burn: Vec<HeroInfo>,
+        /// hero to upgrade
+        upgrade: HeroInfo,
+        /// entropy for the rng
+        entropy: String,
+    },
+}
+
+/// the token ID and contract address of a Hero
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct HeroInfo {
+    /// the hero's token ID
+    pub token_id: String,
+    /// the SNIP-721 contract that controls this Hero
+    pub contract_address: HumanAddr,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -70,12 +96,34 @@ pub enum ResponseStatus {
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HandleAnswer {
-    Mint { status: ResponseStatus },
-    ChangeAdmin { new_admin: HumanAddr },
-    NewCardContract { card_contract: HumanAddr },
-    NewMultiSig { multi_sig: HumanAddr },
-    SetMintStatus { minting_has_halted: bool },
-    AddMintCount { packs_added: u32 },
+    Mint {
+        status: ResponseStatus,
+    },
+    ChangeAdmin {
+        new_admin: HumanAddr,
+    },
+    NewCardContract {
+        card_contract: HumanAddr,
+    },
+    NewMultiSig {
+        multi_sig: HumanAddr,
+    },
+    SetMintAndUpgradeStatus {
+        minting_has_halted: bool,
+        upgrades_have_halted: bool,
+    },
+    AddMintCount {
+        packs_added: u32,
+    },
+    AddLegacyCardContracts {
+        card_versions: Vec<ContractInfo>,
+    },
+    Upgrade {
+        /// hero's skills before the upgrade
+        pre_upgrade_skills: Vec<u8>,
+        /// hero's skills after the upgrade
+        post_upgrade_skills: Vec<u8>,
+    },
 }
 
 /// Responses from queries
@@ -87,16 +135,8 @@ pub enum QueryAnswer {
         card_versions: Vec<ContractInfo>,
         multi_sig_contract: HumanAddr,
         minting_has_halted: bool,
+        upgrades_have_halted: bool,
     },
     /// number of packs minted
     PacksMinted { packs_minted: u32 },
-}
-
-/// code hash and address of a contract
-#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
-pub struct ContractInfo {
-    /// contract's code hash string
-    pub code_hash: String,
-    /// contract's address
-    pub address: HumanAddr,
 }

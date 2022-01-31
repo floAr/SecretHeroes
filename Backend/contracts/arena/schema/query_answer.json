@@ -437,7 +437,7 @@
       }
     },
     "ContractInfo": {
-      "description": "code hash and address of a contract",
+      "description": "code hash and address of a secret contract",
       "type": "object",
       "required": [
         "address",

@@ -11,7 +11,8 @@ use secret_toolkit::{
     storage::{AppendStore, AppendStoreMut},
 };
 
-use crate::msg::{Battle, BattleDump, ContractInfo, Hero, HeroDump, PlayerStats, TokenInfo};
+use crate::contract_info::{ContractInfo, StoreContractInfo};
+use crate::msg::{Battle, BattleDump, Hero, HeroDump, PlayerStats, TokenInfo};
 use crate::stats::Stats;
 
 pub const CONFIG_KEY: &[u8] = b"config";
@@ -306,31 +307,6 @@ impl StoreBattle {
     }
 }
 
-/// code hash and address of a contract
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct StoreContractInfo {
-    /// contract's code hash string
-    pub code_hash: String,
-    /// contract's address
-    pub address: CanonicalAddr,
-}
-
-impl StoreContractInfo {
-    /// Returns StdResult<ContractInfo> from converting a StoreContractInfo to a displayable
-    /// ContractInfo
-    ///
-    /// # Arguments
-    ///
-    /// * `api` - a reference to the Api used to convert human and canonical addresses
-    pub fn to_humanized<A: Api>(&self, api: &A) -> StdResult<ContractInfo> {
-        let info = ContractInfo {
-            address: api.human_address(&self.address)?,
-            code_hash: self.code_hash.clone(),
-        };
-        Ok(info)
-    }
-}
-
 /// Returns StdResult<()> after saving the battle id
 ///
 /// # Arguments
@@ -376,8 +352,8 @@ pub fn get_history<A: Api, S: ReadonlyStorage>(
     let config: Config = load(storage, CONFIG_KEY)?;
     let versions = config
         .card_versions
-        .iter()
-        .map(|v| v.to_humanized(api))
+        .into_iter()
+        .map(|v| v.into_humanized(api))
         .collect::<StdResult<Vec<ContractInfo>>>()?;
     // access battle storage
     let his_store = ReadonlyPrefixedStorage::new(PREFIX_HISTORY, storage);

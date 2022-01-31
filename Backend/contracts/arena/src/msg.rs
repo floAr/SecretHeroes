@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{Binary, HumanAddr};
 
+use crate::contract_info::ContractInfo;
 use crate::stats::Stats;
 
 /// Instantiation message
@@ -53,10 +54,10 @@ pub enum HandleMsg {
         /// true if battles should be halted
         stop: bool,
     },
-    /// add a compatible card contract
-    AddCardContract {
-        /// new card ContractInfo
-        card_contract: ContractInfo,
+    /// add compatible card contracts
+    AddCardContracts {
+        /// new card ContractInfos
+        card_contracts: Vec<ContractInfo>,
     },
     /// set export_to contract info
     SetExportToContract {
@@ -102,8 +103,8 @@ pub enum HandleAnswer {
     ChangeAdmin { new_admin: HumanAddr },
     /// response from starting/stopping battles
     SetBattleStatus { battles_have_halted: bool },
-    /// response from adding a new card contract
-    AddCardContract { card_contract: HumanAddr },
+    /// response from adding new card contracts
+    AddCardContracts { card_contracts: Vec<ContractInfo> },
     /// response from adding auto-send addresses
     AddBots { added_bots: Vec<HumanAddr> },
     /// response from removing auto-send addresses
@@ -309,15 +310,6 @@ pub struct Hero {
     pub pre_battle_skills: Vec<u8>,
     /// hero's skills after the battle
     pub post_battle_skills: Vec<u8>,
-}
-
-/// code hash and address of a contract
-#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
-pub struct ContractInfo {
-    /// contract's code hash string
-    pub code_hash: String,
-    /// contract's address
-    pub address: HumanAddr,
 }
 
 /// player stats and point leaderboard entry
