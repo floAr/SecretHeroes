@@ -9,6 +9,14 @@ mergeInto(LibraryManager.library, {
 	window.sendToBattle(token)
   },
 
+
+ UpgradeHeroes: function(upgradeId, burnOne, burnTwo){
+    var upgrade = Pointer_stringify(upgradeId);
+    var b1 = Pointer_stringify(burnOne);
+    var b2 = Pointer_stringify(burnTwo);
+    window.ugradeHeroes(upgrade, b1, b2)
+ };
+
   PollData: function (){
 	window.poll()
   }

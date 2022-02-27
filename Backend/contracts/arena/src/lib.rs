@@ -1,5 +1,6 @@
-//#![allow(clippy::field_reassign_with_default)]
+#![allow(clippy::field_reassign_with_default)]
 pub mod contract;
+mod contract_info;
 pub mod msg;
 mod rand;
 pub mod state;

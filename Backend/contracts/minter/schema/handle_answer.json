@@ -82,16 +82,20 @@
     {
       "type": "object",
       "required": [
-        "set_mint_status"
+        "set_mint_and_upgrade_status"
       ],
       "properties": {
-        "set_mint_status": {
+        "set_mint_and_upgrade_status": {
           "type": "object",
           "required": [
-            "minting_has_halted"
+            "minting_has_halted",
+            "upgrades_have_halted"
           ],
           "properties": {
             "minting_has_halted": {
+              "type": "boolean"
+            },
+            "upgrades_have_halted": {
               "type": "boolean"
             }
           }
@@ -118,9 +122,88 @@
           }
         }
       }
+    },
+    {
+      "type": "object",
+      "required": [
+        "add_legacy_card_contracts"
+      ],
+      "properties": {
+        "add_legacy_card_contracts": {
+          "type": "object",
+          "required": [
+            "card_versions"
+          ],
+          "properties": {
+            "card_versions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "upgrade"
+      ],
+      "properties": {
+        "upgrade": {
+          "type": "object",
+          "required": [
+            "post_upgrade_skills",
+            "pre_upgrade_skills"
+          ],
+          "properties": {
+            "post_upgrade_skills": {
+              "description": "hero's skills after the upgrade",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint8",
+                "minimum": 0.0
+              }
+            },
+            "pre_upgrade_skills": {
+              "description": "hero's skills before the upgrade",
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint8",
+                "minimum": 0.0
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
+    "ContractInfo": {
+      "description": "code hash and address of a secret contract",
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "code_hash": {
+          "description": "contract's code hash string",
+          "type": "string"
+        }
+      }
+    },
     "HumanAddr": {
       "type": "string"
     },

@@ -164,25 +164,24 @@
       }
     },
     {
-      "description": "add a compatible card contract",
+      "description": "add compatible card contracts",
       "type": "object",
       "required": [
-        "add_card_contract"
+        "add_card_contracts"
       ],
       "properties": {
-        "add_card_contract": {
+        "add_card_contracts": {
           "type": "object",
           "required": [
-            "card_contract"
+            "card_contracts"
           ],
           "properties": {
-            "card_contract": {
-              "description": "new card ContractInfo",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/ContractInfo"
-                }
-              ]
+            "card_contracts": {
+              "description": "new card ContractInfos",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
             }
           }
         }
@@ -348,7 +347,7 @@
       "type": "string"
     },
     "ContractInfo": {
-      "description": "code hash and address of a contract",
+      "description": "code hash and address of a secret contract",
       "type": "object",
       "required": [
         "address",

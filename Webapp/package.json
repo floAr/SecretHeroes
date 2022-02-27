@@ -66,7 +66,7 @@
     "react-toastify": "^7.0.4",
     "react-tooltip": "^4.2.18",
     "react-unity-webgl": "8.x",
-    "secretjs": "^0.11.0",
+    "secretjs": "^0.17.3",
     "typescript": "^3.5.2"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ import BattleReportFrame from '../components/BattleReport/BattleReportFrame'
 import UnityFunc from '../components/UnityFunc'
 import ViewingKeyController from '../components/ViewingKeyController'
 import IndexLayout from '../layouts'
-import { Battle, Contracts, getEntropy } from '../secret-heroes/contracts'
+import { Battle, Contracts, getEntropy, HeroInfo } from '../secret-heroes/contracts'
 import { KeplrContext } from '../secret/KeplrContext'
 import { viewingKeyContext } from '../secret/ViewingKeysContext'
 
@@ -19,6 +19,7 @@ declare global {
     mint: () => Promise<void>
     poll: () => Promise<void>
     sendToBattle: (tokenId: string) => Promise<void>
+    upgradeHeroes: (upgradeId: string, burnOne: string, burnTwo: string) => Promise<void>
     registerUnityInstance: React.Dispatch<React.SetStateAction<UnityInstance | undefined>>
   }
 }
@@ -236,6 +237,24 @@ const Game = () => {
     }
   }
 
+
+
+  const UpgradeHeroes = async (upgradeId: string, burnOne: string, burnTwo: string) => {
+    if (client != null && setWorking != null) {
+      try {
+        setWorking(true)
+        const upgrade = await Contracts.minter.upgrade(client, [
+          { token_id: burnOne, contract_address: Contracts.cards.address },
+          { token_id: burnTwo, contract_address: Contracts.cards.address }
+        ], { token_id: upgradeId, contract_address: Contracts.cards.address })
+        unityInstance.SendMessage('WebGlBridge', 'RegisterUpgrade', JSON.stringify(upgrade))
+        setWorking(false)
+      } catch (e) {
+        toast.error(`Error upgrading hero: ${e}`)
+      }
+    }
+  }
+
   const getSaveName = (name: string | null | undefined) => {
     if (name === undefined || name === null || name.length === 0) return getEntropy()
     return name
@@ -295,6 +314,7 @@ const Game = () => {
     window.mint = MintHeroes
     window.poll = PollFightState
     window.sendToBattle = SendToBattle
+    window.upgradeHeroes = UpgradeHeroes
   }
 
   useEffect(() => {

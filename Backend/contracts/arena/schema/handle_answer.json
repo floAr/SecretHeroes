@@ -84,20 +84,23 @@
       }
     },
     {
-      "description": "response from adding a new card contract",
+      "description": "response from adding new card contracts",
       "type": "object",
       "required": [
-        "add_card_contract"
+        "add_card_contracts"
       ],
       "properties": {
-        "add_card_contract": {
+        "add_card_contracts": {
           "type": "object",
           "required": [
-            "card_contract"
+            "card_contracts"
           ],
           "properties": {
-            "card_contract": {
-              "$ref": "#/definitions/HumanAddr"
+            "card_contracts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ContractInfo"
+              }
             }
           }
         }
@@ -253,6 +256,28 @@
     }
   ],
   "definitions": {
+    "ContractInfo": {
+      "description": "code hash and address of a secret contract",
+      "type": "object",
+      "required": [
+        "address",
+        "code_hash"
+      ],
+      "properties": {
+        "address": {
+          "description": "contract's address",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HumanAddr"
+            }
+          ]
+        },
+        "code_hash": {
+          "description": "contract's code hash string",
+          "type": "string"
+        }
+      }
+    },
     "HumanAddr": {
       "type": "string"
     }

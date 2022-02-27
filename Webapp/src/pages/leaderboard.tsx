@@ -54,7 +54,7 @@ const LeaderboardPage = () => {
   const updateLeaderboardData = async () => {
     let queryClient = getQueryClient()
     if (queryClient == null) {
-      await connectQuery('secret-3')
+      await connectQuery('secret-4')
       queryClient = getQueryClient()
     }
     if (queryClient != null) {
