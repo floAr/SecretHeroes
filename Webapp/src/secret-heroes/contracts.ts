@@ -220,21 +220,21 @@ const createPadding = (currentLength: number, targetLength: number) => {
 
 const getFees = (txName: 'mint' | 'viewingKeys' | 'send' | 'pull'): StdFee => {
 
-  let gas = "1000000";
+  let gas = "250000";
   let amount = "0";
   const denom = "uscrt";
   switch (txName) {
     case "mint":
-      gas = "650000";
+      gas = "162500";
       break;
     case "viewingKeys":
-      gas = "120000";
+      gas = "30000";
       break;
     case "send":
-      gas = "860000";
+      gas = "215000";
       break;
     case "pull":
-      gas = "260000";
+      gas = "65000";
       break;
     default:
       break
